@@ -4,6 +4,9 @@ import { Footer, Blog, Possibility, Features, WhatGPT3, Header } from './contain
 import { CTA, Brand, Navbar } from './components';
 import './App.css'
 
+// BEM -> Block Element Modifier
+// naming convention (i.e. gpt__navbar)
+
 const App = () => {
   return (
     <div className="App">
