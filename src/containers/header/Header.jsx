@@ -1,5 +1,5 @@
-import React from 'react'
-import './header.css'
+import React from 'react';
+import './header.css';
 
 import ai_img from '../../assets/ai.png';
 
