@@ -1,0 +1,14 @@
+.fto__footer {
+    display: flex;
+    border-top: #fff;
+}
+
+.fto__footer-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    width: 80%
+}
