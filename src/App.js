@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Footer, Blog, Possibility, Features, WhatGPT3, Header } from './containers';
+import { Footer, Blog, Possibility, Features, AskChatGPT, Header } from './containers';
 import { CTA, Brand, Navbar } from './components';
 import './App.css'
 
@@ -10,13 +10,15 @@ import './App.css'
 const App = () => {
   return (
     <div className="App">
-		FindThatOST
+		<div className='fto__navbar-bg'>
+		</div>
+
 		<div className='gradient__bg'>
 			<Navbar />
 			<Header />
+			<AskChatGPT />
 		</div>
-		<Brand />
-		<WhatGPT3 />
+		<Brand /> { /**/}
 		<Features />
 		<Possibility />
 		<CTA />

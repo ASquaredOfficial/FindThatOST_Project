@@ -6,12 +6,16 @@
 }
 
 body {
-    background: var(--color-bg)
+    background: var(--color-bg-main)
 }
 
 a {
     color: unset;
     text-decoration: none;
+}
+
+.fto__navbar-bg {
+    background: var(--color-bg-navbar);
 }
 
 .gradient__bg {
@@ -38,8 +42,13 @@ a {
     -webkit-text-fill-color: transparent;
 }
 
+.header__text {
+    font-family: var(--font-family-cantata_one);
+    color: #fff;
+}
+
 .section__padding {
-    padding: 4rem 6rem;
+    padding: 1rem 6rem;
 }
 
 .section__margin {
@@ -48,7 +57,7 @@ a {
   
 @media screen and (max-width: 700px) {
     .section__padding {
-        padding: 4rem;
+        padding: 1rem 4rem;
     }
     
     .section__margin {

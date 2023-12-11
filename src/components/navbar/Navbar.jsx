@@ -2,15 +2,14 @@ import React, {useState} from 'react';
 import './navbar.css';
 
 import { RiMenu3Line, RiCloseLine } from 'react-icons/ri'
-import logo from '../../assets/logo.svg'
+import Ftologo from '../ftologo/Ftologo';
+import search_icon from '../../assets/Search_Icon.svg'
 
 const Menu = () => (
   <>
   <p><a href='#home'>Home</a></p>
-  <p><a href='#wgpt3'>What is GPT</a></p>
-  <p><a href='#possibility'>Open AI</a></p>
-  <p><a href='#features'>Case Studies</a></p>
-  <p><a href='#blog'>Library</a></p>
+  <p><a href='#search'>Search</a></p>
+  <p><a href='#askchatgpt'>Ask ChatGPT</a></p>
   </>
 )
 
@@ -20,15 +19,21 @@ const Navbar = () => {
   return (
     <div className='fto__navbar'>
       <div className='fto__navbar-links'>
+
         <div className='fto__navbar-links_logo'>
-          <img src={logo} alt='logo'/>
+          <Ftologo/>
         </div>
         <div className='fto__navbar-links_container'>
           <Menu />
         </div>
+        <div className='fto__navbar-search'>
+          <input type='search' placeholder='Enter Anime Title' />
+          <button type='button'><img src={search_icon}/></button>
+        </div>
+
       </div>
       <div className='fto__navbar-sign'>
-        <p><strong>Sign in</strong></p>
+        <p><strong>Log in</strong></p>
         <button type='button'>Sign Up</button>
       </div>
 
@@ -42,7 +47,7 @@ const Navbar = () => {
             <div className='fto__navbar-menu_container-links'>
               <Menu />
               <div className='fto__navbar-menu_container-links-sign'>
-                <p><strong>Sign in</strong></p>
+                <p><strong>Log in</strong></p>
                 <button type='button'>Sign Up</button>
               </div>
             </div>

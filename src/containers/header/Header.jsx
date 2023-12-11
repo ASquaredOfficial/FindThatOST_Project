@@ -1,27 +1,22 @@
 import React from 'react';
 import './header.css';
 
-import ai_img from '../../assets/ai.png';
+import anime_poster_img from '../../assets/anime_poster.png';
 
 const Header = () => {
   return (
     <div className='fto__header section__padding' id='home'>
       <div className='fto__header-content'>
-        <h1 className='gradient__text'>
-          Let&#8217;s Build Something amazing with GPT-3 OpenAI
+        <h1 className='header__text'>
+          Find and Discover Your Favourite Anime Music
         </h1>
         <p>
-          Yet bed any for travelling assistance indulgence unpleasing. Not thoughts all exercise blessing. Indulgence way everything joy alteration boisterous the attachment. Party we years to order allow asked of.
+          Welcome to FindThatOST, the ultimate destination for all your favourite anime music. Search for the perfect soundtrack for your favourite anime series and relive the magic of every scene.
         </p>
-
-        <div className='fto__header-content__input'>
-          <input type='search' placeholder='Your Question for ChatGPT' />
-          <button type='button'>Ask ChatGPT</button>
-        </div>
       </div>
       
       <div className='fto__header-image'>
-        <img src={ai_img} alt='ai' /> 
+        <img src={anime_poster_img} alt='anime poster' /> 
       </div>
     </div>
   )
