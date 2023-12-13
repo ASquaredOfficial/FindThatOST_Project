@@ -31,7 +31,6 @@ const Navbar = () => {
   return (
     <div className='fto__navbar'>
       <div className='fto__navbar-links'>
-
         <div className='fto__navbar-links_logo'>
           <Ftologo/>
         </div>
@@ -42,8 +41,8 @@ const Navbar = () => {
           <input type='search' placeholder='Enter Anime Title' />
           <button type='button'><img src={search_icon}/></button>
         </div>
-
       </div>
+
       {(typeof backendData.username == 'underfined') ? (
         //If no username passed, load non signed in navbar
         <div className='fto__navbar-sign'>

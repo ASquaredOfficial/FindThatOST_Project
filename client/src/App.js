@@ -19,11 +19,11 @@ const App = () => {
 			<Header />
 			<AskChatGPT />
 		</div>
-		<Brand /> { /**/}
+		{ /*<Brand /> 
 		<Features />
 		<Possibility />
 		<CTA />
-		<Blog />
+		<Blog />*/}
 		<Footer />
     </div>
   )
