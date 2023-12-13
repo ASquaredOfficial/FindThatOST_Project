@@ -1,7 +1,9 @@
 import React from 'react'
+import { BrowserRouter, Routes, Route} from 'react-router-dom'
 
-import { Footer, Blog, Possibility, Features, AskChatGPT, Header } from './containers';
+import { Blog, Possibility, Features, AskChatGPT, Header } from './containers';
 import { CTA, Brand, Navbar } from './components';
+import { Home } from './pages'
 import './App.css'
 
 // BEM -> Block Element Modifier
@@ -11,20 +13,13 @@ const App = () => {
 
   return (
     <div className="App">
-		<div className='fto__navbar-bg'>
-		</div>
-
-		<div className='gradient__bg'>
-			<Navbar />
-			<Header />
-			<AskChatGPT />
-		</div>
-		{ /*<Brand /> 
-		<Features />
-		<Possibility />
-		<CTA />
-		<Blog />*/}
-		<Footer />
+		<BrowserRouter>
+			<Routes>
+				<Route index element={<Home />} />
+				<Route element={<Home />} path="/home" />
+				{/*<Route element={NoPage} path="*" /> */}
+			</Routes>
+		</BrowserRouter>
     </div>
   )
 }
