@@ -1,8 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route} from 'react-router-dom'
 
-import { Blog, Possibility, Features, AskChatGPT, Header } from './containers';
-import { CTA, Brand, Navbar } from './components';
 import { Home } from './pages'
 import './App.css'
 
