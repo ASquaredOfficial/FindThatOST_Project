@@ -5,7 +5,7 @@ import ai_img from '../../assets/ai.png';
 
 const AskChatGPT = () => {
   return (
-    <div className='fto__askChatGPT section__padding' id='home'>
+    <div className='fto__askChatGPT' id='home'>
       <div className='fto__askChatGPT-image'>
         <img src={ai_img} alt='ai' /> 
       </div>

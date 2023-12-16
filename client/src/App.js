@@ -1,7 +1,7 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route} from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import { Home } from './pages'
+import { Home, Search } from './pages'
 import './App.css'
 
 // BEM -> Block Element Modifier
@@ -13,8 +13,9 @@ const App = () => {
     <div className="App">
 		<BrowserRouter>
 			<Routes>
-				<Route index element={<Home />} />
+				<Route index element={<Search />} />
 				<Route element={<Home />} path="/home" />
+				<Route element={<Search />} path="/search" />
 				{/*<Route element={NoPage} path="*" /> */}
 			</Routes>
 		</BrowserRouter>

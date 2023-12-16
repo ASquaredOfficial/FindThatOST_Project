@@ -3,7 +3,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    
+
     border-top: 2px solid #fff;
     color: #fff;
     background: #000;
@@ -47,7 +47,7 @@
 }
 
 .fto__footer-content_horizontal_rule {
-    border: #fff 2px solid;
+    border-top: 1px solid white;
     width: 60%;
     margin: 2rem 0;
 }
@@ -63,6 +63,7 @@
 
     .fto__footer-content_horizontal_rule {
         width: 90%;
+        border-top: 1px solid white;
     }
 }
 

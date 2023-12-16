@@ -17,6 +17,7 @@ const Menu = () => (
 const Navbar = () => {
   const [toggleMenu, setToggleMenu] = useState(false);
 
+  //username info rom backend
   const [backendData, setBackendData] = useState ([{}])
 	useEffect(() => {
 		fetch("/api").then(

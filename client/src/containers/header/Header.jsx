@@ -5,7 +5,7 @@ import anime_poster_img from '../../assets/anime_poster.png';
 
 const Header = () => {
   return (
-    <div className='fto__header section__padding' id='home'>
+    <div className='fto__header' id='home'>
       <div className='fto__header-content'>
         <h1 className='header__text'>
           Find and Discover Your Favourite Anime Music

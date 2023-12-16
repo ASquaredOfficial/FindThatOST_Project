@@ -1,20 +1,23 @@
 import React from 'react';
+import './home.css';
+
 
 import { Navbar, Footer, } from "../../components";
 import { Header, AskChatGPT} from "../../containers";
 
-export default function Home() {
+const Home = () => {
     return (
         <div className='fto__page__home'>
-            { /*<div className='fto__navbar-bg'>
-            </div>*/}
-            Hello I am here
             <div className='gradient__bg'>
                 <Navbar />
-                <Header />
-                <AskChatGPT />
+                <div className='fto__page__home-content'>
+                    <Header/>
+                    <AskChatGPT />
+                </div>
             </div>
 		    <Footer />
         </div>
     )
 }
+
+export default Home
