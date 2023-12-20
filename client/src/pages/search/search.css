@@ -19,6 +19,12 @@
     margin: 1rem 0rem;
     color: white;
     border-spacing: 0;
+
+    tbody {
+        td {
+            border-bottom: 1px solid white;
+        }
+    }
 }
 
 .fto__page__search-content_search_table hr {
@@ -38,9 +44,18 @@
 .fto__page__search-content_search_table td:nth-child(2) {
     text-align:left;
     vertical-align: top;
-    padding: 1rem;
+    padding: 0.5rem;
 
-    font-size: 1.5em;
+    font-size: 1em;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+    font-family: var(--font-family-manrope);
+    font-weight: 900;
+
+    .fto__page__search-content_english_date {
+        color: grey;
+        font-size: 0.8em;
+    }
 }
 .fto__page__search-content_search_table td:nth-child(1) > img {
     display: block;

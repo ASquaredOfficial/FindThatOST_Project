@@ -41,6 +41,9 @@
     margin: 0 3rem;
 }
 
+.fto__navbar-search form {
+    display: contents;
+}
 .fto__navbar-search input {
     width: 100%;
     font-size: 18px;

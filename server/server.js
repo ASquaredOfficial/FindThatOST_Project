@@ -1,5 +1,6 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
+var port = process.env.PORT || 5000;
 
 app.get("/api", (req, res) => {
     res.json({
@@ -7,4 +8,4 @@ app.get("/api", (req, res) => {
     });
 })
 
-app.listen(5000, ()=> {console.log("Server started on port 5000")})
+app.listen(port, ()=> {console.log(`Server started on port ${port}`)})
