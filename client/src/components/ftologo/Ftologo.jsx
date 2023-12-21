@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './ftologo.css';
 import smallLogo from '../../assets/FindThatOST_logo_short.svg'
 import largeLogo from '../../assets/FindThatOST_logo_long.svg'
+import { useNavigate } from "react-router-dom";
 
 const Ftologo = () => {
   const [mediaSize, setMediaSize] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -27,13 +29,24 @@ const Ftologo = () => {
     };
   }, []);
 
+  const HandleLogoOnClick = () => {
+    var curentPage = location.href;
+    if (curentPage.startsWith(location.origin + '/home')) {
+      //if home page, refresh
+      navigate(0)
+    }
+    else {
+      navigate('/home')
+    }
+  }
+
   return (
-    <div>
       <img 
+        style={{cursor: 'pointer'}}
         src={mediaSize === 'small' ? smallLogo : largeLogo } 
         alt="Dynamic Image" 
+        onClick={HandleLogoOnClick}
       />
-    </div>
   );
 };
 

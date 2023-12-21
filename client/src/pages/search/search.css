@@ -46,19 +46,36 @@
     vertical-align: top;
     padding: 0.5rem;
 
-    font-size: 1em;
     overflow: hidden;
     text-overflow: ellipsis; 
     font-family: var(--font-family-manrope);
     font-weight: 900;
 
-    .fto__page__search-content_english_date {
+    .fto__page__search-content_default_title {
+        max-lines: 2;
+        font-size: 1em;
+        cursor: pointer;
+    }
+
+    .fto__page__search-content_english_title {
         color: grey;
         font-size: 0.8em;
+    }
+
+    p.fto__page__search-content_synopsis {
+        font-weight: 200;
+        font-size: 0.8em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* number of lines to show */
+                line-clamp: 2; 
+        -webkit-box-orient: vertical;
+
     }
 }
 .fto__page__search-content_search_table td:nth-child(1) > img {
     display: block;
+    cursor: pointer;
 }
 
 .fto__page__search-content_search_table {
@@ -72,4 +89,38 @@
     td:nth-child(6), td:nth-child(7) {
         width: 8%;
     }
+}
+
+.fto__page__search-content_page_details{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.fto__page__search-result_count {
+    font-family: var(--font-family-manrope);
+    color: white;
+    font-size: 1em;
+    align-self: flex-start;
+}
+
+span.fto__page__search-page_links {
+    background-color: var(--color-bg-navbar_search_border);
+    align-self: end;
+    padding: 2px;
+    align-self: flex-start;
+
+    p {
+        margin: 5px;
+        color: white;
+        display: inline;
+    }
+
+    a {
+        margin: 5px;
+        cursor: pointer;
+        color:#8383f1;
+        text-decoration: underline;
+    }
+
 }

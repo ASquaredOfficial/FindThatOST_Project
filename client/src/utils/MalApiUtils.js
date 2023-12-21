@@ -40,7 +40,7 @@ const AddSubtitle = ( animetitles ) => {
 
     if (animeTitle_default != animeTitle_english 
         && animeTitle_english != '' && animeTitle_english != null) {
-            return <p className='fto__page__search-content_english_date'>{animeTitle_english}</p>;
+            return <p className='fto__page__search-content_english_title'>{animeTitle_english}</p>;
     }
 }
 
@@ -54,7 +54,6 @@ const AddSubtitle = ( animetitles ) => {
  */
 const GetEpisodeCount = ( airStatus, malEpCount, malAnimeID) => {
     if (airStatus == "Currently Airing") { 
-        //GetAniListAnime(malAnimeID)   
         return '-';
     }
     else if (airStatus == "Not yet aired") {

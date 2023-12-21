@@ -38,18 +38,20 @@ const Navbar = () => {
 
     if (location.href.startsWith(location.origin + '/search')) {
       //if search page, add search string from url to searchbar
-      setFormData(new URLSearchParams(location.search).get('data'))
+      setFormData(new URLSearchParams(location.search).get('query'))
     }
-}, [])
+  }, [])
 
   const HandleSearchbarSubmit = (e) => {
     e.preventDefault();
-    console.log(`Navbar Form data: ${encodeURIComponent(formData)}`);
+    console.debug(`Navbar Form data: ${encodeURIComponent(formData)}`);
+    var curentPage = location.href;
+    
     navigate({
       pathname: '/search',
-      search: `?data=${encodeURIComponent(formData)}`,
+      search: `?query=${encodeURIComponent(formData)}&page=1`,
     });
-    if (location.href.startsWith(location.origin + '/search')) {
+    if (curentPage.startsWith(location.origin + '/search')) {
       //if search page 
       navigate(0)
     }
