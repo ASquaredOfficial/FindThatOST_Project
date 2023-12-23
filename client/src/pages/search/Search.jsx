@@ -1,14 +1,15 @@
 import React, {useEffect, useState, createElement} from 'react'
-import { createSearchParams, useLocation, useNavigate, Link, NavLink} from "react-router-dom";
+import { createSearchParams, useLocation } from "react-router-dom";
 import './search.css';
 
 import { Navbar, Footer, } from "../../components";
+import { useCustomNavigate } from './../../routing/navigation'
 import default_img from '../../assets/default_image_square.png';
 import { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount} from "../../utils/MalApiUtils"
 
 const Search = () => {
     const location = useLocation();
-    const navigate = useNavigate();
+    const { navigateToSearch } = useCustomNavigate();
 
     const searchParams = new URLSearchParams(location.search);
     const [spQuery, setQuery] = useState(searchParams.get('query') || '');
@@ -153,7 +154,7 @@ const Search = () => {
         // Get the search string and new page number, and change url
         searchParams.set('page', newPage);
         searchParams.set('query', searchParams.get('query'));
-        navigate(`?${searchParams.toString()}`);
+        navigateToSearch(`?${searchParams.toString()}`);
 
         // Fetch data for the new page
         FetchAnime(spQuery, newPage);
