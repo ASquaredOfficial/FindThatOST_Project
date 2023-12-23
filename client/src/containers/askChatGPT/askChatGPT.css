@@ -1,0 +1,108 @@
+.fto__askChatGPT {
+    display: flex;
+    padding: 1rem 3rem 6rem;
+}
+
+.fto__askChatGPT-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+
+    margin-right: 5rem;
+}
+
+.fto__askChatGPT-content h1 {
+    font-family: var(--font-family-manrope);
+    font-weight: 800;
+    font-size: 62px;
+    line-height: 75px;
+    letter-spacing: -0.04em;
+}
+
+.fto__askChatGPT-content p {
+    font-family: var(--font-family-cantata_one);
+    font-size: 20px;
+    line-height: 27px;
+    color: var(--color-text);
+
+    margin-top: 1.5rem;
+}
+
+.fto__askChatGPT-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fto__askChatGPT-image img {
+    width: 100%;
+    height: 100%;
+}
+
+.fto__askChatGPT-content__input {
+    width: 100%;
+    margin: 2rem 0 1rem;
+
+    display: flex;
+}
+
+.fto__askChatGPT-content__input input {
+    flex: 2;
+    width: 100%;
+    font-family: var(--font-family-manrope);
+    font-size: 20px;
+    line-height: 27px;
+    background: var(--color-footer);
+    border: 2px solid var(--color-footer);
+    padding: 0 1rem;
+    outline: none;
+    color: #fff;  
+
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.fto__askChatGPT-content__input button {
+    flex: 0.6;
+    width: 100%;
+    min-height: 50px;
+    font-family: var(--font-family-manrope);
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 27px;
+    background: var(--color-pink);
+    color: #FFF;
+    cursor: pointer;
+    outline: none;
+    padding: 0 1rem;
+    border: none;
+    
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+@media screen and (max-width: 1050px) {
+    .fto__askChatGPT {
+        flex-direction: column;
+    }
+
+    .fto__askChatGPT-content {
+        margin: 0 0 1rem;
+    }   
+
+    .fto__askChatGPT-image {
+        display: none;
+    }
+
+}
+
+@media screen and (max-width: 750px) {
+    .fto__askChatGPT-content__input input,
+    .fto__askChatGPT-content__input button {
+        font-size: 12px;
+        line-height: 12px;
+    }
+}
