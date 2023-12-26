@@ -9,7 +9,7 @@ import { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount} from "../../ut
 
 const Search = () => {
     const location = useLocation();
-    const { navigateToSearch } = useCustomNavigate();
+    const { navigateToSearch, navigateToAnime } = useCustomNavigate();
 
     const searchParams = new URLSearchParams(location.search);
     const [spQuery, setQuery] = useState(searchParams.get('query') || '');
@@ -75,11 +75,11 @@ const Search = () => {
 
     // Show pagination data from fetch
     const ShowPagination = ( paginationDetails ) => {
-        console.log("Pagination Details");
-        console.log(paginationDetails);
+        console.debug("Pagination Details");
+        console.debug(paginationDetails);
         if (Object.keys(paginationDetails).length === 0 && paginationDetails.constructor === Object) {
             // If no results, hide pagination
-            console.log("No Pages");
+            console.debug("No Pages");
             return;
         }
         var nFirstPage = 1;
