@@ -11,9 +11,7 @@ const Anime = () => {
     const loAnimeData = state?.anime_data || -111;
 
     useEffect(() => {
-        console.log(state)
-        console.log("My data id is:", loAnimeData.mal_id)
-        console.log(loAnimeData)
+        console.debug(`Render-Anime (onMount): ${location.href}`); 
     }, []);
 
     return (

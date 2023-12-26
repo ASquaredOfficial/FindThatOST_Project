@@ -22,7 +22,7 @@ export const useCustomNavigate = () => {
   const navigateToAnime = (nFtoID = -1, objAnimeData = {}) => {
     if (!process.env.REACT_APP_DEBUG_MODE && nFtoID == -1) {
       alert('Operation failed');
-      console.log(`Unable to navigate to page (Anime) because variable 'nFtoID' is an invalid value '${nFtoID}'`);
+      console.error(`Unable to navigate to page (Anime) because variable 'nFtoID' is an invalid value '${nFtoID}'`);
       return;
     }
     
@@ -33,10 +33,6 @@ export const useCustomNavigate = () => {
         fto_id: nFtoID
       }
     });
-  };
-
-  const navigateToPage2 = () => {
-    navigate('/page2');
   };
 
   // Add more navigation functions as needed

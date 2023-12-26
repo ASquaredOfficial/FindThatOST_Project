@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import './navbar.css';
 
-import { useNavigate  } from 'react-router-dom';
 import { RiMenu3Line, RiCloseLine } from 'react-icons/ri'
 import { useCustomNavigate } from './../../routing/navigation'
 import Menu from '../menu/Menu'
@@ -9,7 +8,7 @@ import Ftologo from '../ftologo/Ftologo';
 import search_icon from '../../assets/Search_Icon.svg'
 
 const Navbar = () => {
-  const { navigateToHome, navigateToSearch } = useCustomNavigate();
+  const { navigateToSearch } = useCustomNavigate();
 
   //username info rom backend
   const [backendData, setBackendData] = useState ([{}])
@@ -25,7 +24,6 @@ const Navbar = () => {
 
   //handle navbar searchbar submit
   const [formData, setFormData] = useState('');
-  const navigate = useNavigate();
   
   useEffect(() => {
     // Render (onMount)
