@@ -10,13 +10,12 @@ const FtoConnection = mysql.createConnection({
 
 FtoConnection.connect((err) => {
   if (err) {
-    console.log(dotenv)
-      throw err;
+    console.error(err)
+    throw err;
   }
   console.log("MySQL connected...");
 });
 
-// Example query function
 const GetAllAnime = () => {
   return new Promise((resolve, reject) => {
     FtoConnection.query('SELECT * FROM fto_anime', (error, results) => {
@@ -28,6 +27,39 @@ const GetAllAnime = () => {
     });
   });
 };
+
+const GetAnime = (nFtoAnimeID) => {
+  return new Promise((resolve, reject) => {
+    FtoConnection.query(`SELECT * FROM fto_anime where anime_id = ${nFtoAnimeID}`, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+}
+
+const PatchAnime = (nAnimeID, strAnimeTitle, nAnimePrequel) => {
+  return new Promise((resolve, reject) => {
+    let patch_data = {};
+    if (strAnimeTitle !== '') {
+      patch_data.canonical_title = strAnimeTitle;
+    }
+    if (nAnimePrequel > 0) {
+      patch_data.parent_anime_id = nAnimePrequel;
+    }
+    console.log('Patch Data:', patch_data);
+    let sql = `UPDATE fto_anime SET ? WHERE anime_id = ${nAnimeID}`;
+    FtoConnection.query(sql, patch_data, (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+}
 
 const GetAnimeMappingMAL = (nMalID) => {
   return new Promise((resolve, reject) => {
@@ -48,7 +80,7 @@ const PostAnimeIntoDB = (nMalID, nKitsuID) => {
         mal_id: nMalID,
         kitsu_id: nKitsuID,
     }
-    let sql = 'INSERT INTO fto_anime SET ?'
+    let sql = 'INSERT INTO fto_anime SET ?';
 		FtoConnection.query(sql, post_data, (error, results) => {
       if (error) {
         reject(error);
@@ -61,6 +93,8 @@ const PostAnimeIntoDB = (nMalID, nKitsuID) => {
 
 module.exports = {
   GetAllAnime,
+  GetAnime,
+  PatchAnime,
   GetAnimeMappingMAL,
   PostAnimeIntoDB,
   // Add more query functions as needed

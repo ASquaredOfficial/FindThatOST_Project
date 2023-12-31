@@ -192,7 +192,9 @@ const Search = () => {
     }
       
     const FetchAnimeMapping_FTO = async (malAnimeID) => {
-        fetch(`/getAnimeMappingMAL/${malAnimeID}`)
+        var apiUrl_fto = `/getAnimeMappingMAL/${malAnimeID}`;
+        console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+        fetch(apiUrl_fto)
             .then(response => response.json())
             .then(response => {
                 if (response.length > 0) {
