@@ -35,7 +35,6 @@ export const useCustomNavigate = () => {
     });
   };
 
-  // Add more navigation functions as needed
 
   return {
     navigateToHome,

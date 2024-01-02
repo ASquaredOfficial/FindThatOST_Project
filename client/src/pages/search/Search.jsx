@@ -46,7 +46,6 @@ const Search = () => {
             setPage(newPage);
       
             // Perform search or fetch data based on newQuery and newPage
-            // You may need to adjust this logic based on your specific requirements
             FetchAnimeList_MAL(newQuery, newPage);
         };
         window.addEventListener('popstate', handlePopstate);
@@ -126,8 +125,6 @@ const Search = () => {
                             key: `pg_${it}`, 
                             onClick:() => HandleSearchPageChange(pageNum),
                         }, 
-                        //<Link to={`/search?data=${encodeURIComponent(spQuery)}&page=${pageNum}`}>{pageNum}</Link>,
-                        //<NavLink href="#x"><Link id="RouterNavLink" to={window.location.origin+`/search?data=${encodeURIComponent(spQuery)}&page=${pageNum}`}>{pageNum}</Link></NavLink>
                         pageNum,
                     );
                 } else {

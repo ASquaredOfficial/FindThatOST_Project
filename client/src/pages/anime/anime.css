@@ -54,7 +54,6 @@
 
 .fto__page__anime-main_content_left {
     border-right:1px solid #fff;
-    height:100%;
     min-width: 225px;
     padding: 1rem;
 
@@ -76,6 +75,53 @@
 
         .fto__page__anime-main_content_left_indent {
             margin-left: 1rem;
+        }
+    }
+
+    .fto__page__anime-main_content_episode_list {
+        margin-top: 1rem;
+        border-radius: 5px;
+        background: var(--color-bg-navbar_search_border);
+
+        .fto__page__anime-main_content-header {
+            margin-bottom: 0.25rem;
+            padding: 10px;
+        }
+
+        .fto__page__anime-main_content_episode_list-row {
+            background: #1b1b1b;
+            padding: 10px 15px;
+            border-bottom: 0.5px solid grey;
+        }
+        .fto__page__anime-main_content_episode_heading {
+            cursor: pointer;
+        }
+
+        .fto__page__anime-episode_pageination {
+            padding: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            span.fto__page__anime-page_links {
+                background-color: var(--color-bg-navbar_search_border);
+                padding: 2px;
+                align-self: flex-start;
+            
+                p {
+                    margin: 5px;
+                    color: white;
+                    display: inline;
+                }
+            
+                a {
+                    margin: 5px;
+                    cursor: pointer;
+                    color:#8383f1;
+                    text-decoration: underline;
+                }
+            
+            }
         }
     }
 }
