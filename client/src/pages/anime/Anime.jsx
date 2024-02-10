@@ -10,12 +10,13 @@ import { ParseClassName } from "../../utils/RegularUtils"
 const Anime = () => {
     const location = useLocation();
     const { id } = useParams();
-    const { navigateToAnime } = useCustomNavigate();
+    const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
 
     const searchParams = new URLSearchParams(location.search);
     const [ spEpisodePageNum, setEpisodePageNum ] = useState(parseInt(searchParams.get('episode_page_no'), 10) || 1);
-    
+
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
+    const [ ftoAnimeEpisodesInfo, setFTOAnimeEpisodesInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
     const [ aniListEpisodeCountInfo, setAniListEpisodeCountInfo ] = useState();
 
@@ -83,12 +84,193 @@ const Anime = () => {
            FetchEpisodeData(malAnimeInfo, spEpisodePageNum);
         }
     }, [malAnimeInfo]);
+    
+    useEffect(() => {
+        if (pageEpisodeInfo !== undefined) {
+            // Get episode number to see the
+            var animeStatus = malAnimeInfo.status;
+            var nLatestEpisode = Number(malAnimeInfo.episodes);
+
+            if (animeStatus !== 'Not yet aired') {
+                if (animeStatus == 'Currently Airing') {
+                    nLatestEpisode = Number(aniListEpisodeCountInfo.data.Media.nextAiringEpisode.episode - 1);
+                }
+                
+                UpdateEpisodesInFtoDB(pageEpisodeInfo, nLatestEpisode);
+            }
+        }
+    }, [pageEpisodeInfo]);
+
+    /**
+     * Updates the FTO DB with episode details.
+     * 
+     * @async
+     * @function UpdateEpisodesInFtoDB
+     * @param {Array<Object>} pageEpisodesDetails - The array of json objects containing episode details.
+     * @param {number} nLatestAnimeEpisode - The Latest aired episode number.
+     */
+    const UpdateEpisodesInFtoDB = async (pageEpisodesDetails, nLatestEpisodeNum) => {
+        const animeEpisodesData = await FetchEpisodeMapping(id);
+
+        //If all show episodes not in database
+        if (animeEpisodesData !== undefined && animeEpisodesData.length !== nLatestEpisodeNum) {
+            
+            var nListOfEpisodeNos = [];
+            for (var i = 0; i < animeEpisodesData.length ; i++ ) {
+                nListOfEpisodeNos.push(animeEpisodesData[i].episode_no);
+            }
+
+            var nListOfEpisodeNosToAdd = [];
+            for (var i = 0; i < nLatestEpisodeNum ; i++ ) {
+                if (!nListOfEpisodeNos.includes(i+1)) {
+                    nListOfEpisodeNosToAdd.push(i+1);
+                }
+            }
+
+            //If page doesn't already have all episodes, fetch  whole anime episodeDetails
+            const allEpisodeDetails = (nLatestEpisodeNum > pageEpisodesDetails.length) ? await FetchAllAnimeEpisodeDetails(nLatestEpisodeNum) : pageEpisodesDetails;
+            const responseStatus = await FetchInsertMissingEpisodes(nListOfEpisodeNosToAdd, allEpisodeDetails);
+            if (responseStatus != 500 && responseStatus!= undefined) {
+                // Successful Insert of missing episodes into DB, get new episode mapping
+                const newAnimeEpisodesData = await FetchEpisodeMapping(id);
+                console.log(`New Episodes for Anime ${id}: `, newAnimeEpisodesData);
+                setFTOAnimeEpisodesInfo(newAnimeEpisodesData);
+            }
+        }
+        else {
+            console.info(`All Episodes for Anime are present`);
+            setFTOAnimeEpisodesInfo(animeEpisodesData);
+        }
+    }
+
+    /**
+     * Get all episodes with the anime id.
+     * 
+     * @async
+     * @function FetchEpisodeMapping
+     * @param {number|string} ftoAnimeID - The FindThatOST Anime ID.
+     * @returns {Promise<Array<Object>|undefined} ftoAnimeID - The array of json objects containing episode details.
+     */
+    const FetchEpisodeMapping = async (ftoAnimeID) => {
+        var apiUrl_fto = `/getEpisodes/anime/${ftoAnimeID}`;
+        console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+        
+        const response = await fetch(apiUrl_fto);
+        if (response.status == 200) {
+            const data = await response.json();
+            return data;
+        } else if (response.status == 500) {
+            alert("The FindThatOST Server is down at the moment. Please try again later.")
+            return;
+        } 
+
+    }
+    
+    /**
+     * Get all episode details from MAL and Kitsu API and create array of episode details for anime.
+     * 
+     * @async
+     * @function FetchAllAnimeEpisodeDetails
+     * @param {number} nLatestAnimeEpisode - The Latest aired episode number.
+     * @returns {Promise<Array<Object>>} - The array of json objects containing episode details.
+     */
+    const FetchAllAnimeEpisodeDetails = async (nLatestAnimeEpisode) => {
+        // Get All MAL Episodes
+        var allMALAnimeEpisodes = [];
+        let malQueryPage = 1;
+        while (malQueryPage > 0) {
+            const malPageEipsodes = await FetchEpisodeData_MAL(malAnimeInfo.mal_id, malQueryPage);
+            
+            console.log("MAL episodes:", malPageEipsodes);
+            allMALAnimeEpisodes.push(...malPageEipsodes.data);
+            malQueryPage = (malPageEipsodes.pagination.has_next_page == true) ? malQueryPage++ : 0;
+        }
+
+        // Get All Kitsu Episodes
+        var allKitsuAnimeEpisodes = [];
+        var nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
+        var kitsuQueryOffset = 0;
+        let iter = 0;
+        while (kitsuQueryOffset <= ((nLastOffset * 20) - 20) && iter < nLastOffset) {
+            const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, kitsuQueryOffset);
+            allKitsuAnimeEpisodes.push(...kitsuPageEpisodes.data);
+
+            var apiLinks = kitsuPageEpisodes.links;
+            if (!('next' in apiLinks)) {
+                break;
+            }
+
+            kitsuQueryOffset = kitsuQueryOffset + 20;
+            iter++;
+        }
+        
+        // Create a combined array of episode details
+        const episodesInfo = [];
+        for (var it = 0; it < nLatestAnimeEpisode; it++) {
+            var epInfo = {};
+            var episodeTitleEn = '';
+            var episodeNumber = it + 1;
+            epInfo.episode_no = episodeNumber;
+            
+            if (allMALAnimeEpisodes.length > (episodeNumber%100)-1) {
+                var malEpisodeinfo = allMALAnimeEpisodes[(episodeNumber%100)-1];
+                epInfo.mal_episode_id = Number(malEpisodeinfo.mal_id);
+                if (malEpisodeinfo.title != '') {
+                    episodeTitleEn = malEpisodeinfo.title;
+                }
+            } else {}
+            if (allKitsuAnimeEpisodes.length > (episodeNumber%100)-1) {
+                var kitsuEpisodeinfo = allKitsuAnimeEpisodes[it];
+                epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
+                if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
+                    episodeTitleEn = (episodeTitleEn == '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
+                }
+            }
+            epInfo.episode_title = (episodeTitleEn !== '') ? episodeTitleEn : null;
+            episodesInfo.push(epInfo);
+        }
+
+        return episodesInfo;
+    }
+    
+    /**
+     * Get all episode details from MAL and Kitsu API and create array of episode details for anime.
+     * 
+     * @async
+     * @function FetchInsertMissingEpisodes
+     * @param {Array<Number>} listOfMissingEpisodesNos - The Latest aired episode number.
+     * @param {Array<JSON>} listOfEpisodesDetails - The Latest aired episode number.
+     * 
+     */
+    const FetchInsertMissingEpisodes = async (listOfMissingEpisodesNos, listOfEpisodesDetails) => {
+        // Filter allEpisodeDetails list to only have missing episodes
+        const listOfMissingEpisodesDetails = listOfEpisodesDetails.filter((objEpisode) =>
+            listOfMissingEpisodesNos.includes(objEpisode.episode_no)
+        );
+
+        // Add missing episodes to episode database.
+        var data = listOfMissingEpisodesDetails;
+        if (listOfMissingEpisodesDetails.length > 0) {
+            const response = await fetch(`/postMissingEpisodes/${id}`, 
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data }),
+            });
+            const responseStatus = response.status;
+            const responseData = await response.json();
+            return responseStatus;
+        }
+        return;
+    }
 
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
         try {
             var apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-            const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
+            const response = await fetch(apiUrl_fto);
             const data = await response.json();
             return data;
         } catch (error) {
@@ -172,10 +354,14 @@ const Anime = () => {
                 }
             }
 
-            const malPageEpisodes = await FetchEpisodeData_MAL(malAnimeDetails.mal_id, ftoEpisodePageNum);
+            var malToFtoRangeSize = 5;
+            var malEpisodeQueryPage = (ftoEpisodePageNum + malToFtoRangeSize - 1) / malToFtoRangeSize | 0;
+            const malPageEpisodesResponse = await FetchEpisodeData_MAL(malAnimeDetails.mal_id, malEpisodeQueryPage);
+            const malPageEpisodes = malPageEpisodesResponse.data;
 
             var startEpisode = 1 + ((ftoEpisodePageNum - 1) * 20);
-            const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, startEpisode);
+            const kitsuPageEpisodesResponse = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, startEpisode-1 );
+            const kitsuPageEpisodes = kitsuPageEpisodesResponse.data;
 
             const episodesInfo = [];
             var endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;
@@ -200,23 +386,21 @@ const Anime = () => {
                         episodeTitleEn = (episodeTitleEn == '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
                     }
                 }
-                epInfo.title = episodeTitleEn;
+                epInfo.episode_title = episodeTitleEn.replace("'", "\\'");
                 episodesInfo.push(epInfo);
             }
             setPageEpisodesInfo(episodesInfo);
         }
     }
 
-    const FetchEpisodeData_MAL = async (malAnimeID, pageNum) => {
+    const FetchEpisodeData_MAL = async (malAnimeID, queryPageNum) => {
         try {
             //Finished aring, check if mal has individual episode details
-            var malToFtoRangeSize = 5;
-            var malEpisodeQueryPage = (pageNum + malToFtoRangeSize - 1) / malToFtoRangeSize | 0;
-            let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/episodes?page=${malEpisodeQueryPage}`;
+            let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/episodes?page=${queryPageNum}`;
             console.debug(`Fetch Episode data from External API, MAL url: '${apiUrl_mal}'`);
             const response_mal = await fetch(apiUrl_mal);
             const responseData_mal = await response_mal.json();
-            return responseData_mal.data;
+            return responseData_mal;
         }
         catch (error) {
             throw new Error('Error fetching episode data from external API (MyAnimeList)');
@@ -226,11 +410,11 @@ const Anime = () => {
     const FetchEpisodeData_KITSU = async (kitsuAnimeID, pageOffset) => {
         try {
             if (kitsuAnimeID != -1 || (kitsuAnimeID == null)) {
-                let apiUrl_kitsu = `https://kitsu.io/api/edge/anime/${kitsuAnimeID}/episodes?page[limit]=20&page[0ffset]=${pageOffset}`;
+                let apiUrl_kitsu = `https://kitsu.io/api/edge/anime/${kitsuAnimeID}/episodes?page[limit]=20&page[offset]=${pageOffset}`;
                 console.debug(`Fetch Episode data from External API, Kitsu url: '${apiUrl_kitsu}'`);
                 const response_kitsu = await fetch(apiUrl_kitsu);
                 const responseData_kitsu = await response_kitsu.json();
-                return responseData_kitsu.data;
+                return responseData_kitsu;
             }
             return []
         }
@@ -243,7 +427,7 @@ const Anime = () => {
         try {
             // Get Prequel Anime in FTO DB (if present)
             var ftoPrequelAnimeID = 0;
-            var arrMalAnimeRelations = malAnimeInfo.relations;
+            var arrMalAnimeRelations = malAnimeDetails.relations;
             for (var it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
                 var animeRelation = arrMalAnimeRelations[it]
                 let animeRelationEntry = animeRelation.entry;
@@ -251,14 +435,14 @@ const Anime = () => {
                 if (animeRelationType == 'Prequel') {
                     var prequelEntries = animeRelationEntry;
 
-                    var nLowestMalID = malAnimeInfo.mal_id;
+                    var nLowestMalID = malAnimeDetails.mal_id;
                     prequelEntries.map(entry => {
                         if (entry.mal_id < nLowestMalID) {
                             nLowestMalID = entry.mal_id;
                         }
                     });
                     
-                    if (nLowestMalID !== malAnimeInfo.mal_id) {
+                    if (nLowestMalID !== malAnimeDetails.mal_id) {
 
                         var apiUrl_fto = `/getAnimeMappingMAL/${nLowestMalID}`
                         try {
@@ -279,7 +463,7 @@ const Anime = () => {
 
             var bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id == 0) && ftoPrequelAnimeID !== 0;
             var bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title == '');
-            var ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeInfo.titles[0].title;;
+            var ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
             
             // Createn update query
             var apiUrl_fto = '';
@@ -326,7 +510,7 @@ const Anime = () => {
     }
 
     // Show pagination data from fetch
-    const ShowPagination = ( malAnimeDetails, anilistEpisodeDetails, pageEpisodeDetails, ftoEpisodePageNum = 1) => {
+    const ShowPagination = (malAnimeDetails, anilistEpisodeDetails, pageEpisodeDetails, ftoEpisodePageNum = 1) => {
         // If no results, hide pagination
         if (Object.keys(malAnimeDetails).length === 0 && malAnimeDetails.constructor === Object) {
             return;
@@ -412,7 +596,6 @@ const Anime = () => {
 
     // Hanle episode list page number change
     const HandleEpiosdeListPageChange = (newPageNum) => {
-
         // Get the search string and new page number, and change url
         searchParams.set('episode_page_no', newPageNum);
         navigateToAnime(`${id}?${searchParams.toString()}`);
@@ -424,7 +607,8 @@ const Anime = () => {
     };
 
     const HandleEpisodeRowOnClick = (episodeDetails) => {
-
+        // Navigate to the episode
+        navigateToEpisode(id, episodeDetails.episode_no, ftoAnimeEpisodesInfo[episodeDetails.episode_no]);
     }
 
     return (

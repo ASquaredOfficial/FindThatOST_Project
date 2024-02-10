@@ -35,11 +35,29 @@ export const useCustomNavigate = () => {
     });
   };
 
+  const navigateToEpisode = (nFtoAnimeID = -1, nFtoEpisodeID = -1, objAnimeEpisodeData = {}) => {
+    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoAnimeID == -1 || nFtoEpisodeID == -1)) {
+      alert('Operation failed');
+      console.error(`Unable to navigate to page (Anime) because parameters contain an invalid value`);
+      return;
+    }
+    
+    navigate(`/anime/${nFtoAnimeID}/episode/${nFtoEpisodeID}`,
+    {
+      state: {
+        fto_anime_id: nFtoAnimeID,
+        fto_episode_id: nFtoEpisodeID,
+        anime_episode_data: objAnimeEpisodeData,
+      }
+    });
+  };
+
 
   return {
     navigateToHome,
     navigateToSearch,
-    navigateToAnime
+    navigateToAnime,
+    navigateToEpisode,
     // Add more navigation functions
   };
 };
