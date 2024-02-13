@@ -21,6 +21,7 @@ const Episode = () => {
     const [ malEpisodeImageInfo, setMALEpisodeImageInfo ] = useState();
     const [ kitsuEpisodeInfo, setKitsuEpisodeInfo ] = useState();
     const [ pageEpisodeInfo, setPageEpisodeInfo ] = useState();
+    const [ episodeListOfTracks, setEpisodeListOfTracks ] = useState();
 
     useEffect(() => {
         console.debug(`Render-Anime (onMount): ${location.href}`);  
@@ -210,7 +211,6 @@ const Episode = () => {
             let nPageNumber = 1;
             let attempt = 0;
             while (bEpisodeNotFound) {
-                console.log("Attempt:", attempt++);
                 let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/videos/episodes?page=${nPageNumber}`;
                 console.debug(`Fetch Episode Image data from External API, MAL url: '${apiUrl_mal}'`);
                 const response_mal = await fetch(apiUrl_mal);
@@ -282,6 +282,18 @@ const Episode = () => {
         }
     }
 
+    const FetchEpisodeListOfTracks_FTO = async (nEpisodeID) => {
+        try {
+            var apiUrl_fto = `/getTracks/episode_id/${Number(nEpisodeID)}`
+            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+            const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            throw new Error('Error fetching data from backend');
+        }
+    }
+
     const FetchPageData = async (pageId, episodeId) => {
         try {
             // Fetch data from the backend
@@ -307,6 +319,10 @@ const Episode = () => {
             setMALEpisodeImageInfo(episodeImageData_malAPI);
             setKitsuEpisodeInfo(episodeData_kitsuAPI.data.attributes);
 
+            //Get all tracks for this anime
+            const episodeListOfTracksFromBackend = await FetchEpisodeListOfTracks_FTO(episodeDataFromBackend[0].episode_id);
+            console.log('List of tracks for episode:', episodeListOfTracksFromBackend);
+            setEpisodeListOfTracks(episodeListOfTracksFromBackend);
         } catch (error) {
             console.error('Error:', error.message);
         }
@@ -318,6 +334,21 @@ const Episode = () => {
         }
         else {
             return `${title_romanji} (${title_japanese})`;
+        }
+    }
+
+    const MapTrackType = (strShorthandTrackType) => {
+        switch (strShorthandTrackType) {
+            case ('OP'):
+                return 'Opening'
+            case ('ED'):
+                return 'Ending'
+            case ('IM'):
+                return 'Insert Song'
+            case ('BGM'):
+                return 'Background Music'
+            case ('OST'):
+                return 'Original SoundTrack'
         }
     }
 
@@ -371,38 +402,46 @@ const Episode = () => {
                                     </div>
                                     <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>
                                     <hr />
-
-                                    {/* If no tracks show this messahe*/ }
-                                    <p className='fto__page__episode-main_content-no_soundtracks'>
-                                        No Soundtracks Added yet.
-                                    </p>
-
-                                    <div className='fto__page__episode-main_content--track_item'>
-                                        <div className='fto__page__episode-main_content--track_item-header'>
-                                            <div className='fto__page__episode-main_content--track_item-header_left'>
-                                                <h4>Track Title</h4>
-                                                <h5 className='fto__page__episode-subheader_color'>Track Type</h5>
-                                            </div>
-                                            <div className='fto__page__episode-main_content--track_item-header_right'>
-                                                <button className='fto__page__episode-main_content--track_item-goto_track_button' type='submit'>
-                                                    <img src={arrow_icon}/>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className='fto__page__episode-main_content--track_item-scene_description'>
-                                            <div className='fto__page__episode-main_content--track_item-scene_description_left'>
-                                                <p><b>Scene Description:</b></p>
-                                                <p>A redundent scene description to help the user identify the song</p>
-                                            </div>
-                                            <div className='fto__page__episode-main_content--track_item-scene_description_right'>
-                                                <button className='fto__page__episode-main_content--track_item-edit_track_button' type='submit'>
-                                                    <img src={pencil_icon}/>&nbsp;Edit
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
+                                    
+                                    
+                                    {(episodeListOfTracks == undefined || episodeListOfTracks.length == 0) ? (
+                                        /* If no tracks show this messahe*/
+                                        <p className='fto__page__episode-main_content-no_soundtracks'>
+                                            No Soundtracks Added yet.
+                                        </p>
+                                    ) : ( 
+                                        episodeListOfTracks.map((trackInfo, it) => {
+                                            return (
+                                                <div className='fto__page__episode-main_content--track_item' key={it}>
+                                                    <div className='fto__page__episode-main_content--track_item-header'>
+                                                        <div className='fto__page__episode-main_content--track_item-header_left'>
+                                                            <h4>{trackInfo.track_name}</h4>
+                                                            <h5 className='fto__page__episode-subheader_color'>{MapTrackType(trackInfo.track_type)}</h5>
+                                                        </div>
+                                                        <div className='fto__page__episode-main_content--track_item-header_right'>
+                                                            <button className='fto__page__episode-main_content--track_item-goto_track_button' 
+                                                            onClick='location.href=""' type='submit'>
+                                                                <img src={arrow_icon}/>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className='fto__page__episode-main_content--track_item-scene_description'>
+                                                        <div className='fto__page__episode-main_content--track_item-scene_description_left'>
+                                                            <p><b>Scene Description:</b></p>
+                                                            <p>{trackInfo.scene_description}</p>
+                                                        </div>
+                                                        <div className='fto__page__episode-main_content--track_item-scene_description_right'>
+                                                            <button className='fto__page__episode-main_content--track_item-edit_track_button' type='submit'>
+                                                                <img src={pencil_icon}/>&nbsp;Edit
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                            );
+                                        })
+                                    )}   
                                     
                                 </div>
                             )}

@@ -142,6 +142,26 @@ const PostEpisodesIntoDB = async (nFtoAnimeID, arrMissingEpisodesDetails) => {
   return Promise.all(sqlQueries.map(query => PostEpisodeIntoDB(query)));
 };
 
+const GetTracksForEpisode = (nEpisodeID) => {
+  return new Promise((resolve, reject) => {
+    let sqlQuery = 
+    "SELECT occurrence_id, track_id, track_name, fto_occurrence.track_type, fto_occurrence.scene_description " + 
+    "FROM ((`fto_episode` " + 
+      "INNER JOIN fto_occurrence ON fto_episode.episode_id = fto_occurrence.fto_episode_id) " + 
+      "INNER JOIN fto_track ON fto_occurrence.fto_track_id = fto_track.track_id) " + 
+      "INNER JOIN fto_anime ON fto_episode.fto_anime_id = fto_anime.anime_id " + 
+    `WHERE fto_episode.episode_id = ${nEpisodeID};`;
+    FtoConnection.query(sqlQuery, (error, results) => {
+      if (error) {
+        LogError('GetTracksForEpisode', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+};
+
 const LogError = (strFunctionName, strErrorMessage) => {
   var date = new Date(); // for now
   let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`
@@ -156,5 +176,6 @@ module.exports = {
   PostAnimeIntoDB,
   GetEpisodeMapping,
   PostEpisodesIntoDB,
+  GetTracksForEpisode,
   // Add more query functions as needed
 };

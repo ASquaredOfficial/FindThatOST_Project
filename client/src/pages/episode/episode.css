@@ -83,11 +83,16 @@
         p.fto__page__episode-main_content-no_soundtracks{
             text-align: center;
             padding: 2rem 0rem;
+            
+            background-color: #000000;
+            opacity: 0.3;
+            color: #fff;
         }
 
         div.fto__page__episode-main_content--track_item {
             background-color: #1b1b1b;
             padding: 1rem;
+            margin-bottom: 0.5rem;
 
             .fto__page__episode-main_content--track_item-header {
                 display: flex;

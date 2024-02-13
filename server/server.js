@@ -11,6 +11,7 @@ const {
     PostAnimeIntoDB,
     GetEpisodeMapping,
     PostEpisodesIntoDB,
+    GetTracksForEpisode, 
 } = require('./sql/database');
 
 app.use(bodyParser.json());
@@ -234,5 +235,23 @@ app.post("/postMissingEpisodes/:nFtoAnimeID", async (req, res) => {
         console.log(`Insert Request Error (${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}):\n`, error);
     }
 }); 
+
+app.get("/getTracks/episode_id/:nEpisodeID/", async (req, res) => {
+    //Get List of Tracks for the episode with corresponding FTO Episode ID
+    const nEpisodeID = req.params.nEpisodeID;
+    try {
+        const ftoEpisodeTracksDetails = await GetTracksForEpisode(nEpisodeID);
+        if (!ftoEpisodeTracksDetails) {
+            return res.status(404).json({ error: 'Resource Not Found' }).end(); 
+        }
+        res.status(200).json(ftoEpisodeTracksDetails);
+    }
+    catch (error) {
+        var objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
 
 app.listen(port, ()=> {console.log(`Server started on port ${port}`)});
