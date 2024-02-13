@@ -133,7 +133,7 @@ const Anime = () => {
             if (responseStatus != 500 && responseStatus!= undefined) {
                 // Successful Insert of missing episodes into DB, get new episode mapping
                 const newAnimeEpisodesData = await FetchEpisodeMapping(id);
-                console.log(`New Episodes for Anime ${id}: `, newAnimeEpisodesData);
+                console.log(`New Episodes for Anime ${id} added to FTO database: `, newAnimeEpisodesData);
                 setFTOAnimeEpisodesInfo(newAnimeEpisodesData);
             }
         }
@@ -183,7 +183,7 @@ const Anime = () => {
             
             console.log("MAL episodes:", malPageEipsodes);
             allMALAnimeEpisodes.push(...malPageEipsodes.data);
-            malQueryPage = (malPageEipsodes.pagination.has_next_page == true) ? malQueryPage++ : 0;
+            malQueryPage = (malPageEipsodes.pagination.has_next_page == true) ? malQueryPage + 1 : 0;
         }
 
         // Get All Kitsu Episodes
@@ -212,21 +212,21 @@ const Anime = () => {
             var episodeNumber = it + 1;
             epInfo.episode_no = episodeNumber;
             
-            if (allMALAnimeEpisodes.length > (episodeNumber%100)-1) {
-                var malEpisodeinfo = allMALAnimeEpisodes[(episodeNumber%100)-1];
+            if (allMALAnimeEpisodes.length > (episodeNumber-1)%100) {
+                var malEpisodeinfo = allMALAnimeEpisodes[((episodeNumber-1)%100)];
                 epInfo.mal_episode_id = Number(malEpisodeinfo.mal_id);
                 if (malEpisodeinfo.title != '') {
                     episodeTitleEn = malEpisodeinfo.title;
                 }
-            } else {}
-            if (allKitsuAnimeEpisodes.length > (episodeNumber%100)-1) {
+            }
+            if (allKitsuAnimeEpisodes.length > (episodeNumber-1)%100) {
                 var kitsuEpisodeinfo = allKitsuAnimeEpisodes[it];
                 epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
                 if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
                     episodeTitleEn = (episodeTitleEn == '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
                 }
             }
-            epInfo.episode_title = (episodeTitleEn !== '') ? episodeTitleEn : null;
+            epInfo.episode_title = (episodeTitleEn !== '') ? episodeTitleEn.replaceAll("'", "\\'") : null;
             episodesInfo.push(epInfo);
         }
 
@@ -372,21 +372,21 @@ const Anime = () => {
                 var episodeNumber = startEpisode + it;
                 epInfo.episode_no = episodeNumber;
                 
-                if (malPageEpisodes.length > (episodeNumber%100)-1) {
-                    var malEpisodeinfo = malPageEpisodes[(episodeNumber%100)-1];
+                if (malPageEpisodes.length > (episodeNumber-1)%100) {
+                    var malEpisodeinfo = malPageEpisodes[(episodeNumber-1)%100];
                     epInfo.mal_episode_id = malEpisodeinfo.mal_id;
                     if (malEpisodeinfo.title != '') {
                         episodeTitleEn = malEpisodeinfo.title;
                     }
                 }
-                if (kitsuPageEpisodes.length > (episodeNumber%100)-1) {
+                if (kitsuPageEpisodes.length > (episodeNumber-1)%100 ) {
                     var kitsuEpisodeinfo = kitsuPageEpisodes[it];
                     epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
                     if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
                         episodeTitleEn = (episodeTitleEn == '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
                     }
                 }
-                epInfo.episode_title = episodeTitleEn.replace("'", "\\'");
+                epInfo.episode_title = episodeTitleEn.replaceAll("'", "\\'");
                 episodesInfo.push(epInfo);
             }
             setPageEpisodesInfo(episodesInfo);

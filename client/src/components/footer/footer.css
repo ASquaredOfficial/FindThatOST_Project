@@ -21,12 +21,12 @@
 
 .fto__footer-content_main_header {
     padding: 1rem;
-    font-size: 1.5em;
+    font-size: 1.25em;
 }
 
 .fto__footer-content_details_paragraph {
     padding: 1rem 0;
-    font-size: 1.25em;
+    font-size: 1em;
     text-align: center;
     width: 50%;
 }
@@ -43,7 +43,7 @@
 }
 
 .fto__footer-content_links_container p {
-    font-size: 1.25em;
+    font-size: 1em;
 }
 
 .fto__footer-content_horizontal_rule {

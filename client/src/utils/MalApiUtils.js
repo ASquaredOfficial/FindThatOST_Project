@@ -1,4 +1,6 @@
-import default_img from '../assets/default_image_rectangular_vertical.svg'
+import default_img_vert from '../assets/default_image_rectangular_vertical.svg'
+import default_img_horiz from '../assets/default_image_rectangular_horizontal.svg'
+import { IsEmpty } from '../utils/RegularUtils'
 
 /**
  * Formats a date string provided my MAL API to a localized date representation.
@@ -75,7 +77,16 @@ const ParseAnimePosterImage = (passedMalAnimeInfo) => {
         return `${passedMalAnimeInfo.images.jpg.image_url}`;
     }
     else {
-        return `${default_img}`;
+        return `${default_img_vert}`;
+    }
+}
+
+const ParsePosterImage_Horzontal = (passedImageUrl) => {
+    if (!IsEmpty(passedImageUrl)) {
+        return `${passedImageUrl}`;
+    }
+    else {
+        return `${default_img_horiz}`;
     }
 }
 
@@ -106,4 +117,5 @@ export {
     GetEpisodeCount, 
     AreDefaultAndEnglishTitlesDifferent,
     ParseAnimePosterImage,
+    ParsePosterImage_Horzontal,
 };

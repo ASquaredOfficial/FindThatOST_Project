@@ -1,0 +1,196 @@
+.fto__page__episode {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.fto__page__episode-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+
+    margin: auto;
+    padding-bottom: 0;
+}
+
+.fto__page__episode-horizontal_hr {
+    margin: 0px;
+    border-top: 1px solid white;
+    width: 100%;
+}
+
+.fto__page__episode-subheader_color {
+    color: grey;
+}
+
+.fto__page__episode-main_content-text {
+    font-size: 0.9em;
+}
+
+.fto__page__episode-main_content-header {
+    font-weight: 900;
+}
+
+.fto__page__episode-content_heading_section {
+    margin-bottom: 0.5rem;
+
+    .fto__page__episode-content_header_title {
+        font-family: var(--font-family-manrope);
+        font-weight: 800;
+    }
+    
+    .fto__page__episode-content_header_subtitle {
+        font-family: var(--font-family-manrope);
+        color: white;
+        font-size: 1em;
+        font-weight: 400;
+        align-self: flex-start;
+    }
+}
+
+.fto__page__episode-main_content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    font-family: var(--font-family-manrope);
+    color: #fff;
+    padding: 1rem;
+
+    .fto__page__episode-main_content--episode_details {
+        display: flex;
+        flex-direction: row;
+
+        .fto__page__episode-main_content--episode_details-left {
+            margin:auto;
+        }
+
+        .fto__page__episode-main_content--episode_details-right {
+            display: flex;
+            flex-direction: column;
+            padding: 0rem 1rem;
+            width: 100%;
+        }
+
+        .fto__page__episode-main_content--episode_details-info_item {
+            margin-top: 0.5rem;
+        }
+    }
+
+    .fto__page__episode-main_content--soundtrack_section {
+        p.fto__page__episode-main_content-no_soundtracks{
+            text-align: center;
+            padding: 2rem 0rem;
+        }
+
+        div.fto__page__episode-main_content--track_item {
+            background-color: #1b1b1b;
+            padding: 1rem;
+
+            .fto__page__episode-main_content--track_item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .fto__page__episode-main_content--track_item-header_left {
+                    flex-grow: 1;
+                }
+                
+                .fto__page__episode-main_content--track_item-goto_track_button {
+                    border-radius: 50%;
+                    background-color: #424242;
+                    height: 30px;
+                    width: 30px;
+                    border: 0px;
+                    margin: auto;
+                    align-self: auto;
+                    cursor: pointer;
+
+                    img {
+                        margin-left: 3px;
+                        margin-top: 3px;
+                    }
+                }
+            }
+
+            .fto__page__episode-main_content--track_item-edit_track_button {
+                border-radius: 15px;
+                background-color: #D9D9D9;
+                border: 0px;
+                margin: auto;
+                padding: 5px 15px;
+                align-self: auto; 
+                display: inline-flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            .fto__page__episode-main_content--track_item-scene_description {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 0.5rem;
+                padding: 0.5rem;
+
+                border-radius: 5px ;
+                background-color: #fff;
+                color: #000;
+                font-size: 0.8rem;
+
+                .fto__page__episode-main_content--track_item-scene_description_left {
+                    flex-grow: 1;
+                }
+            }
+        }
+
+        .fto__page__episode-main_content--add_track_section {
+            display: flex;
+            justify-content: flex-end;
+
+            .fto__page__episode-main_content--add_track_button {
+                padding: 0.5rem 1rem;
+                margin: 1rem 0rem;
+                color: #ffffff;
+                background: var(--color-pink);
+                font-family: var(--font-family-manrope);
+                font-weight: 500;
+                font-size: 1em;
+                line-height: 18px;
+                border-radius: 5px;
+                cursor: pointer;
+                border: none;
+                outline: none;
+            }
+        }
+    }
+}
+
+/*Edit for slightly smaller tablet or smaller screens*/
+@media screen and (max-width: 1050px) {
+    .fto__page__episode-main_content {
+
+        .fto__page__episode-main_content--episode_details {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        
+        .fto__page__episode-main_content--episode_details-left {
+            padding: 1rem 0rem
+        }
+    }
+}
+
+/*Mobile devices or smaller*/
+@media screen and (max-width: 550px) {
+    
+    .fto__page__episode-main_content {
+        .fto__page__episode-main_content--soundtrack_section {
+            .fto__page__episode-main_content--add_track_section {
+                justify-content: center;
+            }
+        }
+    }
+}

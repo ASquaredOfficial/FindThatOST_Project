@@ -167,15 +167,42 @@ const Search = () => {
         }).toString()}`;
         console.debug(`Fetch url:, '${apiUrl_mal}'`);
         
-        const response = await fetch(apiUrl_mal, {
-            mode: 'cors',
-            })
-            .then(response => response.json())
-            .then((resObject) => {
-                setPageSearchData(resObject.data);
-                setPagignationData(resObject.pagination);
-                setViewStyle({ height: 'auto', justifyContent: 'flex-center' });
-            })
+        const response = await fetch(apiUrl_mal);
+        const responseJson = await response.json();
+        console.log("Response", responseJson)
+        if (responseJson.status == undefined || responseJson.status !== 500) {
+            setPageSearchData(responseJson.data);
+            setPagignationData(responseJson.pagination);
+            setViewStyle({ height: 'auto', justifyContent: 'flex-center' });
+        }
+        else {
+            console.log("Response Status", responseJson.status);
+            console.error("An errror occurred with the Jikan API fetch request.")
+            // Jikan API failed, use different API
+            /* This API needs the use of a redirect to get an Access token, perhaps use KITSU API as a backup
+            * 
+            console.debug(`Fetch (Jikan API) Failed. Reattempting using offial MAL API`);
+            apiUrl_mal = `https://api.myanimelist.net/v2/anime?${createSearchParams({
+                q: (query),
+                fields: 'start_date, main_picture, num_episodes, media_type, status',
+                limit: 25,
+                offset: (pgNum-1) * 25,
+            })}`;
+            console.debug(`Fetch url:, '${apiUrl_mal}'`);
+
+            const response = await fetch(apiUrl_mal, {
+                method: 'post',
+                mode: 'no-cors',
+                headers: new Headers({
+                    'Content-Type': 'application/json',
+                    'X-MAL-CLIENT-ID': 'e09bf7d461e98e3280ae4b21b093f4af',
+                }), 
+            });
+            console.log("Response", response);
+            //const responseJson = await response.json();
+            //console.log("Response", responseJson);
+            */
+        }
     }
 
     const HandleSearchRowOnclick = (malID, malAnimeInfo) => {
@@ -191,20 +218,25 @@ const Search = () => {
     const FetchAnimeMapping_FTO = async (malAnimeID) => {
         var apiUrl_fto = `/getAnimeMappingMAL/${malAnimeID}`;
         console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-        fetch(apiUrl_fto)
-            .then(response => response.json())
-            .then(response => {
-                if (response.length > 0) {
-                    var animeID = response[0].anime_id
+        const response = await fetch(apiUrl_fto)
 
-                    // Navigate to the next page with the row ID
-                    navigateToAnime(animeID);
-                }
-                else {
-                    // Get Kitsu Mapping, then insert new anime to Fto DB
-                    FetchAnimeMapping_KITSU(malAnimeID);
-                }
-            })
+        const responseStatus = response.status;
+        if (responseStatus == 200) {
+            const responseData = await response.json();
+            if (responseData.length > 0) {
+                var animeID = responseData[0].anime_id
+    
+                // Navigate to the next page with the row ID
+                navigateToAnime(animeID);
+            }
+        }
+        else if (responseStatus == 204) {
+            // Get Kitsu Mapping, then insert new anime to Fto DB
+            FetchAnimeMapping_KITSU(malAnimeID);
+        }
+        else {
+            // TODO Redirect to 'server is down' page
+        }
     }
 
     const FetchAnimeMapping_KITSU = async (malAnimeID) => {

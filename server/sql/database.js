@@ -44,7 +44,7 @@ const GetAnime = (nFtoAnimeID) => {
     let sqlQuery = `SELECT * FROM ${tblName_anime} WHERE anime_id = ${nFtoAnimeID}`;
     FtoConnection.query(sqlQuery, (error, results) => {
       if (error) {
-        console.log(`Error in function (GetAnime).\nSQL Query:"${sqlQuery}".\nError Message:`, error.sqlMessage);
+        LogError('GetAnime', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
         reject(error);
       } else {
         resolve(results);
@@ -66,7 +66,7 @@ const PatchAnime = (nAnimeID, strAnimeTitle, nAnimePrequel) => {
     let sqlQuery = `UPDATE ${tblName_anime} SET ? WHERE anime_id = ${nAnimeID}`;
     FtoConnection.query(sqlQuery, patch_data, (error, results) => {
       if (error) {
-        console.log(`Error in function (PatchAnime).\nSQL Query:"${sqlQuery}".\nError Message:`, error.sqlMessage);
+        LogError('PatchAnime', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
         reject(error);
       } else {
         resolve(results);
@@ -80,7 +80,7 @@ const GetAnimeMappingMAL = (nMalID) => {
     let sqlQuery = `SELECT * FROM ${tblName_anime} WHERE mal_id = ${nMalID} LIMIT 1`;
     FtoConnection.query(sqlQuery, (error, results) => {
       if (error) {
-        console.log(`Error in function (GetAnimeMappingMAL).\nSQL Query:"${sqlQuery}".\nError Message:`, error.sqlMessage);
+        LogError('GetAnimeMappingMAL', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
         reject(error);
       } else {
         resolve(results);
@@ -98,7 +98,7 @@ const PostAnimeIntoDB = (nMalID, nKitsuID) => {
     let sqlQuery = `INSERT INTO ${tblName_anime} SET ?`;
 		FtoConnection.query(sqlQuery, post_data, (error, results) => {
       if (error) {
-        console.log(`Error in function (PostAnimeIntoDB).\nSQL Query:"${sqlQuery}".\nError Message:`, error.sqlMessage);
+        LogError('PostAnimeIntoDB', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
         reject(error);
       } else {
         resolve(results);
@@ -113,7 +113,7 @@ const GetEpisodeMapping = (nFtoAnimeID, nEpisodeNo = -1) => {
     let sqlQuery = `SELECT * FROM ${tblName_episode} WHERE fto_anime_id = ${nFtoAnimeID}${extraWhereQuery} ORDER BY episode_no ASC`;
     FtoConnection.query(sqlQuery, (error, results) => {
       if (error) {
-        console.log(`Error in function (GetEpisodeMapping).\nSQL Query:"${sqlQuery}".\nError Message:`, error.sqlMessage);
+        LogError('GetEpisodeMapping', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
         reject(error);
       } else {
         resolve(results);
@@ -126,7 +126,7 @@ const PostEpisodeIntoDB = (sqlQuery) => {
   return new Promise((resolve) => {
     FtoConnection.query(sqlQuery, (error, results) => {
       if (results == undefined) {
-        console.log(`Error in function (PostEpisodeIntoDB).\nSQL Query:"${sqlQuery}".\nError Message:`, error.sqlMessage);
+        LogError('PostEpisodeIntoDB', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
         resolve(error);
       } else {
         resolve(results);
@@ -141,6 +141,12 @@ const PostEpisodesIntoDB = async (nFtoAnimeID, arrMissingEpisodesDetails) => {
   
   return Promise.all(sqlQueries.map(query => PostEpisodeIntoDB(query)));
 };
+
+const LogError = (strFunctionName, strErrorMessage) => {
+  var date = new Date(); // for now
+  let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`
+  console.log(`Error in function (${strFunctionName}).\nDatetime:${strDatetimeNow}\n${strErrorMessage}\n`, '-'.repeat(50));
+}
 
 module.exports = {
   GetAllAnime,
