@@ -1,20 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import './navbar.css';
 
-import { useNavigate  } from 'react-router-dom';
 import { RiMenu3Line, RiCloseLine } from 'react-icons/ri'
+import { useCustomNavigate } from './../../routing/navigation'
+import Menu from '../menu/Menu'
 import Ftologo from '../ftologo/Ftologo';
 import search_icon from '../../assets/Search_Icon.svg'
 
-const Menu = () => (
-  <>
-  <p><a href='#home'>Home</a></p>
-  <p><a href='#search'>Search</a></p>
-  <p><a href='#askchatgpt'>Ask ChatGPT</a></p>
-  </>
-)
-
 const Navbar = () => {
+  const { navigateToSearch } = useCustomNavigate();
 
   //username info rom backend
   const [backendData, setBackendData] = useState ([{}])
@@ -30,7 +24,6 @@ const Navbar = () => {
 
   //handle navbar searchbar submit
   const [formData, setFormData] = useState('');
-  const navigate = useNavigate();
   
   useEffect(() => {
     // Render (onMount)
@@ -45,16 +38,8 @@ const Navbar = () => {
   const HandleSearchbarSubmit = (e) => {
     e.preventDefault();
     console.debug(`Navbar Form data: ${encodeURIComponent(formData)}`);
-    var curentPage = location.href;
     
-    navigate({
-      pathname: '/search',
-      search: `?query=${encodeURIComponent(formData)}&page=1`,
-    });
-    if (curentPage.startsWith(location.origin + '/search')) {
-      //if search page 
-      navigate(0)
-    }
+    navigateToSearch(formData);
   }
 
   const [toggleMenu, setToggleMenu] = useState(false);

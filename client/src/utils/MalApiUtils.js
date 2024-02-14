@@ -1,3 +1,7 @@
+import default_img_vert from '../assets/default_image_rectangular_vertical.svg'
+import default_img_horiz from '../assets/default_image_rectangular_horizontal.svg'
+import { IsEmpty } from '../utils/RegularUtils'
+
 /**
  * Formats a date string provided my MAL API to a localized date representation.
  * If not null, returns suitable string.
@@ -44,6 +48,48 @@ const AddSubtitle = ( animetitles ) => {
     }
 }
 
+const AreDefaultAndEnglishTitlesDifferent = (animetitles) => {
+    var animeTitle_default = '';
+    var animeTitle_english = '';
+    animetitles.map((animeTitleObject) => {
+        if (animeTitleObject.type == "Default") {
+            animeTitle_default = animeTitleObject.title;
+        }
+        else if (animeTitleObject.type == "English") {
+            animeTitle_english = animeTitleObject.title;
+        }
+    })
+
+    if (animeTitle_default != animeTitle_english 
+        && animeTitle_english != '' && animeTitle_english != null) {
+            return true;
+    }
+}
+
+/**
+ * Gets the default image in malAnimeInfo object. Returns default if not present or undefined.
+ *
+ * @param {Object} passedMalAnimeInfo - An array of anime title objects.
+ * @returns {String} - String with file path to poster image.
+ */
+const ParseAnimePosterImage = (passedMalAnimeInfo) => {
+    if (passedMalAnimeInfo.images.jpg.image_url !== undefined ) {
+        return `${passedMalAnimeInfo.images.jpg.image_url}`;
+    }
+    else {
+        return `${default_img_vert}`;
+    }
+}
+
+const ParsePosterImage_Horzontal = (passedImageUrl) => {
+    if (!IsEmpty(passedImageUrl)) {
+        return `${passedImageUrl}`;
+    }
+    else {
+        return `${default_img_horiz}`;
+    }
+}
+
 /**
  * Retrieves the episode count based on air status, MyAnimeList episode count, and MyAnimeList anime ID.
  *
@@ -65,4 +111,11 @@ const GetEpisodeCount = ( airStatus, malEpCount, malAnimeID) => {
 }
 
 
-export { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount };
+export { 
+    FormatDateToMidDateString, 
+    AddSubtitle, 
+    GetEpisodeCount, 
+    AreDefaultAndEnglishTitlesDifferent,
+    ParseAnimePosterImage,
+    ParsePosterImage_Horzontal,
+};
