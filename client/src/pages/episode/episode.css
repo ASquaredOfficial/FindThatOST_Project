@@ -111,12 +111,10 @@
                     border: 0px;
                     margin: auto;
                     align-self: auto;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
                     cursor: pointer;
-
-                    img {
-                        margin-left: 3px;
-                        margin-top: 3px;
-                    }
                 }
             }
 

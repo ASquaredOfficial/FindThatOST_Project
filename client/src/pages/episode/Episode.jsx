@@ -403,7 +403,6 @@ const Episode = () => {
                                     <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>
                                     <hr />
                                     
-                                    
                                     {(episodeListOfTracks == undefined || episodeListOfTracks.length == 0) ? (
                                         /* If no tracks show this messahe*/
                                         <p className='fto__page__episode-main_content-no_soundtracks'>
@@ -419,10 +418,10 @@ const Episode = () => {
                                                             <h5 className='fto__page__episode-subheader_color'>{MapTrackType(trackInfo.track_type)}</h5>
                                                         </div>
                                                         <div className='fto__page__episode-main_content--track_item-header_right'>
-                                                            <button className='fto__page__episode-main_content--track_item-goto_track_button' 
-                                                            onClick='location.href=""' type='submit'>
+                                                            <a className='fto__page__episode-main_content--track_item-goto_track_button button' 
+                                                            href='/home'>
                                                                 <img src={arrow_icon}/>
-                                                            </button>
+                                                            </a>
                                                         </div>
                                                     </div>
                                                     

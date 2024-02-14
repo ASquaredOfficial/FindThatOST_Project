@@ -14,6 +14,12 @@ a {
     text-decoration: none;
 }
 
+a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+}
+
 .fto__navbar-bg {
     background: var(--color-bg-navbar);
 }
