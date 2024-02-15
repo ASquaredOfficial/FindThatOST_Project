@@ -35,6 +35,7 @@
 
 .fto__page__episode-content_heading_section {
     margin-bottom: 0.5rem;
+    width: 100%;
 
     .fto__page__episode-content_header_title {
         font-family: var(--font-family-manrope);
@@ -151,21 +152,6 @@
         .fto__page__episode-main_content--add_track_section {
             display: flex;
             justify-content: flex-end;
-
-            .fto__page__episode-main_content--add_track_button {
-                padding: 0.5rem 1rem;
-                margin: 1rem 0rem;
-                color: #ffffff;
-                background: var(--color-pink);
-                font-family: var(--font-family-manrope);
-                font-weight: 500;
-                font-size: 1em;
-                line-height: 18px;
-                border-radius: 5px;
-                cursor: pointer;
-                border: none;
-                outline: none;
-            }
         }
     }
 }

@@ -149,7 +149,7 @@ const Anime = () => {
      * @async
      * @function FetchEpisodeMapping
      * @param {number|string} ftoAnimeID - The FindThatOST Anime ID.
-     * @returns {Promise<Array<Object>|undefined} ftoAnimeID - The array of json objects containing episode details.
+     * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing episode details.
      */
     const FetchEpisodeMapping = async (ftoAnimeID) => {
         var apiUrl_fto = `/getEpisodes/anime/${ftoAnimeID}`;
@@ -172,7 +172,7 @@ const Anime = () => {
      * @async
      * @function FetchAllAnimeEpisodeDetails
      * @param {number} nLatestAnimeEpisode - The Latest aired episode number.
-     * @returns {Promise<Array<Object>>} - The array of json objects containing episode details.
+     * @returns {Promise<Array<JSON>>} - The array of json objects containing episode details.
      */
     const FetchAllAnimeEpisodeDetails = async (nLatestAnimeEpisode) => {
         // Get All MAL Episodes
@@ -266,6 +266,15 @@ const Anime = () => {
         return;
     }
 
+    /**
+     * Get anime details for anime with corresponding FTO Anime ID.
+     * 
+     * @async
+     * @function FetchAnimeData_FTO
+     * @param {number|string}  ftoAnimeID - FindThatOST Anime ID.
+     * @returns {Promise<Array<JSON>>|undefined} The array of json objects (max length 1) containing anime details.
+     * 
+     */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
         try {
             var apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
@@ -278,6 +287,15 @@ const Anime = () => {
         }
     }
     
+    /**
+     * Get anime details from MyAnimeList API using MAL ID mapped from the FTOAnimeID from backend response.
+     * 
+     * @async
+     * @function FetchFullAnimeData_MAL
+     * @param {Array<JSON>}  dataFromBackend - The array of json objects (max length 1) containing anime details.
+     * @returns {Promise<Array<JSON>|undefined} - JSON Object containing anime info from MAL API.
+     * 
+     */
     const FetchFullAnimeData_MAL = async (dataFromBackend) => {
         try {
             var malID = dataFromBackend[0].mal_id;
@@ -291,6 +309,15 @@ const Anime = () => {
         }
     }
     
+    /**
+     * Get anime details from AniList API using MAL ID mapped from the FTOAnimeID from backend response.
+     * 
+     * @async
+     * @function FetchFullAnimeData_AniList
+     * @param {Array<JSON>}  dataFromBackend - The array of json objects (max length 1) containing anime details.
+     * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing anime info from MAL API.
+     * 
+     */
     const FetchFullAnimeData_AniList = async (dataFromBackend) => {
         try {
             var malID = dataFromBackend.mal_id;
@@ -335,6 +362,15 @@ const Anime = () => {
         }
     }
 
+    /**
+     * Get Episode data to display on page (and update FTO database if unapdated).
+     * 
+     * @async
+     * @function FetchEpisodeData
+     * @param {number|string}  malAnimeDetails - Page ID (search param) from url, corresponds to FindThatOST Anime ID.
+     * @param {number|string}  ftoEpisodePageNum - Page number (search param) from url for API query.
+     * 
+     */
     const FetchEpisodeData = async (malAnimeDetails, ftoEpisodePageNum = 1) => {
         //Asuming each page on FTO anime page has 20 episodes
         var episodeCount = malAnimeDetails.episodes;
@@ -392,7 +428,17 @@ const Anime = () => {
             setPageEpisodesInfo(episodesInfo);
         }
     }
-
+    
+    /**
+     * Get episode details from MyAnimeList API using MAL Anime ID.
+     * 
+     * @async
+     * @function FetchEpisodeData_MAL
+     * @param {number|string}  malAnimeID - MyAnimeList Anime ID.
+     * @param {number|string}  queryPageNum - Page number for API query.
+     * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing episode info from MAL API.
+     * 
+     */
     const FetchEpisodeData_MAL = async (malAnimeID, queryPageNum) => {
         try {
             //Finished aring, check if mal has individual episode details
@@ -406,7 +452,17 @@ const Anime = () => {
             throw new Error('Error fetching episode data from external API (MyAnimeList)');
         }
     }
-
+    
+    /**
+     * Get episode details from Kitsu API using Kitsu Anime ID.
+     * 
+     * @async
+     * @function FetchEpisodeData_KITSU
+     * @param {number|string}  malAnimeID - MyAnimeList Anime ID.
+     * @param {number|string}  pageOffset - Page number for API query.
+     * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing episode info from MAL API.
+     * 
+     */
     const FetchEpisodeData_KITSU = async (kitsuAnimeID, pageOffset) => {
         try {
             if (kitsuAnimeID != -1 || (kitsuAnimeID == null)) {
@@ -423,6 +479,15 @@ const Anime = () => {
         }
     }
 
+    /**
+     * Update anime data in FTO database (mainly canonical title and parent anime).
+     * 
+     * @async
+     * @function FetchUpdateAnimeData_FTO
+     * @param {number|string}  ftoID - FindThatOST Anime ID.
+     * @param {JSON}  malAnimeDetails - MyAnimeList JSON Object, containing anime details.
+     * 
+     */
     const FetchUpdateAnimeData_FTO = async (ftoID, malAnimeDetails) => {
         try {
             // Get Prequel Anime in FTO DB (if present)
@@ -492,6 +557,14 @@ const Anime = () => {
         }
     }
 
+    /**
+     * Perform all fetches to set up the webpage.
+     * 
+     * @async
+     * @function FetchPageData
+     * @param {number|string}  pageId - Page ID from url, corresponds to FindThatOST Anime ID.
+     * 
+     */
     const FetchPageData = async (pageId) => {
         try {
             // Fetch data from the backend

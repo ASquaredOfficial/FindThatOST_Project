@@ -1,4 +1,4 @@
-import React, {useEffect, useState, createElement} from 'react';
+import React, {useEffect, useState} from 'react';
 import { useLocation, useParams } from "react-router-dom";
 import './episode.css';
 
@@ -8,7 +8,6 @@ import { IsEmpty } from "../../utils/RegularUtils"
 
 import arrow_icon from '../../assets/Arrow_Icon.svg'
 import pencil_icon from '../../assets/Pencil_Icon.svg'
-
 
 const Episode = () => {
     const location = useLocation();
@@ -24,17 +23,12 @@ const Episode = () => {
     const [ episodeListOfTracks, setEpisodeListOfTracks ] = useState();
 
     useEffect(() => {
-        console.debug(`Render-Anime (onMount): ${location.href}`);  
-        console.log(`AnimeID(${id} and EpisodeID(${episode_id}))`)
-        
+        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${id}\nEpisodeID:${episode_id}`)
         FetchPageData(id, episode_id);
     }, []);
 
     useEffect(() => {
         if (malAnimeInfo !== undefined) {
-            // Process MAL API anime titles to output to display
-            var arrMalAnimeTitles = malAnimeInfo.titles;
-       
             if (ftoAnimeInfo !== undefined) {
                 FetchUpdateAnimeData_FTO(id, malAnimeInfo);
             }
@@ -82,8 +76,17 @@ const Episode = () => {
             setPageEpisodeInfo(episodeInfo);
         }
         
-    }, [malEpisodeInfo, malEpisodeImageInfo, kitsuEpisodeInfo])
+    }, [malEpisodeInfo, malEpisodeImageInfo, kitsuEpisodeInfo]);
 
+    /**
+     * Get anime details for anime with corresponding FTO Anime ID.
+     * 
+     * @async
+     * @function FetchAnimeData_FTO
+     * @param {number|string}  ftoAnimeID - FindThatOST Anime ID.
+     * @returns {Promise<Array<JSON>>|undefined} The array of json objects (max length 1) containing anime details.
+     * 
+     */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
         try {
             var apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
@@ -96,6 +99,16 @@ const Episode = () => {
         }
     }
 
+    /**
+     * Get episode details for anime episode with corresponding FTO Anime ID and episode number.
+     * 
+     * @async
+     * @function FetchAnimeData_FTO
+     * @param {number|string}  ftoAnimeID - FindThatOST Anime ID.
+     * @param {number|string}  nEpisodeNo - Anime Episode Number.
+     * @returns {Promise<Array<JSON>>|undefined} The array of json objects (max length 1) containing anime details.
+     * 
+     */
     const FetchEpisodeData_FTO = async (ftoAnimeID, nEpisodeNo) => {
         try {
             var apiUrl_fto = `/getEpisodes/anime/${Number(ftoAnimeID)}/episode_no/${Number(nEpisodeNo)}`
@@ -108,6 +121,15 @@ const Episode = () => {
         }
     }
     
+    /**
+     * Get anime details from MyAnimeList API using MAL ID mapped from the FTOAnimeID from backend response.
+     * 
+     * @async
+     * @function FetchFullAnimeData_MAL
+     * @param {Array<JSON>}  malAnimeID - The MyAnimeList Anime ID.
+     * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing anime info from MAL API.
+     * 
+     */
     const FetchFullAnimeData_MAL = async (malAnimeID) => {
         try {
             var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/full`;
@@ -120,6 +142,15 @@ const Episode = () => {
         }
     }
 
+    /**
+     * Update anime data in FTO database (mainly canonical title and parent anime).
+     * 
+     * @async
+     * @function FetchUpdateAnimeData_FTO
+     * @param {number|string}  ftoID - FindThatOST Anime ID.
+     * @param {JSON}  malAnimeDetails - MyAnimeList JSON Object, containing anime details.
+     * 
+     */
     const FetchUpdateAnimeData_FTO = async (ftoID, malAnimeDetails) => {
         try {
             // Get Prequel Anime in FTO DB (if present)
@@ -189,6 +220,16 @@ const Episode = () => {
         }
     }
     
+    /**
+     * Get anime episode details from MyAnimeList API using MAL ID mapped from the FTOAnimeID from backend response.
+     * 
+     * @async
+     * @function FetchEpisodeData_MAL
+     * @param {Array<JSON>}  malAnimeID - The MyAnimeList Anime ID.
+     * @param {Array<JSON>}  malEpisodeID - The MyAnimeList Episode ID.
+     * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing anime info from MAL API.
+     * 
+     */
     const FetchEpisodeData_MAL = async (malAnimeID, malEpisodeID) => {
         try {
             //Finished aring, check if mal has individual episode details
@@ -203,6 +244,16 @@ const Episode = () => {
         }
     }
 
+    /**
+     * Get anime details from MyAnimeList API using MAL ID mapped from the FTOAnimeID from backend response.
+     * 
+     * @async
+     * @function FetchEpisodeImageData_MAL
+     * @param {Array<JSON>}  malAnimeID - The MyAnimeList Anime ID.
+     * @param {Array<JSON>}  malEpisodeID - The MyAnimeList Episode ID.
+     * @returns {Promise<string>|undefined} - JSON Object containing anime info from MAL API.
+     * 
+     */
     const FetchEpisodeImageData_MAL = async (malAnimeID, malEpisodeID) => {
         try {
             //Finished aring, check if mal has individual episode details
@@ -265,6 +316,15 @@ const Episode = () => {
         }
     }
 
+    /**
+     * Get anime episode details from Kitsu API using Kitsu ID.
+     * 
+     * @async
+     * @function FetchEpisodeData_KITSU
+     * @param {Array<JSON>}  kitsuEpisodeID - The Kitsu Episode ID.
+     * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing anime info from MAL API.
+     * 
+     */
     const FetchEpisodeData_KITSU = async (kitsuEpisodeID) => {
         try {
             if (kitsuEpisodeID != -1 || (kitsuEpisodeID == null)) {
@@ -282,6 +342,15 @@ const Episode = () => {
         }
     }
 
+    /**
+     * Get list of tracks for episode with corresponding FTO Episode ID.
+     * 
+     * @async
+     * @function FetchEpisodeListOfTracks_FTO
+     * @param {number|string}  nEpisodeID - FindThatOST Episode ID.
+     * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing track details.
+     * 
+     */
     const FetchEpisodeListOfTracks_FTO = async (nEpisodeID) => {
         try {
             var apiUrl_fto = `/getTracks/episode_id/${Number(nEpisodeID)}`
@@ -294,11 +363,20 @@ const Episode = () => {
         }
     }
 
-    const FetchPageData = async (pageId, episodeId) => {
+    /**
+     * Perform all fetches to set up the webpage.
+     * 
+     * @async
+     * @function FetchPageData
+     * @param {number|string}  pageId - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
+     * @param {number|string}  episodeNum - Episode No from url, corresponds to anime's epispode number.
+     * 
+     */
+    const FetchPageData = async (pageId, episodeNum) => {
         try {
             // Fetch data from the backend
             const animeDataFromBackend = await FetchAnimeData_FTO(pageId);
-            const episodeDataFromBackend = await FetchEpisodeData_FTO(pageId, episodeId);
+            const episodeDataFromBackend = await FetchEpisodeData_FTO(pageId, episodeNum);
             console.log('Anime Data from backend:', animeDataFromBackend);
             console.log('Episode Data from backend:', episodeDataFromBackend);
             setFTOAnimeInfo(animeDataFromBackend[0]);
@@ -328,8 +406,21 @@ const Episode = () => {
         }
     }
 
+    /**
+     * Format Episode Title Subheader, depending on whPerform all fetches to set up the webpage.
+     * 
+     * @async
+     * @function FormatEpisodeSubHeader
+     * @param {string}  title_romanji - Episode title in japanese using latin roman characters.
+     * @param {string}  title_japanese - Episode title in japanese using japanese characters.
+     * @returns {string|undefined} The formatted title stirng.
+     * 
+     */
     const FormatEpisodeSubHeader = (title_romanji, title_japanese) => {
-        if (IsEmpty(title_japanese)) {
+        if (IsEmpty(title_japanese) && IsEmpty(title_romanji)) {
+            return
+        }
+        else if (IsEmpty(title_japanese)) {
             return title_romanji;
         }
         else {
@@ -337,6 +428,15 @@ const Episode = () => {
         }
     }
 
+    /**
+     * Format Episode Title Subheader, depending on whPerform all fetches to set up the webpage.
+     * 
+     * @async
+     * @function MapTrackType
+     * @param {string}  strShorthandTrackType - Shorthand of the FTO Track Types.
+     * @returns {string} The full track type stirng.
+     * 
+     */
     const MapTrackType = (strShorthandTrackType) => {
         switch (strShorthandTrackType) {
             case ('OP'):
@@ -372,7 +472,7 @@ const Episode = () => {
                         <div className='fto__page__episode-main_content'>
                             <div className='fto__page__episode-main_content--episode_details'>
                                 <div className='fto__page__episode-main_content--episode_details-left'>
-                                    <img alt='Anime Image' className='fto__page__episode-main_content--episode_details-thumbnail' src={ParsePosterImage_Horzontal(pageEpisodeInfo.image_url)}/>
+                                    <img alt='Episode Image' className='fto__page__episode-main_content--episode_details-thumbnail' src={ParsePosterImage_Horzontal(pageEpisodeInfo.image_url)}/>
                                 </div>
                                 <div className='fto__page__episode-main_content--episode_details-right'>
                                     <h2>{pageEpisodeInfo.title_en_us}</h2>
@@ -394,8 +494,7 @@ const Episode = () => {
                                 </div>
                             </div>
                             
-                            {// Show Anime Synopsis
-                            malAnimeInfo.synopsis !== undefined && (
+                            {malAnimeInfo !== undefined && (
                                 <div className='fto__page__episode-main_content--soundtrack_section'>
                                     <div className='fto__page__episode-main_content--add_track_section'>
                                         <button className='fto__page__episode-main_content--add_track_button'>Add new Track</button>
