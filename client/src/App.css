@@ -20,6 +20,25 @@ a.button {
     appearance: button;
 }
 
+.fto__button__pink {
+    padding: 0.5rem 1rem;
+    margin: 1rem 0rem;
+    color: #ffffff;
+    background: var(--color-pink);
+    font-family: var(--font-family-manrope);
+    font-weight: 500;
+    font-size: 1em;
+    line-height: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+.subheader_color {
+    color: grey;
+}
+
 .fto__navbar-bg {
     background: var(--color-bg-navbar);
 }

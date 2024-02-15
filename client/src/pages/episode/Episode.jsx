@@ -476,7 +476,7 @@ const Episode = () => {
                                 </div>
                                 <div className='fto__page__episode-main_content--episode_details-right'>
                                     <h2>{pageEpisodeInfo.title_en_us}</h2>
-                                    <h4 className='fto__page__episode-subheader_color'>{FormatEpisodeSubHeader(pageEpisodeInfo.title_en_jp, pageEpisodeInfo.title_ja_jp)}</h4>
+                                    <h4 className='subheader_color'>{FormatEpisodeSubHeader(pageEpisodeInfo.title_en_jp, pageEpisodeInfo.title_ja_jp)}</h4>
                                     <hr className='fto__page__episode-horizontal_hr'/>
 
                                     {pageEpisodeInfo.aired !== undefined && ( 
@@ -497,8 +497,9 @@ const Episode = () => {
                             {malAnimeInfo !== undefined && (
                                 <div className='fto__page__episode-main_content--soundtrack_section'>
                                     <div className='fto__page__episode-main_content--add_track_section'>
-                                        <button className='fto__page__episode-main_content--add_track_button'>Add new Track</button>
+                                        <button className='fto__button__pink'>Add new Track</button>
                                     </div>
+
                                     <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>
                                     <hr />
                                     
@@ -518,7 +519,7 @@ const Episode = () => {
                                                         </div>
                                                         <div className='fto__page__episode-main_content--track_item-header_right'>
                                                             <a className='fto__page__episode-main_content--track_item-goto_track_button button' 
-                                                            href='/home'>
+                                                            href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}>
                                                                 <img src={arrow_icon}/>
                                                             </a>
                                                         </div>

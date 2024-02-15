@@ -12,6 +12,7 @@ const {
     GetEpisodeMapping,
     PostEpisodesIntoDB,
     GetTracksForEpisode, 
+    GetTrack,
 } = require('./sql/database');
 
 app.use(bodyParser.json());
@@ -245,6 +246,43 @@ app.get("/getTracks/episode_id/:nEpisodeID/", async (req, res) => {
             return res.status(404).json({ error: 'Resource Not Found' }).end(); 
         }
         res.status(200).json(ftoEpisodeTracksDetails);
+    }
+    catch (error) {
+        var objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.get("/getTrack/:nTrackID/", async (req, res) => {
+    //Get List of Tracks for the episode with corresponding FTO Episode ID
+    const nTrackID = req.params.nTrackID;
+    try {
+        const ftoTracksDetails = await GetTrack(nTrackID);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
+    }
+    catch (error) {
+        var objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.get("/getTrack/:nTrackID/context_id/:nOccurrenceID", async (req, res) => {
+    //Get List of Tracks for the episode with corresponding FTO Episode ID
+    const nTrackID = req.params.nTrackID;
+    const nOccurrenceID = req.params.nOccurrenceID;
+    try {
+        const ftoTracksDetails = await GetTrack(nTrackID, nOccurrenceID);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
     }
     catch (error) {
         var objError = {};
