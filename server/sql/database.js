@@ -63,6 +63,12 @@ class SQLArrayHandler {
   }
 }
 
+const LogError = (strFunctionName, strErrorMessage) => {
+  var date = new Date(); // for now
+  let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`
+  console.log(`Error in function (${strFunctionName}).\nDatetime:${strDatetimeNow}\n${strErrorMessage}\n`, '-'.repeat(50));
+};
+
 const GetAllAnime = () => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
@@ -265,10 +271,31 @@ const GetTrack = (nTrackID, nOccurrenceID = -1) => {
   });
 };
 
-const LogError = (strFunctionName, strErrorMessage) => {
-  var date = new Date(); // for now
-  let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`
-  console.log(`Error in function (${strFunctionName}).\nDatetime:${strDatetimeNow}\n${strErrorMessage}\n`, '-'.repeat(50));
+const GetSubmissionContext_TrackAdd = (nFtoAnimeID, nEpisodeNo = -1) => {
+  return new Promise((resolve, reject) => {
+    let sqlQuery = [
+      "SELECT fto_anime.canonical_title",
+      "FROM `fto_anime`",
+      `WHERE anime_id = ${nFtoAnimeID}`,
+    ];
+// "SELECT fto_anime.canonical_title FROM `fto_anime` WHERE anime_id = 2;"
+// "SELECT fto_anime.canonical_title, episode_id FROM `fto_anime` INNER JOIN fto_episode ON fto_anime.anime_id = fto_episode.fto_anime_id WHERE anime_id = 2 AND fto_episode.episode_no = 12;
+    if (nEpisodeNo !== -1) {
+      sqlQuery.splice(1, 0, ", episode_id, episode_title");
+      sqlQuery.splice(3, 0, "INNER JOIN fto_episode ON fto_anime.anime_id = fto_episode.fto_anime_id");
+      sqlQuery.push(`AND episode_no = ${nEpisodeNo}`)
+    }
+    const handler = new SQLArrayHandler(sqlQuery);
+    const sqlQueryString = handler.CombineStringsToQuery();
+    FtoConnection.query(sqlQueryString, (error, results) => {
+      if (error) {
+        LogError('GetSubmissionContext', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    });
+  });
 }
 
 module.exports = {
@@ -281,5 +308,6 @@ module.exports = {
   PostEpisodesIntoDB,
   GetTracksForEpisode,
   GetTrack,
+  GetSubmissionContext_TrackAdd,
   // Add more query functions as needed
 };

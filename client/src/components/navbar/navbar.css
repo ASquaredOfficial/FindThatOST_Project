@@ -99,7 +99,7 @@
 .fto__navbar-menu_container button {
     padding: 0.5rem 1rem;
     color: #ffffff;
-    background: var(--color-pink);
+    background: var(--color-pink_bright);
     font-family: var(--font-family-manrope);
     font-weight: 500;
     font-size: 18px;
@@ -148,7 +148,7 @@
 }
 
 .fto__navbar-menu_container-links-sign p {
-    color: var(--color-pink);
+    color: var(--color-pink_bright);
 }
 
 /*Tablet Screens or smaller*/

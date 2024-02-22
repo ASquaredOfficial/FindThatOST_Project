@@ -11,7 +11,7 @@ import pencil_icon from '../../assets/Pencil_Icon.svg'
 
 const Episode = () => {
     const location = useLocation();
-    const { id, episode_id } = useParams();
+    const { anime_id, episode_no } = useParams();
     
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
@@ -23,14 +23,14 @@ const Episode = () => {
     const [ episodeListOfTracks, setEpisodeListOfTracks ] = useState();
 
     useEffect(() => {
-        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${id}\nEpisodeID:${episode_id}`)
-        FetchPageData(id, episode_id);
+        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${anime_id}\nEpisodeID:${episode_no}`)
+        FetchPageData(anime_id, episode_no);
     }, []);
 
     useEffect(() => {
         if (malAnimeInfo !== undefined) {
             if (ftoAnimeInfo !== undefined) {
-                FetchUpdateAnimeData_FTO(id, malAnimeInfo);
+                FetchUpdateAnimeData_FTO(anime_id, malAnimeInfo);
             }
         }
     }, [malAnimeInfo]);
@@ -463,9 +463,9 @@ const Episode = () => {
                         
                         <div className='fto__page__episode-content_heading_section'>
                             <h1 className='fto__page__episode-content_header_title gradient__text'>
-                                Episode {episode_id}
+                                Episode {episode_no}
                             </h1>
-                            <h1 className='fto__page__episode-content_header_subtitle'><strong>{malAnimeInfo.titles[0].title}</strong></h1>
+                            <h4 className='fto__page__episode-content_header_subtitle'><strong>{malAnimeInfo.titles[0].title}</strong></h4>
                         </div>
                         <hr className='fto__page__episode-horizontal_hr' />
                         
@@ -497,7 +497,7 @@ const Episode = () => {
                             {malAnimeInfo !== undefined && (
                                 <div className='fto__page__episode-main_content--soundtrack_section'>
                                     <div className='fto__page__episode-main_content--add_track_section'>
-                                        <button className='fto__button__pink'>Add new Track</button>
+                                        <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + 12}>Add New Track</a>
                                     </div>
 
                                     <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>

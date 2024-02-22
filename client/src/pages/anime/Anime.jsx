@@ -697,7 +697,7 @@ const Anime = () => {
                             </h1>
                             
                             {AreDefaultAndEnglishTitlesDifferent(malAnimeInfo.titles) && (
-                                <h1 className='fto__page__anime-content_header_subtitle'><strong>{malAnimeTitles !== undefined && ( malAnimeTitles.English )}</strong></h1>
+                                <h4 className='fto__page__anime-content_header_subtitle'><strong>{malAnimeTitles !== undefined && ( malAnimeTitles.English )}</strong></h4>
                             )}
                         </div>
                         <hr className='fto__page__anime-horizontal_hr' />

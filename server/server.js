@@ -13,6 +13,7 @@ const {
     PostEpisodesIntoDB,
     GetTracksForEpisode, 
     GetTrack,
+    GetSubmissionContext_TrackAdd,
 } = require('./sql/database');
 
 app.use(bodyParser.json());
@@ -289,6 +290,83 @@ app.get("/getTrack/:nTrackID/context_id/:nOccurrenceID", async (req, res) => {
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
+    }
+});
+
+app.get("/getSubmissionContext/track_add/:nFtoAnimeID/", async (req, res) => {
+    //Get Conext information to add a track to the anime with corresponding FTO Anime ID
+    const nFtoAnimeID = req.params.nFtoAnimeID;
+    try {
+        const ftoTracksDetails = await GetSubmissionContext_TrackAdd(nFtoAnimeID);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
+    }
+    catch (error) {
+        var objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.get("/getSubmissionContext/track_add/:nFtoAnimeID/episode_no/:nEpisodeNo", async (req, res) => {
+    //Get Conext information to add a track to the anime with corresponding FTO Anime ID and episode number
+    const nFtoAnimeID = req.params.nFtoAnimeID;
+    const nEpisodeNo = req.params.nEpisodeNo;
+    try {
+        const ftoTracksDetails = await GetSubmissionContext_TrackAdd(nFtoAnimeID, nEpisodeNo);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
+    }
+    catch (error) {
+        var objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.post("/postSubmission/track_add/:nFtoAnimeID", async (req, res) => {
+    var date = new Date(); // for now
+    const { data } = req.body;
+
+    if (!data || !Array.isArray(data) || data.length === 0) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const nFtoAnimeID = req.params.nFtoAnimeID;
+        const ftoResponse = await PostEpisodesIntoDB(nFtoAnimeID, data);
+
+        const failedQueries = ftoResponse.reduce((failed, result, index) => {
+            if (result instanceof Error) {
+                failed.push(index + 1);
+            }
+            return failed;
+        }, []);
+      
+        if (failedQueries.length === 0) {
+            // All queries successful
+            return res.status(200).json({ message: 'Bulk insert successful' });
+        } else if (failedQueries.length === data.length) {
+            // All queries failed
+            return res.status(500).json({ error: 'All Bulk insert failed', failedQueries });
+        } else {
+            // Partial success, partial failure
+            return res.status(207).json({ message: 'Some queries failed', failedQueries }).end;
+        }
+    } 
+    catch (error) {
+        var objError = {};
+        objError.error = 'Internal Request Error';
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+        objError.details = error;
+        res.status(500).json(objError);
+        console.log(`Insert Request Error (${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}):\n`, error);
     }
 });
 

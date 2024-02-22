@@ -21,7 +21,7 @@ const Track = () => {
     const { track_id } = useParams();
 
     const searchParams = new URLSearchParams(location.search);
-    const [ spOccurrenceID, setOccurrenceID ] = useState(parseInt(searchParams.get('context_id'), 10) || -1);
+    const spOccurrenceID = parseInt(searchParams.get('context_id'), 10) || -1;
 
     const [ ftoTrackInfo, setFTOTrackInfo ] = useState();
     const [ streamingPlatformsLInks, setStreamingPlatformsLInks ] = useState([]);
@@ -91,14 +91,14 @@ const Track = () => {
      * 
      * @async
      * @function FetchPageData
-     * @param {number|string}  nTrackID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
+     * @param {number|string}  nTrackID - TrackID ID from url, corresponds to FindThatOST Track ID.
      * @param {number|string}  nOccurrenceID -  Context/Occurrence ID (search param) from url,for API query.
      * 
      */
     const FetchPageData = async (nTrackID, nOccurrenceID) => {
         try {
             // Fetch data from the backend
-            const trackDataFromBackend = await FetchTrackDetails(nTrackID, nOccurrenceID);
+            const trackDataFromBackend = await FetchTrackDetails_FTO(nTrackID, nOccurrenceID);
             console.log('Anime Data from backend:', trackDataFromBackend[0]);
             setFTOTrackInfo(trackDataFromBackend[0]);
         } catch (error) {
@@ -110,13 +110,13 @@ const Track = () => {
      * Get anime details for anime with corresponding FTO Anime ID.
      * 
      * @async
-     * @function FetchTrackDetails
+     * @function FetchTrackDetails_FTO
      * @param {number|string}  nTrackID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
      * @param {number|string}  nOccurrenceID -  Context/Occurrence ID (search param) from url,for API query.
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects (max length 1) containing anime details.
      * 
      */
-    const FetchTrackDetails = async (nTrackID, nOccurrenceID) => {
+    const FetchTrackDetails_FTO = async (nTrackID, nOccurrenceID) => {
         try {
             var apiUrl_fto = `/getTrack/${Number(nTrackID)}`;
             if (nOccurrenceID != -1) {
@@ -203,8 +203,8 @@ const Track = () => {
                             <hr className='fto__page__track-horizontal_hr' />
                             {spOccurrenceID !== -1 && (
                                 <div className='fto__page__track-content_subheading_section'>
-                                    <h1 className='fto__page__track-content_header_subtitle'><strong>{ftoTrackInfo.canonical_title}</strong></h1>
-                                    <h4 className='fto__page__track-subheader_color'>Episode {ftoTrackInfo.episode_no}</h4>
+                                    <h4 className='fto__page__track-content_header_subtitle'><strong>{ftoTrackInfo.canonical_title}</strong></h4>
+                                    <h4 className='subheader_color'>Episode {ftoTrackInfo.episode_no}</h4>
                                 </div>
                             )}
                             <hr className='fto__page__track-horizontal_hr' />
@@ -235,7 +235,7 @@ const Track = () => {
                             </div>
 
                             <div className='fto__page__track-main_content--edit_track_section'>
-                                <button className='fto__button__pink'>Edit Track</button>
+                                <a className='fto__button__pink' href={'/submission/track_edit/'}>Edit Track</a>
                             </div>
 
                             <div>
@@ -245,7 +245,7 @@ const Track = () => {
                                     <hr className='fto__page__track-horizontal_hr' />
 
                                     <div className='fto__page__track--streaming_platform_items'>
-                                        {/**/streamingPlatformsLInks.map((streamPlatformInfo, it) => {
+                                        {streamingPlatformsLInks.map((streamPlatformInfo, it) => {
                                             return (
                                                 <a className='fto__page__track--streaming_platform_item' key={it} href={streamPlatformInfo.link_url}>
                                                     <img src={GetPlatformIcon(streamPlatformInfo.platform_type)}/>

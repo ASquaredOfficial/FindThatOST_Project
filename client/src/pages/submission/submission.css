@@ -1,0 +1,150 @@
+.fto__page__submission {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.fto__page__submission-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+
+    margin: auto;
+    padding-bottom: 0;
+}
+
+.fto__page__submission-content_heading_section {
+    margin-bottom: 0.5rem;
+    width: 100%;
+
+    .fto__page__submission-content_header_title {
+        font-family: var(--font-family-manrope);
+        font-weight: 800;
+    }
+    
+    .fto__page__submission-content_header_subtitle {
+        font-family: var(--font-family-manrope);
+        color: white;
+        font-weight: 400;
+        align-self: flex-start;
+    }
+}
+
+.fto_input {
+    padding: 0.5rem;
+    height: 36px;
+    min-height: 36px;
+    flex: 1;
+
+    border: 1px solid #BFBDBD;
+    border-radius: 5px;
+    background-color: #121212;
+    color: #fff;
+    font-size: 1rem;
+    
+    -webkit-transition: 0.5s;
+    transition: 0.5s;
+    outline: none;
+    box-sizing: border-box;
+}
+.fto_input:focus  {
+    border: 1.5px solid #F133A5;
+}
+.fto_input::placeholder  {
+    color: grey;
+}
+textarea.fto_input  {
+    height: 80px;
+    min-height: 72px;
+}
+
+.fto__page__submission-main_content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    font-family: var(--font-family-manrope);
+    color: #fff;
+    padding: 1rem;
+
+    .fto__page__submission-main_content-input_section {
+        margin-bottom: 1rem;
+
+        > label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1em;
+            color: #fff;
+        }
+        
+        > input[type=text],
+        > select,
+        > textarea {
+            width: 100%;
+            max-width: 100%;
+            min-width: 100%;
+        }
+        > input[type=date] {
+            width: 80%;
+            max-width: 80%;
+            min-width: 80%;
+        }
+        > input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1); /* Change the color of the icon */
+        }
+
+        .fto__page__submission-main_content-streamPlat_item {
+            display: flex;
+            flex-direction: row;
+            align-items: center; /* Vertically center items */
+            margin-bottom: 5px;
+
+            .delete_streamPlat_item {
+                cursor: pointer;
+            }
+
+            .ftoInput__streamPlat_label {
+                position: relative;
+                display: flex;
+                width: 100%;
+                margin-left: 10px;
+
+                input[type=text] {
+                    padding-left: 40px;
+                }
+            
+                .ftoInput__streamPlatIcon {
+                    position: absolute;
+                    left: 10px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    height: 18px;
+                }
+            }
+        }
+    }
+
+    .fto__page__submission-main_content-submit_section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .fto__page__submission-main_content-align_end {
+        display: inline-flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        float: right;
+    }
+
+    .fto__page__submission-main_content-even_split {
+        display: flex;
+
+        .fto__page__submission-main_content-left,
+        .fto__page__submission-main_content-right {
+            flex: 1;
+        }
+    }
+}

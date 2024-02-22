@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import { Home, Search, Anime, Episode, Track } from './pages'
+import { Home, Search, Anime, Episode, Track, Submit_TrackAdd } from './pages'
 import './App.css'
 
 // BEM -> Block Element Modifier
@@ -17,9 +17,10 @@ const App = () => {
 				<Route element={<Home />} path="/home" />
 				<Route element={<Search />} path="/search" />
 				<Route element={<Anime />} path="/anime/:id" />
-				<Route element={<Episode />} path="/anime/:id/episode/:episode_id" />
+				<Route element={<Episode />} path="/anime/:anime_id/episode/:episode_no" />
 				<Route element={<Track />} path="/track/:track_id/" />
-				{/*<Route element={NoPage} path="*" /> */}
+				<Route element={<Submit_TrackAdd />} path="/submission/track_add/:anime_id/" />+
+				{/*<Route element={ErrorPage} path="*" /> */}
 			</Routes>
 		</BrowserRouter>
     </div>
