@@ -13,6 +13,7 @@
 
     margin: auto;
     padding-bottom: 0;
+    z-index: 1;
 }
 
 .fto__page__submission-content_heading_section {
@@ -32,34 +33,6 @@
     }
 }
 
-.fto_input {
-    padding: 0.5rem;
-    height: 36px;
-    min-height: 36px;
-    flex: 1;
-
-    border: 1px solid #BFBDBD;
-    border-radius: 5px;
-    background-color: #121212;
-    color: #fff;
-    font-size: 1rem;
-    
-    -webkit-transition: 0.5s;
-    transition: 0.5s;
-    outline: none;
-    box-sizing: border-box;
-}
-.fto_input:focus  {
-    border: 1.5px solid #F133A5;
-}
-.fto_input::placeholder  {
-    color: grey;
-}
-textarea.fto_input  {
-    height: 80px;
-    min-height: 72px;
-}
-
 .fto__page__submission-main_content {
     display: flex;
     flex-direction: column;
@@ -68,6 +41,10 @@ textarea.fto_input  {
     font-family: var(--font-family-manrope);
     color: #fff;
     padding: 1rem;
+
+    > form > div {
+        width: 100%;
+    }
 
     .fto__page__submission-main_content-input_section {
         margin-bottom: 1rem;
@@ -79,19 +56,15 @@ textarea.fto_input  {
             color: #fff;
         }
         
-        > input[type=text],
-        > select,
-        > textarea {
+        input[type=text],
+        input[type=date],
+        textarea,
+        select  {
             width: 100%;
             max-width: 100%;
             min-width: 100%;
         }
-        > input[type=date] {
-            width: 80%;
-            max-width: 80%;
-            min-width: 80%;
-        }
-        > input[type="date"]::-webkit-calendar-picker-indicator {
+        input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1); /* Change the color of the icon */
         }
 
@@ -104,26 +77,19 @@ textarea.fto_input  {
             .delete_streamPlat_item {
                 cursor: pointer;
             }
-
-            .ftoInput__streamPlat_label {
-                position: relative;
-                display: flex;
-                width: 100%;
-                margin-left: 10px;
-
-                input[type=text] {
-                    padding-left: 40px;
-                }
-            
-                .ftoInput__streamPlatIcon {
-                    position: absolute;
-                    left: 10px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    height: 18px;
-                }
-            }
         }
+    }
+
+    .fto__page__submission-main_content-even_split {
+        display: flex;
+
+        .fto__page__submission-main_content-left,
+        .fto__page__submission-main_content-right {
+            flex: 1;
+        }
+    }
+    .fto__page__submission-main_content-even_split_gap {
+        gap: 10px; /* Only use when screensize is big enough */
     }
 
     .fto__page__submission-main_content-submit_section {
@@ -137,14 +103,5 @@ textarea.fto_input  {
         flex-direction: row-reverse;
         align-items: center;
         float: right;
-    }
-
-    .fto__page__submission-main_content-even_split {
-        display: flex;
-
-        .fto__page__submission-main_content-left,
-        .fto__page__submission-main_content-right {
-            flex: 1;
-        }
     }
 }

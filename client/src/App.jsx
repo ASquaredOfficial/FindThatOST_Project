@@ -1,8 +1,9 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import { Home, Search, Anime, Episode, Track, Submit_TrackAdd } from './pages'
 import './App.css'
+import './pages/general.css'
 
 // BEM -> Block Element Modifier
 // naming convention (i.e. gpt__navbar)
@@ -13,8 +14,8 @@ const App = () => {
     <div className="App">
 		<BrowserRouter>
 			<Routes>
-				<Route index element={<Home />} />
-				<Route element={<Home />} path="/home" />
+				<Route element={<Home />} path="/home" index/>
+				<Route element={<Navigate to='/home' replace/>} path="/" />
 				<Route element={<Search />} path="/search" />
 				<Route element={<Anime />} path="/anime/:id" />
 				<Route element={<Episode />} path="/anime/:anime_id/episode/:episode_no" />

@@ -14,6 +14,7 @@ const {
     GetTracksForEpisode, 
     GetTrack,
     GetSubmissionContext_TrackAdd,
+    PostSubmission_TrackAdd,
 } = require('./sql/database');
 
 app.use(bodyParser.json());
@@ -330,35 +331,18 @@ app.get("/getSubmissionContext/track_add/:nFtoAnimeID/episode_no/:nEpisodeNo", a
     }
 });
 
-app.post("/postSubmission/track_add/:nFtoAnimeID", async (req, res) => {
+app.post("/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFtoEpisodeID", async (req, res) => {
     var date = new Date(); // for now
-    const { data } = req.body;
-
-    if (!data || !Array.isArray(data) || data.length === 0) {
+    const { objUserSubmission } = req.body;
+    if (!objUserSubmission) {
         return res.status(400).json({ error: 'Invalid data format' });
     }
 
     try {
         const nFtoAnimeID = req.params.nFtoAnimeID;
-        const ftoResponse = await PostEpisodesIntoDB(nFtoAnimeID, data);
-
-        const failedQueries = ftoResponse.reduce((failed, result, index) => {
-            if (result instanceof Error) {
-                failed.push(index + 1);
-            }
-            return failed;
-        }, []);
-      
-        if (failedQueries.length === 0) {
-            // All queries successful
-            return res.status(200).json({ message: 'Bulk insert successful' });
-        } else if (failedQueries.length === data.length) {
-            // All queries failed
-            return res.status(500).json({ error: 'All Bulk insert failed', failedQueries });
-        } else {
-            // Partial success, partial failure
-            return res.status(207).json({ message: 'Some queries failed', failedQueries }).end;
-        }
+        const nFtoEpisodeID = req.params.nFtoEpisodeID;
+        const ftoResponse = await PostSubmission_TrackAdd(nFtoAnimeID, nFtoEpisodeID, objUserSubmission, objUserSubmission.user_id);
+        res.status(200).json(ftoResponse);
     } 
     catch (error) {
         var objError = {};
@@ -367,7 +351,7 @@ app.post("/postSubmission/track_add/:nFtoAnimeID", async (req, res) => {
         objError.details = error;
         res.status(500).json(objError);
         console.log(`Insert Request Error (${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}):\n`, error);
-    }
+    } 
 });
 
 app.listen(port, ()=> {console.log(`Server started on port ${port}`)});

@@ -247,7 +247,7 @@ const Track = () => {
                                     <div className='fto__page__track--streaming_platform_items'>
                                         {streamingPlatformsLInks.map((streamPlatformInfo, it) => {
                                             return (
-                                                <a className='fto__page__track--streaming_platform_item' key={it} href={streamPlatformInfo.link_url}>
+                                                <a className='fto__page__track--streaming_platform_item' target="_blank" key={it} href={streamPlatformInfo.link_url}>
                                                     <img src={GetPlatformIcon(streamPlatformInfo.platform_type)}/>
                                                     <div className='fto__page__track--streaming_platform_item_right'> 
                                                         <p>{GetPlatformString(streamPlatformInfo.platform_type)}</p>
