@@ -6,14 +6,17 @@ import { Navbar, Footer} from "../../components";
 import { IoAdd, IoTrash } from "react-icons/io5";
 import { IsEmpty, sortJsonObjectAlphabeticallyExceptLast } from '../../utils/RegularUtils';
 import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon } from '../../utils/HyperlinkUtils';
+import { useCustomNavigate } from './../../routing/navigation'
 
 const Submit_TrackAdd = () => {
+    const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
     const location = useLocation();
     const { anime_id } = useParams();
 
     const searchParams = new URLSearchParams(location.search);
     const spEpisodeNo = parseInt(searchParams.get('episode_no'), 10) || -1;
 
+    const [ ftoEpisodeID, setFtoEpisodeID ] = useState(-1);
     const [ pageLoading, setPageLoading ] = useState(false);
     const [ pageInputs, setPageInputs ] = useState({});
     const [ userSubmission, setUserSubmission ] = useState({submit_streamPlat: []});
@@ -52,6 +55,14 @@ const Submit_TrackAdd = () => {
             }
         }
     }, [pageLoading]);
+
+    useEffect(() => {
+        if (submissionContextInfo !== undefined) {
+            if (submissionContextInfo.hasOwnProperty('episode_id')) {
+                setFtoEpisodeID(submissionContextInfo.episode_id);
+            }
+        }
+    }, [submissionContextInfo])
 
     /**
      * Perform all fetches to set up the webpage.
@@ -459,16 +470,22 @@ const Submit_TrackAdd = () => {
         });
 
         const responseStatus = response.status;
+        const responseData = await response.json();
         if (responseStatus == 200) {    
-            const responseData = await response.json();
+            console.debug("Response Data:", responseData);
             setSuccessfulSubmitQuery(true);
         } else {
+            console.error('Error:', responseData);
             setSuccessfulSubmitQuery(false);
         }
-        return responseStatus;
     }
 
     const handleSubmit_TrackAdd = async (event) => {
+        if (successfulSubmitQuery == true) {
+            // Successfully added track, unauthorised attempt to submit request
+            return;
+        }
+
         setPageLoading(true);
         event.preventDefault();
 
@@ -521,17 +538,31 @@ const Submit_TrackAdd = () => {
             }
             setUserSubmission(updatedSubmission);
             
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1000));  
             FetchPostSubmissionTrackAdd_FTO(anime_id, spEpisodeNo, updatedSubmission);
         }
         setPageLoading(false);
+    }
+
+    const handleModalOnButtonClick = () => {
+        if (successfulSubmitQuery === true) {
+            if (ftoEpisodeID !== -1) {
+                navigateToEpisode(anime_id, spEpisodeNo);
+            }
+            else {
+                navigateToAnime(anime_id);
+            }
+        }
+        else {
+            setSuccessfulSubmitQuery();
+        }
     }
 
     return (
         <div id='fto__page' className='fto__page__submission'>
             {pageLoading && (
                 <div className='fto_loading'>
-                    <div className='fto_loading-bg' />
+                    <div className='fto_modal_overlay-bg fto_loading-cursor' />
                     <div className={'fto_loading-text_section fto_input'} style={
                             { 
                                 position: 'fixed', 
@@ -552,7 +583,7 @@ const Submit_TrackAdd = () => {
             <div className='gradient__bg'>
                 <Navbar />
 
-                {submissionContextInfo !== undefined && (
+                {(submissionContextInfo !== undefined)  && (
                 <div className='fto__page__submission-content section__padding'>
 
                     <div className='fto__page__submission-content_heading_section'>
@@ -567,7 +598,7 @@ const Submit_TrackAdd = () => {
                         <h4 className='fto__page__submission-content_header_subtitle'><strong>{submissionContextInfo.canonical_title}</strong></h4>
                         <hr className='fto__page__submission-horizontal_hr' />
                     </div>
-
+                    
                     <div className='fto__page__submission-main_content'>
                         <form onSubmit={ handleSubmit_TrackAdd }>
                             <div className='fto__page__submission-main_content-input_section'>
@@ -670,18 +701,48 @@ const Submit_TrackAdd = () => {
                                     </span>
                                 </div>
                             </div>
+                            
+                            {(successfulSubmitQuery !== true) && (
                             <div className='fto__page__submission-main_content-submit_section'>
                                 <button className='fto__button__pink' type='submit' disabled={pageLoading}>
                                     Submit
                                 </button>
                                 <p className='fto__pointer'>Add to drafts</p>
                             </div>
+                            )}
                         </form>
                     </div>
+                    
+                    {(successfulSubmitQuery !== undefined) && (
+                    <div className='fto__page__submission-pop_up'>
+                        <div className="fto_modal">
+                            <div className="fto_modal-content">
+                                {(successfulSubmitQuery === true) ? (
+                                    <>
+                                        <h3 className='fto__page__submission-content_header_subtitle'>
+                                            <strong>Add Track to '{submissionContextInfo.canonical_title}' success!</strong>
+                                        </h3>
+                                        <button className='fto__button__pink' onClick={ handleModalOnButtonClick }>
+                                            Finish
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h3 className='fto__page__submission-content_header_subtitle'>
+                                            <strong>An error occurred on submission. Please try again or save this to drafts while we look into this problem.</strong>
+                                        </h3>
+                                        <button className='fto__button__pink' onClick={ handleModalOnButtonClick }>
+                                            Close
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    )}
 
                 </div>
                 )}
-
             </div>
             
             {submissionContextInfo !== undefined && (

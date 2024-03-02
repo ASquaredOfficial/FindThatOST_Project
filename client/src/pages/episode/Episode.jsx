@@ -334,7 +334,7 @@ const Episode = () => {
                 const responseData_kitsu = await response_kitsu.json();
                 return responseData_kitsu;
             }
-            return []
+            return [];
         }
         catch (error) {
             console.error("My error:", error);
