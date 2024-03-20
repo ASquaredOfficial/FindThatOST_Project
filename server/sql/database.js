@@ -271,7 +271,7 @@ const GetTrack = (nTrackID, nOccurrenceID = -1) => {
     let sqlQuery = [
 		"SELECT track_id,",
 		"fto_anime.canonical_title, ",
-		"track_name, artist_name, label_name, release_date, fandom_image_link, fandom_ost_link,",
+		"track_name, artist_name, label_name, release_date, fandom_image_link, fandom_webpage_link,",
 		"streaming_platform_links, embedded_yt_video_id",
 		"FROM ((`fto_episode`",
 		"INNER JOIN fto_occurrence ON fto_episode.episode_id = fto_occurrence.fto_episode_id)",
@@ -345,101 +345,136 @@ const PostSubmission_TrackAdd = (nFtoAnimeID, nFtoEpisodeID = -1, objSubmitDetai
 				return;
 			}
 
-			ftoConnectionPool.beginTransaction((err) => {
-				if (err) {
+			ftoConnectionPool.beginTransaction((err0) => {
+				if (err0) {
 					ftoConnectionPool.release();
-					LogError('PostSubmission_TrackAdd', `Failed to start transaction.\nError Message: ${err.sqlMessage}`, LineNumber());
-					reject(GetSqlErrorObj(err));
+					LogError('PostSubmission_TrackAdd', `Failed to start transaction.\nError Message: ${err0.sqlMessage}`, LineNumber());
+					reject(GetSqlErrorObj(err0));
 					return;
 				}
 
 				const submissionResults = {}
 				let bFailedTrackTblQuery = false; 
 				let bFailedOccurrenceTblQuery = false; 
+				let bFailedRequestTrackAddTblQuery = false; 
+				let bFailedRequestSubmissionTblQuery = false; 
 
 				// Add track, then get track_id
-				const sqlQuery1 = 'INSERT INTO `fto_track_2` SET ?';
+				const sqlQuery1 = 'INSERT INTO `fto_track` SET ?';
 				const postData1 = {};
-				postData1[`track_name`] = objSubmitDetails.submit_trackName;
+				postData1[`track_name`] = String(objSubmitDetails.submit_trackName);
 				postData1[`artist_name`] = (!objSubmitDetails.hasOwnProperty('submit_artistName') || IsEmpty(objSubmitDetails.submit_artistName)) ? null :
-					objSubmitDetails.submit_artistName;
+					String(objSubmitDetails.submit_artistName);
 				postData1[`label_name`] = (!objSubmitDetails.hasOwnProperty('submit_labelName') || IsEmpty(objSubmitDetails.submit_labelName)) ? null :
-					objSubmitDetails.submit_labelName;
+					String(objSubmitDetails.submit_labelName);
 				postData1[`release_date`] = (!objSubmitDetails.hasOwnProperty('submit_releaseDate') || IsEmpty(objSubmitDetails.submit_releaseDate)) ? null :
-					objSubmitDetails.submit_releaseDate;
+					String(objSubmitDetails.submit_releaseDate);
 				postData1[`fandom_image_link`] = (!objSubmitDetails.hasOwnProperty('submit_wikiaImgUrl') || IsEmpty(objSubmitDetails.submit_wikiaImgUrl)) ? null :
-					objSubmitDetails.submit_wikiaImgUrl;
-				postData1[`fandom_ost_link`] = (!objSubmitDetails.hasOwnProperty('submit_wikiaWebpageUrl') || IsEmpty(objSubmitDetails.submit_wikiaWebpageUrl)) ? null :
-					objSubmitDetails.submit_wikiaWebpageUrl;
+					String(objSubmitDetails.submit_wikiaImgUrl);
+				postData1[`fandom_webpage_link`] = (!objSubmitDetails.hasOwnProperty('submit_wikiaWebpageUrl') || IsEmpty(objSubmitDetails.submit_wikiaWebpageUrl)) ? null :
+					String(objSubmitDetails.submit_wikiaWebpageUrl);
 				postData1[`embedded_yt_video_id`] = (!objSubmitDetails.hasOwnProperty('submit_embeddedYtUrl') || IsEmpty(objSubmitDetails.submit_embeddedYtUrl)) ? null :
-					objSubmitDetails.submit_embeddedYtUrl;
+					String(objSubmitDetails.submit_embeddedYtUrl);
 				postData1[`streaming_platform_links`] = JSON.stringify(objSubmitDetails.submit_streamPlat);
-		
-				ftoConnectionPool.query(sqlQuery1, postData1, (err, result1) => {
-					if (err) {
+				ftoConnectionPool.query(sqlQuery1, postData1, (err1, result1) => {
+					if (err1) {
 						ftoConnectionPool.rollback(() => {
 							// Failed to insert data into table
 							bFailedTrackTblQuery = true;
-							reject(GetSqlErrorObj(err, `${filename}:${LineNumber()}`));
+							reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
 						});
 						return;
 					}
-					submissionResults['fto_track_add_request'] = result1;
+					submissionResults['fto_track_add'] = result1;
 
-					if (nFtoEpisodeID !== -1) {
-						// Retrieve the auto-incremented ID from the first insert
-						const insertedTrackId = Number(result1.insertId);
+					// Retrieve the auto-incremented ID from the first insert and Prepare Second insert query using the retrieved ID
+					const insertedTrackId = Number(result1.insertId);
+					const sqlQuery2 = 'INSERT INTO `fto_occurrence` SET ?';
+					const postData2 = {
+						fto_track_id: insertedTrackId,
+						fto_episode_id: nFtoEpisodeID,
+						track_type: String(objSubmitDetails.submit_songType),
+						scene_description: (!objSubmitDetails.hasOwnProperty('submit_sceneDesc') || IsEmpty(objSubmitDetails.submit_sceneDesc)) ? null :
+							String(objSubmitDetails.submit_sceneDesc),
+					};
+					ftoConnectionPool.query(sqlQuery2, postData2, (err2, result2) => {
+						if (err2) {
+							ftoConnectionPool.rollback(() => {
+								// Failed to insert data into table
+								bFailedOccurrenceTblQuery = true;
+								reject(GetSqlErrorObj(err2, `${filename}:${LineNumber()}`));
+							});
+							return;
+						}
+						submissionResults['fto_occurrence'] = result2;
 						
-						// Prepare Second insert query using the retrieved ID
-						const sqlQuery2 = 'INSERT INTO `fto_occurrence_2` SET ?';
-						const postData2 = {};
-						postData2[`fto_track_id`] = insertedTrackId;
-						postData2[`fto_episode_id`] = nFtoEpisodeID;
-						postData2[`track_type`] = objSubmitDetails.submit_songType;
-						postData2[`scene_description`] = (!objSubmitDetails.hasOwnProperty('submit_sceneDesc') || IsEmpty(objSubmitDetails.submit_sceneDesc)) ? null :
-							objSubmitDetails.submit_sceneDesc;
-						
-						ftoConnectionPool.query(sqlQuery2, postData2, (err, result2) => {
-							if (err) {
+						// Retrieve the auto-incremented ID from the first insert and Prepare Third insert query using the retrieved ID
+						const insertedOccurrenceId = Number(result2.insertId);
+						const sqlQuery3 = 'INSERT INTO `fto_request_track_add` SET ?';
+						const postData3 = { 
+							...postData1, 
+							...postData2, 
+							fto_user_id: nUserID,
+						};
+						delete postData3['fto_track_id'];
+						ftoConnectionPool.query(sqlQuery3, postData3, (err3, result3) => {
+							if (err3) {
 								ftoConnectionPool.rollback(() => {
 									// Failed to insert data into table
-									bFailedOccurrenceTblQuery = true;
-									reject(GetSqlErrorObj(err, `${filename}:${LineNumber()}`));
+									bFailedRequestTrackAddTblQuery = true;
+									reject(GetSqlErrorObj(err3, `${filename}:${LineNumber()}`));
 								});
 								return;
 							}
-							submissionResults['fto_occurrence_request'] = result2;
+							submissionResults['fto_request_track_add'] = result3;
 
-							// Commit the transaction if relevant insert queries are successful
-							if (MyXNOR(!bFailedTrackTblQuery, submissionResults.hasOwnProperty('fto_track_add_request')) && 
-								MyXNOR(!bFailedOccurrenceTblQuery, submissionResults.hasOwnProperty('fto_occurrence_request'))) {
-								ftoConnectionPool.commit((err) => {
-									if (err) {
-										ftoConnectionPool.rollback(() => {
-											ftoConnectionPool.release();
-											LogError('PostSubmission_TrackAdd', `Failed to commit transaction.\nError Message: ${err.sqlMessage}`);
-											reject(GetSqlErrorObj(err, `${filename}:${LineNumber()}`));
-										});
-										return;
-									}
-									ftoConnectionPool.release();
-									console.log("Submit Results:", submissionResults)
-									resolve(submissionResults);
+							// Retrieve the auto-incremented ID from the first insert and Prepare Third insert query using the retrieved ID
+							const insertedTrackAddRequestId = Number(result3.insertId);
+							const sqlQuery4 = 'INSERT INTO `fto_request_submissions` SET ?';
+							const postData4 = {
+								submission_type: 'TRACK_ADD',
+								request_id: insertedTrackAddRequestId,
+								fto_user_id: nUserID,
+								fto_track_id: insertedTrackId,
+								fto_occurrence_id: insertedOccurrenceId,
+							};
+							ftoConnectionPool.query(sqlQuery4, postData4, (err4, result4) => {
+								if (err4) {
+									ftoConnectionPool.rollback(() => {
+										// Failed to insert data into table
+										bFailedRequestSubmissionTblQuery = true;
+										reject(GetSqlErrorObj(err4, `${filename}:${LineNumber()}`));
+									});
 									return;
-								});
-							}
-							else {
-								// Insert queries not successful
-								ftoConnectionPool.release();
-							}
+								}
+								submissionResults['fto_request_submissions'] = result4;
+
+								// Commit the transaction if relevant insert queries are successful
+								if (MyXNOR(!bFailedTrackTblQuery, submissionResults.hasOwnProperty('fto_track_add')) && 
+								MyXNOR(!bFailedOccurrenceTblQuery, submissionResults.hasOwnProperty('fto_occurrence')) && 
+								MyXNOR(!bFailedRequestTrackAddTblQuery, submissionResults.hasOwnProperty('fto_request_track_add')) && 
+								MyXNOR(!bFailedRequestSubmissionTblQuery, submissionResults.hasOwnProperty('fto_request_submissions'))) {
+									ftoConnectionPool.commit((err) => {
+										if (err) {
+											ftoConnectionPool.rollback(() => {
+												ftoConnectionPool.release();
+												LogError('PostSubmission_TrackAdd', `Failed to commit transaction.\nError Message: ${err.sqlMessage}`);
+												reject(GetSqlErrorObj(err, `${filename}:${LineNumber()}`));
+											});
+											return;
+										}
+										ftoConnectionPool.release();
+										resolve(submissionResults);
+										return;
+									});
+								}
+								else {
+									// Insert queries not successful
+									ftoConnectionPool.release();
+								}
+							});
 						});
-					} else {
-						ftoConnectionPool.rollback(() => {
-							ftoConnectionPool.release();
-							reject(GetSqlErrorObj({error: 'No Episode ID entered.'}, `${filename}:${LineNumber()}`));
-						});
-						return;
-					}
+					});
 				}); 
 			});
 		});

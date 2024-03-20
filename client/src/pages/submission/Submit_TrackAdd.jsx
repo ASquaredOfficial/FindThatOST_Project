@@ -5,7 +5,7 @@ import './submission.css';
 import { Navbar, Footer} from "../../components";
 import { IoAdd, IoTrash } from "react-icons/io5";
 import { IsEmpty, sortJsonObjectAlphabeticallyExceptLast } from '../../utils/RegularUtils';
-import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon } from '../../utils/HyperlinkUtils';
+import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from './../../routing/navigation'
 
 const Submit_TrackAdd = () => {
@@ -531,6 +531,9 @@ const Submit_TrackAdd = () => {
                     } else {
                         updatedSubmission[key] = '';
                     }
+                }
+                else if (key === 'submit_embeddedYtUrl') {
+                    updatedSubmission[key] = GetIdFromYoutubeUrl(value);
                 }
                 else {
                     updatedSubmission[key] = value;

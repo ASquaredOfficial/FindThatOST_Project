@@ -68,7 +68,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {(typeof backendData.username == 'underfined') ? (
+      {(typeof backendData.username == 'undefined') ? (
         //If no username passed, load non signed in navbar
         <div className='fto__navbar-sign'>
           <p><strong>Log in</strong></p>
