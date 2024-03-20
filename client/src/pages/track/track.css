@@ -1,0 +1,140 @@
+.fto__page__track {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.fto__page__track-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+
+    margin: auto;
+    padding-bottom: 0;
+}
+
+.fto__page__track-horizontal_hr {
+    margin: 0px;
+    border-top: 1px solid white;
+    width: 100%;
+}
+
+.fto__page__track-main_content-text {
+    font-size: 0.9em;
+}
+    
+.fto__page__track-content_header_subtitle {
+    font-family: var(--font-family-manrope);
+    color: white;
+    font-size: 1em;
+    font-weight: 400;
+}
+
+.fto__page__track-content_heading_section {
+    margin-bottom: 0.5rem;
+    width: 100%;
+
+    .fto__page__track-content_subheading_section {
+        padding: 0.5rem 0rem;
+    }
+    
+    .fto__page__track-content_header_title {
+        font-family: var(--font-family-manrope);
+        font-weight: 800;
+    }
+
+    .fto__page__track-content_header_subtitle {
+        font-family: var(--font-family-manrope);
+        color: white;
+        font-size: 1em;
+        font-weight: 400;
+        align-self: flex-start;
+    }
+
+    .fto__page__track-subheader_color {
+        color: grey;
+    }
+}
+
+.fto__page__track-main_content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    font-family: var(--font-family-manrope);
+    color: #fff;
+    padding: 1rem;
+
+    .fto__page__track-main_content--track_details {
+        display: flex;
+        flex-direction: row;
+
+        .fto__page__track-main_content--track_details-left {
+            margin:auto;
+            
+            .fto__page__track-main_content--almbum_thumbnail {
+                width: 200px;
+                height:200px;
+            }
+        }
+    
+        .fto__page__track-main_content--track_details-right {
+            display: flex;
+            flex-direction: column;
+            padding: 0rem 1rem;
+            width: 100%;
+        }
+    }
+
+    .fto__page__track-main_content--edit_track_section {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    
+    .fto__page__track--streaming_platform_section {
+        flex-direction: row;
+        align-items: center;
+
+        .fto__page__track--streaming_platform_items {
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+            padding: 0 5px;
+    
+            .fto__page__track--streaming_platform_item {
+                display: flex;
+                align-items: center;
+                border-bottom: 1px solid;
+                padding: 0.25rem 0rem;
+                cursor: pointer;
+
+                img {
+                    padding: 5px;
+                }
+            
+            }
+            .fto__page__track--streaming_platform_item:hover {
+                opacity: 70%;
+            }
+        }
+    }
+}
+
+/*Edit for slightly smaller tablet or smaller screens*/
+@media screen and (max-width: 1050px) {
+    .fto__page__track-main_content {
+
+        .fto__page__track-main_content--track_details {
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        
+        .fto__page__track-main_content--track_details-left {
+            padding: 1rem 0rem
+        }
+    }
+}
