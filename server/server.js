@@ -18,6 +18,11 @@ const {
 } = require('./sql/database');
 
 app.use(bodyParser.json());
+// app.use((req, res, next) => {
+//     setTimeout(() => {
+//         next();
+//     }, 3500); // Simulate 2-second delay
+// });
 
 app.get("/api", (req, res) => {
     res.json({
@@ -326,6 +331,10 @@ app.get("/getSubmissionContext/track_add/:nFtoAnimeID/episode_no/:nEpisodeNo", a
     catch (error) {
         var objError = {};
         objError.error = 'Internal Server Error';
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+          })}`;
         objError.details = error;
         res.status(500).json(objError);
     }
@@ -347,10 +356,14 @@ app.post("/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFtoEpisodeID", asy
     catch (error) {
         var objError = {};
         objError.error = 'Internal Request Error';
-        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
+        {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })}`;
         objError.details = error;
         res.status(500).json(objError);
-        console.log(`Insert Request Error (${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}):\n`, error);
+        console.log(`Insert Requestf Error (${objError.time}):\n`, error);
     } 
 });
 
