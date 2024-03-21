@@ -40,6 +40,7 @@ const AddSubtitle = ( animetitles ) => {
         else if (animeTitleObject.type  === "English") {
             animeTitle_english = animeTitleObject.title;
         }
+        return animeTitleObject;
     })
 
     if (animeTitle_default !== animeTitle_english 
@@ -58,6 +59,7 @@ const AreDefaultAndEnglishTitlesDifferent = (animetitles) => {
         else if (animeTitleObject.type  === "English") {
             animeTitle_english = animeTitleObject.title;
         }
+        return animeTitleObject;
     })
 
     if (animeTitle_default !== animeTitle_english 

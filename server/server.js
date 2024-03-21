@@ -8,29 +8,29 @@ const {
     GetAnime, 
     PatchAnime, 
     GetAnimeMappingMAL, 
-    PostAnimeIntoDB,
-    GetEpisodeMapping,
-    PostEpisodesIntoDB,
+    PostAnimeIntoDB, 
+    GetEpisodeMapping, 
+    PostEpisodesIntoDB, 
     GetTracksForEpisode, 
-    GetTrack,
-    GetSubmissionContext_TrackAdd,
+    GetTrack, 
+    GetSubmissionContext_TrackAdd, 
     PostSubmission_TrackAdd,
 } = require('./sql/database');
 
-app.use(bodyParser.json());
+app.use(express.json());
 // app.use((req, res, next) => {
 //     setTimeout(() => {
 //         next();
 //     }, 3500); // Simulate 2-second delay
 // });
 
-app.get("/api", (req, res) => {
+app.get("/findthatost_api/username", (req, res) => {
     res.json({
         "username": "Adrian"
     });
 });
 
-app.get("/getAnimes", async (req, res) => {
+app.get("/findthatost_api/getAnimes", async (req, res) => {
     try {
         const allAnime = await GetAllAnime();
         if (!allAnime || allAnime.length == 0) {
@@ -46,7 +46,7 @@ app.get("/getAnimes", async (req, res) => {
     }
 });
 
-app.get("/getAnime/:nFtoAnimeID", async (req, res) => {
+app.get("/findthatost_api/getAnime/:nFtoAnimeID", async (req, res) => {
     //Get details for anime for anime with id AnimeID
     const nFtoAnimeID = req.params.nFtoAnimeID;
     try {
@@ -64,7 +64,7 @@ app.get("/getAnime/:nFtoAnimeID", async (req, res) => {
     }
 });
 
-app.get("/postAnimeIntoDB/:nMalID", async (req, res) => {    
+app.get("/findthatost_api/postAnimeIntoDB/:nMalID", async (req, res) => {    
     // Insert Anime into DB and return new fto anime id
     try {
         const ftoResponse = await PostAnimeIntoDB(req.params.nMalID, -1);
@@ -81,7 +81,7 @@ app.get("/postAnimeIntoDB/:nMalID", async (req, res) => {
     }
 });
 
-app.get("/postAnimeIntoDB/:nMalID/:nKitsuID", async (req, res) => {
+app.get("/findthatost_api/postAnimeIntoDB/:nMalID/:nKitsuID", async (req, res) => {
     // Insert Anime into DB and return new fto anime id
     try {
         const ftoResponse = await PostAnimeIntoDB(req.params.nMalID, req.params.nKitsuID);
@@ -98,7 +98,7 @@ app.get("/postAnimeIntoDB/:nMalID/:nKitsuID", async (req, res) => {
     }
 });
 
-app.get("/patchAnime/:nFtoAnimeID/title/:strAnimeTitle/parent_id/:nAnimePrequel", async (req, res) => {
+app.get("/findthatost_api/patchAnime/:nFtoAnimeID/title/:strAnimeTitle/parent_id/:nAnimePrequel", async (req, res) => {
     // Update Anime title and prequel info
     try { 
         const ftoResponse = await PatchAnime(req.params.nFtoAnimeID, req.params.strAnimeTitle, req.params.nAnimePrequel);
@@ -115,7 +115,7 @@ app.get("/patchAnime/:nFtoAnimeID/title/:strAnimeTitle/parent_id/:nAnimePrequel"
     }
 });
 
-app.get("/patchAnime/:nFtoAnimeID/title/:strAnimeTitle", async (req, res) => {
+app.get("/findthatost_api/patchAnime/:nFtoAnimeID/title/:strAnimeTitle", async (req, res) => {
     // Update Anime title
     try { 
         const ftoResponse = await PatchAnime(req.params.nFtoAnimeID, req.params.strAnimeTitle, 0);
@@ -132,7 +132,7 @@ app.get("/patchAnime/:nFtoAnimeID/title/:strAnimeTitle", async (req, res) => {
     }
 });
 
-app.get("/patchAnime/:nFtoAnimeID/parent_id/:nAnimePrequel", async (req, res) => {
+app.get("/findthatost_api/patchAnime/:nFtoAnimeID/parent_id/:nAnimePrequel", async (req, res) => {
     // Update Anime prequel info
     try { 
         const ftoResponse = await PatchAnime(req.params.nFtoAnimeID, '', req.params.nAnimePrequel);
@@ -149,7 +149,7 @@ app.get("/patchAnime/:nFtoAnimeID/parent_id/:nAnimePrequel", async (req, res) =>
     }
 });
 
-app.get("/getAnimeMappingMAL/:nMalID", async (req, res) => {
+app.get("/findthatost_api/getAnimeMappingMAL/:nMalID", async (req, res) => {
     //Get AnimeID for anime with corresponding MAL ID
     const nMalID = req.params.nMalID;
     try {
@@ -167,7 +167,7 @@ app.get("/getAnimeMappingMAL/:nMalID", async (req, res) => {
     }
 });
 
-app.get("/getEpisodes/anime/:nFtoAnimeID/episode_no/:nEpisodeNo", async (req, res) => {
+app.get("/findthatost_api/getEpisodes/anime/:nFtoAnimeID/episode_no/:nEpisodeNo", async (req, res) => {
     //Get AnimeID for anime with corresponding MAL ID
     const nFtoAnimeID = req.params.nFtoAnimeID;
     const nEpisodeNo = req.params.nEpisodeNo;
@@ -186,7 +186,7 @@ app.get("/getEpisodes/anime/:nFtoAnimeID/episode_no/:nEpisodeNo", async (req, re
     }
 });
 
-app.get("/getEpisodes/anime/:nFtoAnimeID", async (req, res) => {
+app.get("/findthatost_api/getEpisodes/anime/:nFtoAnimeID", async (req, res) => {
     //Get AnimeID for anime with corresponding MAL ID
     const nFtoAnimeID = req.params.nFtoAnimeID;
     try {
@@ -204,7 +204,7 @@ app.get("/getEpisodes/anime/:nFtoAnimeID", async (req, res) => {
     }
 });
 
-app.post("/postMissingEpisodes/:nFtoAnimeID", async (req, res) => {
+app.post("/findthatost_api/postMissingEpisodes/:nFtoAnimeID", async (req, res) => {
     var date = new Date(); // for now
     const { data } = req.body;
 
@@ -244,7 +244,7 @@ app.post("/postMissingEpisodes/:nFtoAnimeID", async (req, res) => {
     }
 }); 
 
-app.get("/getTracks/episode_id/:nEpisodeID/", async (req, res) => {
+app.get("/findthatost_api/getTracks/episode_id/:nEpisodeID/", async (req, res) => {
     //Get List of Tracks for the episode with corresponding FTO Episode ID
     const nEpisodeID = req.params.nEpisodeID;
     try {
@@ -262,7 +262,7 @@ app.get("/getTracks/episode_id/:nEpisodeID/", async (req, res) => {
     }
 });
 
-app.get("/getTrack/:nTrackID/", async (req, res) => {
+app.get("/findthatost_api/getTrack/:nTrackID/", async (req, res) => {
     //Get List of Tracks for the episode with corresponding FTO Episode ID
     const nTrackID = req.params.nTrackID;
     try {
@@ -280,7 +280,7 @@ app.get("/getTrack/:nTrackID/", async (req, res) => {
     }
 });
 
-app.get("/getTrack/:nTrackID/context_id/:nOccurrenceID", async (req, res) => {
+app.get("/findthatost_api/getTrack/:nTrackID/context_id/:nOccurrenceID", async (req, res) => {
     //Get List of Tracks for the episode with corresponding FTO Episode ID
     const nTrackID = req.params.nTrackID;
     const nOccurrenceID = req.params.nOccurrenceID;
@@ -299,7 +299,7 @@ app.get("/getTrack/:nTrackID/context_id/:nOccurrenceID", async (req, res) => {
     }
 });
 
-app.get("/getSubmissionContext/track_add/:nFtoAnimeID/", async (req, res) => {
+app.get("/findthatost_api/getSubmissionContext/track_add/:nFtoAnimeID/", async (req, res) => {
     //Get Conext information to add a track to the anime with corresponding FTO Anime ID
     const nFtoAnimeID = req.params.nFtoAnimeID;
     try {
@@ -317,7 +317,7 @@ app.get("/getSubmissionContext/track_add/:nFtoAnimeID/", async (req, res) => {
     }
 });
 
-app.get("/getSubmissionContext/track_add/:nFtoAnimeID/episode_no/:nEpisodeNo", async (req, res) => {
+app.get("/findthatost_api/getSubmissionContext/track_add/:nFtoAnimeID/episode_no/:nEpisodeNo", async (req, res) => {
     //Get Conext information to add a track to the anime with corresponding FTO Anime ID and episode number
     const nFtoAnimeID = req.params.nFtoAnimeID;
     const nEpisodeNo = req.params.nEpisodeNo;
@@ -340,8 +340,9 @@ app.get("/getSubmissionContext/track_add/:nFtoAnimeID/episode_no/:nEpisodeNo", a
     }
 });
 
-app.post("/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFtoEpisodeID", async (req, res) => {
+app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFtoEpisodeID", async (req, res) => {
     var date = new Date(); // for now
+    console.log(req.body)
     const { objUserSubmission } = req.body;
     if (!objUserSubmission) {
         return res.status(400).json({ error: 'Invalid data format' });

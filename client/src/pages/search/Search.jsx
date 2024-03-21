@@ -210,32 +210,39 @@ const Search = () => {
             alert('We do not support shows that have not aired yet.');
             return;
         }
+        console.log("Go to anime with mal id:", malID)
 
         // Get FTO Anime ID from FTO DB, then navigate to anime page
         FetchAnimeMapping_FTO(malID);
     }
       
     const FetchAnimeMapping_FTO = async (malAnimeID) => {
-        let apiUrl_fto = `/getAnimeMappingMAL/${malAnimeID}`;
-        console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-        const response = await fetch(apiUrl_fto)
-
-        const responseStatus = response.status;
-        if (responseStatus === 200) {
-            const responseData = await response.json();
-            if (responseData.length > 0) {
-                var animeID = responseData[0].anime_id
+        let apiUrl_fto = `/findthatost_api/getAnimeMappingMAL/${malAnimeID}`;
+        console.debug(`Fetch url:, '${apiUrl_fto}'`);
+        try {
+            const response = await fetch(apiUrl_fto)
     
-                // Navigate to the next page with the row ID
-                navigateToAnime(animeID);
+            const responseStatus = response.status;
+            if (responseStatus === 200) {
+                const responseData = await response.json();
+                if (responseData.length > 0) {
+                    var animeID = responseData[0].anime_id
+        
+                    // Navigate to the next page with the row ID
+                    console.log("Navigate to anime:", animeID)
+                    navigateToAnime(animeID);
+                }
+            }
+            else if (responseStatus === 204) {
+                // Get Kitsu Mapping, then insert new anime to Fto DB
+                FetchAnimeMapping_KITSU(malAnimeID);
+            }
+            else {
+                // TODO Redirect to 'server is down' page. I.e. status is 500
             }
         }
-        else if (responseStatus === 204) {
-            // Get Kitsu Mapping, then insert new anime to Fto DB
-            FetchAnimeMapping_KITSU(malAnimeID);
-        }
-        else {
-            // TODO Redirect to 'server is down' page
+        catch (error) {
+            throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
         }
     }
 
@@ -260,7 +267,7 @@ const Search = () => {
                     var kitsuAnimeID = kitsuMappedAnimeObj.id;
 
                     // Insert Anime into DB and return new fto anime id
-                    let apiUrl_fto = `/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
+                    let apiUrl_fto = `//findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
                     console.debug(`Fetch url:, '${apiUrl_fto}'`);
                     fetch(apiUrl_fto)
                         .then(response => response.json())
@@ -278,7 +285,7 @@ const Search = () => {
                 }
                 else {
                     // Insert Anime into DB (without kitsu) and return new fto anime id
-                    let apiUrl_fto = `/postAnimeIntoDB/${malAnimeID}`;
+                    let apiUrl_fto = `//findthatost_api/postAnimeIntoDB/${malAnimeID}`;
                     console.debug(`Fetch url:, '${apiUrl_fto}'`);
                     fetch(apiUrl_fto)
                         .then(response => response.json())

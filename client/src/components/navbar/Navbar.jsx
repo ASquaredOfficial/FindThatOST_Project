@@ -13,7 +13,7 @@ const Navbar = () => {
   //username info rom backend
   const [backendData, setBackendData] = useState ([{}])
 	useEffect(() => {
-		fetch("/api").then(
+		fetch("/findthatost_api/username").then(
 			response => response.json()
 		).then(
 			data => {

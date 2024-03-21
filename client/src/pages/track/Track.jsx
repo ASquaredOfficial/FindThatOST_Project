@@ -118,12 +118,12 @@ const Track = () => {
      * 
      */
     const FetchTrackDetails_FTO = async (nTrackID, nOccurrenceID) => {
+        let apiUrl_fto = `/findthatost_api/getTrack/${Number(nTrackID)}`;
+        if (nOccurrenceID !== -1) {
+            apiUrl_fto += `/context_id/${Number(nOccurrenceID)}`
+        }
+        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
-            let apiUrl_fto = `/getTrack/${Number(nTrackID)}`;
-            if (nOccurrenceID !== -1) {
-                apiUrl_fto += `/context_id/${Number(nOccurrenceID)}`
-            }
-            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
             if (response.status === 204) {
                 // Page doesn't exist, redirect to page doesnt exist page

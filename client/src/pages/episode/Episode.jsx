@@ -88,9 +88,9 @@ const Episode = () => {
      * 
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
+        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}`
+        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
-            let apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
-            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
             const data = await response.json();
             return data;
@@ -110,9 +110,9 @@ const Episode = () => {
      * 
      */
     const FetchEpisodeData_FTO = async (ftoAnimeID, nEpisodeNo) => {
+        let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${Number(ftoAnimeID)}/episode_no/${Number(nEpisodeNo)}`
+        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
-            let apiUrl_fto = `/getEpisodes/anime/${Number(ftoAnimeID)}/episode_no/${Number(nEpisodeNo)}`
-            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
             const data = await response.json();
             return data;
@@ -131,9 +131,9 @@ const Episode = () => {
      * 
      */
     const FetchFullAnimeData_MAL = async (malAnimeID) => {
+        var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/full`;
+        console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
         try {
-            var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/full`;
-            console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
             const response = await fetch(apiUrl_mal);
             const externalData = await response.json();
             return externalData;
@@ -197,11 +197,11 @@ const Episode = () => {
             // Createn update query
             let apiUrl_fto = '';
             if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
-                apiUrl_fto =`/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
+                apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
             } else if (bUpdateCanonicalTitle) {
-                apiUrl_fto = `/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
+                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
             } else if (bUpdateParentAnimeID) {
-                apiUrl_fto = `/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
+                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
             }
 
             // Perform Fetch Query to update anime
@@ -232,10 +232,10 @@ const Episode = () => {
      * 
      */
     const FetchEpisodeData_MAL = async (malAnimeID, malEpisodeID) => {
+        //Finished aring, check if mal has individual episode details
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/episodes/${malEpisodeID}`;
+        console.debug(`Fetch Episode data from External API, MAL url: '${apiUrl_mal}'`);
         try {
-            //Finished aring, check if mal has individual episode details
-            let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/episodes/${malEpisodeID}`;
-            console.debug(`Fetch Episode data from External API, MAL url: '${apiUrl_mal}'`);
             const response_mal = await fetch(apiUrl_mal);
             const responseData_mal = await response_mal.json();
             return responseData_mal;
@@ -353,7 +353,7 @@ const Episode = () => {
      */
     const FetchEpisodeListOfTracks_FTO = async (nEpisodeID) => {
         try {
-            let apiUrl_fto = `/getTracks/episode_id/${Number(nEpisodeID)}`
+            let apiUrl_fto = `/findthatost_api/getTracks/episode_id/${Number(nEpisodeID)}`
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
             const data = await response.json();

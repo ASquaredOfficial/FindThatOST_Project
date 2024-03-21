@@ -63,7 +63,7 @@ const Submit_TrackAdd = () => {
             }
             setDefaultValues();
         }
-    }, [submissionContextInfo])
+    }, [submissionContextInfo]);
 
     /**
      * Perform all fetches to set up the webpage.
@@ -97,7 +97,7 @@ const Submit_TrackAdd = () => {
      */
     const FetchSubmissionContextDetails_FTO = async (nAnimeID, nEpisodeNo) => {
         try {
-            let apiUrl_fto = `/getSubmissionContext/track_add/${Number(nAnimeID)}`;
+            let apiUrl_fto = `/findthatost_api/getSubmissionContext/track_add/${Number(nAnimeID)}`;
             if (nEpisodeNo !== -1) {
                 apiUrl_fto += `/episode_no/${Number(nEpisodeNo)}`
             }
@@ -516,7 +516,7 @@ const Submit_TrackAdd = () => {
      */
     const FetchPostSubmissionTrackAdd_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId = 1) => {
         objUserSubmission['user_id'] = nUserId;
-        let apiUrl_fto = `/postSubmission/track_add/${Number(nAnimeID)}`;
+        let apiUrl_fto = `/findthatost_api/postSubmission/track_add/${Number(nAnimeID)}`;
         if (nEpisodeNo !== -1) {
             apiUrl_fto += `/episode_id/${Number(submissionContextInfo.episode_id)}`
         }

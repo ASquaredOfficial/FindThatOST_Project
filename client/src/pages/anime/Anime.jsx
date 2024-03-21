@@ -153,18 +153,21 @@ const Anime = () => {
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing episode details.
      */
     const FetchEpisodeMapping = async (ftoAnimeID) => {
-        let apiUrl_fto = `/getEpisodes/anime/${ftoAnimeID}`;
+        let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${ftoAnimeID}`;
         console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-        
-        const response = await fetch(apiUrl_fto);
-        if (response.status === 200) {
-            const data = await response.json();
-            return data;
-        } else if (response.status === 500) {
-            alert("The FindThatOST Server is down at the moment. Please try again later.")
-            return;
-        } 
-
+        try {
+            const response = await fetch(apiUrl_fto);
+            if (response.status === 200) {
+                const data = await response.json();
+                return data;
+            } else if (response.status === 500) {
+                alert("The FindThatOST Server is down at the moment. Please try again later.")
+                return;
+            } 
+        }
+        catch (error) {
+            throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
+        }
     }
     
     /**
@@ -252,17 +255,23 @@ const Anime = () => {
         // Add missing episodes to episode database.
         var data = listOfMissingEpisodesDetails;
         if (listOfMissingEpisodesDetails.length > 0) {
-            const response = await fetch(`/postMissingEpisodes/${id}`, 
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ data }),
-            });
-            const responseStatus = response.status;
-            await response.json();
-            return responseStatus;
+            let apiUrl_fto = `/findthatost_api/postMissingEpisodes/${id}`;
+            try {
+                    const response = await fetch(apiUrl_fto, 
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ data }),
+                    });
+                    const responseStatus = response.status;
+                    await response.json();
+                    return responseStatus;
+            }
+            catch (error) {
+                throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
+            }
         }
         return;
     }
@@ -277,9 +286,9 @@ const Anime = () => {
      * 
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
+        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}`
+        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
-            let apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
-            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
             const data = await response.json();
             return data;
@@ -298,10 +307,10 @@ const Anime = () => {
      * 
      */
     const FetchFullAnimeData_MAL = async (dataFromBackend) => {
+        var malID = dataFromBackend[0].mal_id;
+        var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malID}/full`;
+        console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
         try {
-            var malID = dataFromBackend[0].mal_id;
-            var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malID}/full`;
-            console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
             const response = await fetch(apiUrl_mal);
             const externalData = await response.json();
             return externalData;
@@ -535,11 +544,11 @@ const Anime = () => {
             // Createn update query
             let apiUrl_fto = '';
             if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
-                apiUrl_fto =`/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
+                apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
             } else if (bUpdateCanonicalTitle) {
-                apiUrl_fto = `/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
+                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
             } else if (bUpdateParentAnimeID) {
-                apiUrl_fto = `/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
+                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
             }
 
             // Perform Fetch Query to update anime
