@@ -61,18 +61,19 @@ const Anime = () => {
 
             // Process MAL API Anime Relations to output to display
             let arrMalAllAnimeRelations = [];
-            var arrMalAnimeRelations = malAnimeInfo.relations;
-            arrMalAnimeRelations.map(animeRelation => {
+            malAnimeInfo.relations.map(animeRelation => {
                 let animeRelationEntries = animeRelation.entry;
                 let animeRelationType = animeRelation.relation;
 
-                for (var it = 0; it < Object.keys(animeRelationEntries).length; it++) {
-                    var item = animeRelationEntries[it];
-                    if (item.type == 'anime') {
+                for (let it = 0; it < Object.keys(animeRelationEntries).length; it++) {
+                    let item = animeRelationEntries[it];
+                    if (item.type === 'anime') {
                         item.relation = animeRelationType;
                         arrMalAllAnimeRelations.concat(item);
                     }
                 }
+
+                return animeRelation;
             })
             setAnimeRelations(arrMalAllAnimeRelations);
        
@@ -88,11 +89,11 @@ const Anime = () => {
     useEffect(() => {
         if (pageEpisodeInfo !== undefined) {
             // Get episode number to see the
-            var animeStatus = malAnimeInfo.status;
-            var nLatestEpisode = Number(malAnimeInfo.episodes);
+            let animeStatus = malAnimeInfo.status;
+            let nLatestEpisode = Number(malAnimeInfo.episodes);
 
             if (animeStatus !== 'Not yet aired') {
-                if (animeStatus == 'Currently Airing') {
+                if (animeStatus === 'Currently Airing') {
                     nLatestEpisode = Number(aniListEpisodeCountInfo.data.Media.nextAiringEpisode.episode - 1);
                 }
                 
@@ -116,12 +117,12 @@ const Anime = () => {
         if (animeEpisodesData !== undefined && animeEpisodesData.length !== nLatestEpisodeNum) {
             
             var nListOfEpisodeNos = [];
-            for (var i = 0; i < animeEpisodesData.length ; i++ ) {
+            for (let i = 0; i < animeEpisodesData.length ; i++ ) {
                 nListOfEpisodeNos.push(animeEpisodesData[i].episode_no);
             }
 
             var nListOfEpisodeNosToAdd = [];
-            for (var i = 0; i < nLatestEpisodeNum ; i++ ) {
+            for (let i = 0; i < nLatestEpisodeNum ; i++ ) {
                 if (!nListOfEpisodeNos.includes(i+1)) {
                     nListOfEpisodeNosToAdd.push(i+1);
                 }
@@ -130,7 +131,7 @@ const Anime = () => {
             //If page doesn't already have all episodes, fetch  whole anime episodeDetails
             const allEpisodeDetails = (nLatestEpisodeNum > pageEpisodesDetails.length) ? await FetchAllAnimeEpisodeDetails(nLatestEpisodeNum) : pageEpisodesDetails;
             const responseStatus = await FetchInsertMissingEpisodes(nListOfEpisodeNosToAdd, allEpisodeDetails);
-            if (responseStatus != 500 && responseStatus!= undefined) {
+            if (responseStatus !== 500 && responseStatus !== undefined) {
                 // Successful Insert of missing episodes into DB, get new episode mapping
                 const newAnimeEpisodesData = await FetchEpisodeMapping(id);
                 console.log(`New Episodes for Anime ${id} added to FTO database: `, newAnimeEpisodesData);
@@ -152,14 +153,14 @@ const Anime = () => {
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing episode details.
      */
     const FetchEpisodeMapping = async (ftoAnimeID) => {
-        var apiUrl_fto = `/getEpisodes/anime/${ftoAnimeID}`;
+        let apiUrl_fto = `/getEpisodes/anime/${ftoAnimeID}`;
         console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         
         const response = await fetch(apiUrl_fto);
-        if (response.status == 200) {
+        if (response.status === 200) {
             const data = await response.json();
             return data;
-        } else if (response.status == 500) {
+        } else if (response.status === 500) {
             alert("The FindThatOST Server is down at the moment. Please try again later.")
             return;
         } 
@@ -183,7 +184,7 @@ const Anime = () => {
             
             console.log("MAL episodes:", malPageEipsodes);
             allMALAnimeEpisodes.push(...malPageEipsodes.data);
-            malQueryPage = (malPageEipsodes.pagination.has_next_page == true) ? malQueryPage + 1 : 0;
+            malQueryPage = (malPageEipsodes.pagination.has_next_page === true) ? malQueryPage + 1 : 0;
         }
 
         // Get All Kitsu Episodes
@@ -206,7 +207,7 @@ const Anime = () => {
         
         // Create a combined array of episode details
         const episodesInfo = [];
-        for (var it = 0; it < nLatestAnimeEpisode; it++) {
+        for (let it = 0; it < nLatestAnimeEpisode; it++) {
             var epInfo = {};
             var episodeTitleEn = '';
             var episodeNumber = it + 1;
@@ -215,7 +216,7 @@ const Anime = () => {
             if (allMALAnimeEpisodes.length > (episodeNumber-1)%100) {
                 var malEpisodeinfo = allMALAnimeEpisodes[((episodeNumber-1)%100)];
                 epInfo.mal_episode_id = Number(malEpisodeinfo.mal_id);
-                if (malEpisodeinfo.title != '') {
+                if (malEpisodeinfo.title !== '') {
                     episodeTitleEn = malEpisodeinfo.title;
                 }
             }
@@ -223,7 +224,7 @@ const Anime = () => {
                 var kitsuEpisodeinfo = allKitsuAnimeEpisodes[it];
                 epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
                 if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
-                    episodeTitleEn = (episodeTitleEn == '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
+                    episodeTitleEn = (episodeTitleEn === '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
                 }
             }
             epInfo.episode_title = (episodeTitleEn !== '') ? episodeTitleEn.replaceAll("'", "\\'") : null;
@@ -260,7 +261,7 @@ const Anime = () => {
                 body: JSON.stringify({ data }),
             });
             const responseStatus = response.status;
-            const responseData = await response.json();
+            await response.json();
             return responseStatus;
         }
         return;
@@ -277,7 +278,7 @@ const Anime = () => {
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
         try {
-            var apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
+            let apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
             const data = await response.json();
@@ -355,7 +356,7 @@ const Anime = () => {
             return externalDataAniList;
         } 
         catch (error) {
-            if (error.message != '') {
+            if (error.message !== '') {
                 console.error("Error messsage:", error.message)
             }
             throw new Error('Error fetching data from external API (AniList)');
@@ -378,7 +379,7 @@ const Anime = () => {
         var airStatus = malAnimeDetails.status;
 
         if (airStatus !== 'Not yet aired') {
-            if (airStatus == 'Currently Airing') {
+            if (airStatus === 'Currently Airing') {
                 // Get episode count and latest episode numusing AniList API
                 try {
                     const dataFromExternalAPI_AniList = await FetchFullAnimeData_AniList(malAnimeDetails);
@@ -401,8 +402,8 @@ const Anime = () => {
 
             const episodesInfo = [];
             var endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;
-            var loopEnd = (endEpisode%20 == 0) ? 20 : endEpisode%20;
-            for (var it = 0; it < loopEnd; it++) {
+            var loopEnd = (endEpisode%20 === 0) ? 20 : endEpisode%20;
+            for (let it = 0; it < loopEnd; it++) {
                 var epInfo = {};
                 var episodeTitleEn = '';
                 var episodeNumber = startEpisode + it;
@@ -411,7 +412,7 @@ const Anime = () => {
                 if (malPageEpisodes.length > (episodeNumber-1)%100) {
                     var malEpisodeinfo = malPageEpisodes[(episodeNumber-1)%100];
                     epInfo.mal_episode_id = malEpisodeinfo.mal_id;
-                    if (malEpisodeinfo.title != '') {
+                    if (malEpisodeinfo.title !== '') {
                         episodeTitleEn = malEpisodeinfo.title;
                     }
                 }
@@ -419,7 +420,7 @@ const Anime = () => {
                     var kitsuEpisodeinfo = kitsuPageEpisodes[it];
                     epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
                     if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
-                        episodeTitleEn = (episodeTitleEn == '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
+                        episodeTitleEn = (episodeTitleEn === '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
                     }
                 }
                 epInfo.episode_title = episodeTitleEn.replaceAll("'", "\\'");
@@ -465,7 +466,7 @@ const Anime = () => {
      */
     const FetchEpisodeData_KITSU = async (kitsuAnimeID, pageOffset) => {
         try {
-            if (kitsuAnimeID != -1 || (kitsuAnimeID == null)) {
+            if (kitsuAnimeID !== -1 || (kitsuAnimeID == null)) {
                 let apiUrl_kitsu = `https://kitsu.io/api/edge/anime/${kitsuAnimeID}/episodes?page[limit]=20&page[offset]=${pageOffset}`;
                 console.debug(`Fetch Episode data from External API, Kitsu url: '${apiUrl_kitsu}'`);
                 const response_kitsu = await fetch(apiUrl_kitsu);
@@ -491,29 +492,30 @@ const Anime = () => {
     const FetchUpdateAnimeData_FTO = async (ftoID, malAnimeDetails) => {
         try {
             // Get Prequel Anime in FTO DB (if present)
-            var ftoPrequelAnimeID = 0;
-            var arrMalAnimeRelations = malAnimeDetails.relations;
-            for (var it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
-                var animeRelation = arrMalAnimeRelations[it]
+            let ftoPrequelAnimeID = 0;
+            let arrMalAnimeRelations = malAnimeDetails.relations;
+            for (let it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
+                let animeRelation = arrMalAnimeRelations[it]
                 let animeRelationEntry = animeRelation.entry;
                 let animeRelationType = animeRelation.relation;
-                if (animeRelationType == 'Prequel') {
-                    var prequelEntries = animeRelationEntry;
+                if (animeRelationType === 'Prequel') {
+                    let prequelEntries = animeRelationEntry;
 
-                    var nLowestMalID = malAnimeDetails.mal_id;
+                    let nLowestMalID = malAnimeDetails.mal_id;
                     prequelEntries.map(entry => {
                         if (entry.mal_id < nLowestMalID) {
                             nLowestMalID = entry.mal_id;
                         }
+                        return entry;
                     });
                     
                     if (nLowestMalID !== malAnimeDetails.mal_id) {
 
-                        var apiUrl_fto = `/getAnimeMappingMAL/${nLowestMalID}`
+                        let apiUrl_fto = `/getAnimeMappingMAL/${nLowestMalID}`
                         try {
                             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
                             const response = await fetch(apiUrl_fto);
-                            if (response.status == 200) {
+                            if (response.status === 200) {
                                 const data = await response.json();
                                 ftoPrequelAnimeID = data[0].anime_id;
                             }
@@ -526,12 +528,12 @@ const Anime = () => {
                 }
             }
 
-            var bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id == 0) && ftoPrequelAnimeID !== 0;
-            var bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title == '');
-            var ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
+            let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
+            let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
+            let ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
             
             // Createn update query
-            var apiUrl_fto = '';
+            let apiUrl_fto = '';
             if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
                 apiUrl_fto =`/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
             } else if (bUpdateCanonicalTitle) {
@@ -545,7 +547,7 @@ const Anime = () => {
                 try {
                     console.debug(`Fetch put data from the mal api to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
                     const response = await fetch(apiUrl_fto);
-                    const responseData = await response.json();
+                    await response.json();
                 }
                 catch (error) {
                     throw new Error('Error:', error);
@@ -588,14 +590,14 @@ const Anime = () => {
         if (Object.keys(malAnimeDetails).length === 0 && malAnimeDetails.constructor === Object) {
             return;
         }
-        else if (malAnimeDetails.status == 'Currently Airing' && anilistEpisodeDetails == undefined) {
+        else if (malAnimeDetails.status === 'Currently Airing' && anilistEpisodeDetails === undefined) {
             return;
         }
-        if (pageEpisodeDetails.length == 0) {
+        if (pageEpisodeDetails.length === 0) {
             return;
         }
 
-        var latestEpisodeNumber = (malAnimeDetails.status == 'Currently Airing') ? 
+        var latestEpisodeNumber = (malAnimeDetails.status === 'Currently Airing') ? 
             anilistEpisodeDetails.data.Media.nextAiringEpisode.episode - 1 : malAnimeDetails.episodes;
 
         var nFirstPage = 1;
@@ -613,7 +615,7 @@ const Anime = () => {
         } else if (nCurrentPage - 3  < nFirstPage) {
             // Show rest of previous pages
             var nPageNo = nFirstPage;
-            while (nPageNo != nCurrentPage) {
+            while (nPageNo !== nCurrentPage) {
                 pageList.push(nPageNo);
                 nPageNo = nPageNo + 1;
             }
@@ -628,9 +630,9 @@ const Anime = () => {
             pageList.push(nLastPage);
         } else if (nCurrentPage + 3  >= nLastPage) {
             // Show rest of next pages
-            if (nCurrentPage != nLastPage) {
+            if (nCurrentPage !== nLastPage) {
                 var nPageNo = nCurrentPage;
-                while (nPageNo != nLastPage) {
+                while (nPageNo !== nLastPage) {
                     nPageNo = nPageNo + 1;
                     pageList.push(nPageNo);
                 }
@@ -704,7 +706,7 @@ const Anime = () => {
                         
                         <div className='fto__page__anime-main_content'>
                             <div className='fto__page__anime-main_content_left'>
-                                <img alt='Anime Image' className='fto__page__anime-main_content_left-anime_image' src={ParseAnimePosterImage(malAnimeInfo)}/>
+                                <img alt='Anime Thumbnail' className='fto__page__anime-main_content_left-anime_image' src={ParseAnimePosterImage(malAnimeInfo)}/>
                                 
                                 {malAnimeTitles !== undefined && (
                                     <div className='fto__page__anime-main_content_left-alt_titles'>
@@ -745,7 +747,7 @@ const Anime = () => {
                                         
                                         {malAnimeInfo.relations.map((animeRelations) => {
                                             return (
-                                                (animeRelations.relation == 'Prequel' || animeRelations.relation == 'Sequel') && (
+                                                (animeRelations.relation === 'Prequel' || animeRelations.relation === 'Sequel') && (
                                                     <div className={`fto__page__anime-main_content_left-${ParseClassName(animeRelations.relation)}`}
                                                     key={crypto.randomUUID()}>
                                                         <h1 key={crypto.randomUUID()}>{animeRelations.name}</h1>

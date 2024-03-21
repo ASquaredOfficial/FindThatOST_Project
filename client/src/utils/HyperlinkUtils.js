@@ -65,7 +65,7 @@ const IsSpotifyUrl = (spotifyMuiscURl) => {
                     "(?:open\.|play\.)?" +
                     "spotify\.com" +
                     "\/.+";
-    const pattern2 =  "^spotify:" + ".+";
+    const pattern2 = String('^spotify:') + String('.+');
     if (!IsEmpty(spotifyMuiscURl)) {
         if (spotifyMuiscURl.match(pattern)) {
             return true;
@@ -95,7 +95,7 @@ const IsSpotifyTrackUrl = (spotifyMuiscURl) => {
                     "(?:open\.|play\.)" +
                     "?spotify\.com\/" +
                     "(?:track\/).+";
-    const pattern2 = "^spotify:track:" + ".+";
+    const pattern2 = String('^spotify:track:') + String('.+');
     if (!IsEmpty(spotifyMuiscURl)) {
         if (spotifyMuiscURl.match(pattern)) {
             return true;
@@ -478,28 +478,31 @@ const GetPlatformIcon = (strPlatform, strExpectedPlatform = null) => {
         return icon_platform_non_basic;
     }
     else {
-        if (strPlatform == 'youtube') {
+        if (strPlatform === 'youtube') {
             return icon_platform_youtube;
         } 
-        else if (strPlatform == 'youtube_music') {
+        else if (strPlatform === 'youtube_music') {
             return icon_platform_youtube_music;
         } 
-        else if (strPlatform == 'spotify') {
+        else if (strPlatform === 'soundcloud') {
+            return icon_platform_soundcloud;
+        } 
+        else if (strPlatform === 'spotify') {
             return icon_platform_spotify;
         } 
-        else if (strPlatform == 'shazam') {
+        else if (strPlatform === 'shazam') {
             return icon_platform_shazam;
         } 
-        else if (strPlatform == 'apple_music') {
+        else if (strPlatform === 'apple_music') {
             return icon_platform_apple;
         } 
-        else if (strPlatform == 'amazon_music') {
+        else if (strPlatform === 'amazon_music') {
             return icon_platform_amazon_music;
         } 
-        else if (strPlatform == 'deezer') {
+        else if (strPlatform === 'deezer') {
             return icon_platform_deezer;
         } 
-        else if (strPlatform == 'non_basic') {
+        else if (strPlatform === 'non_basic') {
             return icon_platform_non_basic;
         } 
         else {

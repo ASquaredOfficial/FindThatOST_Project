@@ -34,16 +34,16 @@ const AddSubtitle = ( animetitles ) => {
     var animeTitle_english = '';
 
     animetitles.map((animeTitleObject) => {
-        if (animeTitleObject.type == "Default") {
+        if (animeTitleObject.type  === "Default") {
             animeTitle_default = animeTitleObject.title;
         }
-        else if (animeTitleObject.type == "English") {
+        else if (animeTitleObject.type  === "English") {
             animeTitle_english = animeTitleObject.title;
         }
     })
 
-    if (animeTitle_default != animeTitle_english 
-        && animeTitle_english != '' && animeTitle_english != null) {
+    if (animeTitle_default !== animeTitle_english 
+        && animeTitle_english !== '' && animeTitle_english != null) {
             return <p className='fto__page__search-content_english_title'>{animeTitle_english}</p>;
     }
 }
@@ -52,16 +52,16 @@ const AreDefaultAndEnglishTitlesDifferent = (animetitles) => {
     var animeTitle_default = '';
     var animeTitle_english = '';
     animetitles.map((animeTitleObject) => {
-        if (animeTitleObject.type == "Default") {
+        if (animeTitleObject.type  === "Default") {
             animeTitle_default = animeTitleObject.title;
         }
-        else if (animeTitleObject.type == "English") {
+        else if (animeTitleObject.type  === "English") {
             animeTitle_english = animeTitleObject.title;
         }
     })
 
-    if (animeTitle_default != animeTitle_english 
-        && animeTitle_english != '' && animeTitle_english != null) {
+    if (animeTitle_default !== animeTitle_english 
+        && animeTitle_english !== '' && animeTitle_english != null) {
             return true;
     }
 }
@@ -99,10 +99,10 @@ const ParsePosterImage_Horzontal = (passedImageUrl) => {
  * @returns {string} - The episode count or a dash ('-') based on air status and availability of data.
  */
 const GetEpisodeCount = ( airStatus, malEpCount, malAnimeID) => {
-    if (airStatus == "Currently Airing") { 
+    if (airStatus  === "Currently Airing") { 
         return '-';
     }
-    else if (airStatus == "Not yet aired") {
+    else if (airStatus  === "Not yet aired") {
         return '-';
     }
     else {

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, createElement} from 'react';
+import React, {useEffect, useState} from 'react';
 import { useLocation, useParams } from "react-router-dom";
 import './submission.css';
 
@@ -30,7 +30,7 @@ const Submit_TrackAdd = () => {
     
     useEffect(() => {
         document.title = `Submit | Add Track | AnimeID(${anime_id}) and EpisodeNo(${spEpisodeNo})`;
-        console.log(`Render-Submit_TrackAdd (onMount): ${location.href}\nAnimeID:${anime_id}\nEpisodeNo:${spEpisodeNo}`);
+        console.log(`Render-Submit_TrackAdd (onMount): ${window.location.href}\nAnimeID:${anime_id}\nEpisodeNo:${spEpisodeNo}`);
 
         // Fetch page data for anime and corresponding epsiode
         FetchPageData(anime_id, spEpisodeNo);
@@ -97,8 +97,8 @@ const Submit_TrackAdd = () => {
      */
     const FetchSubmissionContextDetails_FTO = async (nAnimeID, nEpisodeNo) => {
         try {
-            var apiUrl_fto = `/getSubmissionContext/track_add/${Number(nAnimeID)}`;
-            if (nEpisodeNo != -1) {
+            let apiUrl_fto = `/getSubmissionContext/track_add/${Number(nAnimeID)}`;
+            if (nEpisodeNo !== -1) {
                 apiUrl_fto += `/episode_no/${Number(nEpisodeNo)}`
             }
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
@@ -193,9 +193,7 @@ const Submit_TrackAdd = () => {
 
                         // Un-error duplicate platform inputs, if no more duplicate platforms
                         const filteredArray = pageInputs.submit_streamPlat.filter(platObj => {
-                            if ((platObj.platform === inputDuplucatePlatform) && (platObj.id !== platElemId) ) {
-                                return platObj;
-                            }
+                            return ((platObj.platform === inputDuplucatePlatform) && (platObj.id !== platElemId));
                         });
                         const numberOfObjects = filteredArray.length;
                         if (numberOfObjects < 2) {
@@ -215,9 +213,7 @@ const Submit_TrackAdd = () => {
     
                             // Remove error from inputs that aren't duplicate anymore 
                             const listOfPlatformInputs = userSubmission.submit_streamPlat.filter(platObj => {
-                                if (platObj.id !== platElemId) {
-                                    return platObj;
-                                }
+                                return (platObj.id !== platElemId);
                             });
                             setUserSubmission(prevState => ({...prevState, submit_streamPlat: listOfPlatformInputs}));
                         }
@@ -236,17 +232,17 @@ const Submit_TrackAdd = () => {
                 }
 
                 //Further Validation for fandom wikia image url
-                if (inputElement.id == 'submit_wikiaImgUrl' && !IsFandomImageUrl(inputElement.value)) {
+                if (inputElement.id === 'submit_wikiaImgUrl' && !IsFandomImageUrl(inputElement.value)) {
                     return;
                 }
 
                 //Further Validation for fandom wikia webpage url
-                if (inputElement.id == 'submit_wikiaWebpageUrl' && !IsFandomCommunityWebsiteUrl(inputElement.value)) {
+                if (inputElement.id === 'submit_wikiaWebpageUrl' && !IsFandomCommunityWebsiteUrl(inputElement.value)) {
                     return;
                 }
 
                 //Further Validation for embedded youtube video url
-                if (inputElement.id == 'submit_embeddedYtUrl' && !IsYoutubeVideoUrl(inputElement.value)) {
+                if (inputElement.id === 'submit_embeddedYtUrl' && !IsYoutubeVideoUrl(inputElement.value)) {
                     return;
                 } 
             }
@@ -254,15 +250,15 @@ const Submit_TrackAdd = () => {
                 //If input is empty, check if further validation needed for some specific inputs
 
                 let emptyInputValid = false;
-                if (inputElement.id == 'submit_wikiaImgUrl') {
+                if (inputElement.id === 'submit_wikiaImgUrl') {
                     //Validate for fandom wikia image url
                     emptyInputValid = true;
                 }
-                else if (inputElement.id == 'submit_wikiaWebpageUrl') {
+                else if (inputElement.id === 'submit_wikiaWebpageUrl') {
                     //Validate for fandom wikia webpage url
                     emptyInputValid = true;
                 }
-                else if (inputElement.id == 'submit_embeddedYtUrl') {
+                else if (inputElement.id === 'submit_embeddedYtUrl') {
                     //Validate for fandom wikia webpage url
                     emptyInputValid = true;
                 }
@@ -520,8 +516,8 @@ const Submit_TrackAdd = () => {
      */
     const FetchPostSubmissionTrackAdd_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId = 1) => {
         objUserSubmission['user_id'] = nUserId;
-        var apiUrl_fto = `/postSubmission/track_add/${Number(nAnimeID)}`;
-        if (nEpisodeNo != -1) {
+        let apiUrl_fto = `/postSubmission/track_add/${Number(nAnimeID)}`;
+        if (nEpisodeNo !== -1) {
             apiUrl_fto += `/episode_id/${Number(submissionContextInfo.episode_id)}`
         }
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
@@ -536,7 +532,7 @@ const Submit_TrackAdd = () => {
 
         const responseStatus = response.status;
         const responseData = await response.json();
-        if (responseStatus == 200) {    
+        if (responseStatus === 200) {    
             console.debug("Response Data:", responseData);
             setSuccessfulSubmitQuery(true);
         } else {
@@ -546,7 +542,7 @@ const Submit_TrackAdd = () => {
     }
 
     const handleSubmit_TrackAdd = async (event) => {
-        if (successfulSubmitQuery == true) {
+        if (successfulSubmitQuery === true) {
             // Successfully added track, unauthorised attempt to submit request
             return;
         }
@@ -561,7 +557,7 @@ const Submit_TrackAdd = () => {
             let listOfNonBasicUrls = [];
             platformItems.forEach(platItem => {
                 if (!IsEmpty(platItem.inputString)) {
-                    if (platItem.platform != 'non_basic') {
+                    if (platItem.platform !== 'non_basic') {
                         jsonDataObject[platItem.platform] = StandardiseTrackUrl(platItem.inputString, platItem.platform);
                     }
                     else {
@@ -587,11 +583,11 @@ const Submit_TrackAdd = () => {
                     continue;
                 }
                 else if (key === 'submit_songType') {
-                    if (value == 'songType_OP') {
+                    if (value === 'songType_OP') {
                         updatedSubmission[key] = 'OP';
-                    } else if (value == 'songType_ED') {
+                    } else if (value === 'songType_ED') {
                         updatedSubmission[key] = 'ED';
-                    } else if (value == 'songType_BGM') {
+                    } else if (value === 'songType_BGM') {
                         updatedSubmission[key] = 'BGM';
                     } else {
                         updatedSubmission[key] = '';

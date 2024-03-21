@@ -30,8 +30,8 @@ const Ftologo = () => {
   }, []);
 
   const HandleLogoOnClick = () => {
-    var curentPage = location.href;
-    if (curentPage.startsWith(location.origin + '/home')) {
+    var curentPage = window.location.href;
+    if (curentPage.startsWith(window.location.origin + '/home')) {
       //if home page, refresh
       navigate(0)
     }

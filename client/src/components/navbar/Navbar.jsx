@@ -27,11 +27,11 @@ const Navbar = () => {
   
   useEffect(() => {
     // Render (onMount)
-    console.log(`Render-Navbar (onMount): ${location.href}`);  
+    console.log(`Render-Navbar (onMount): ${window.location.href}`);  
 
-    if (location.href.startsWith(location.origin + '/search')) {
+    if (window.location.href.startsWith(window.location.origin + '/search')) {
       //if search page, add search string from url to searchbar
-      setFormData(new URLSearchParams(location.search).get('query'))
+      setFormData(new URLSearchParams(window.location.search).get('query'))
     }
   }, [])
 

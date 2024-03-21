@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import './track.css';
 
 import { Navbar, Footer, } from "../../components";
@@ -19,6 +19,7 @@ import icon_platform_non_basic from '../../assets/drawables/ic_platform_non_basi
 
 const Track = () => {
     const { track_id } = useParams();
+    const location = useLocation();
 
     const searchParams = new URLSearchParams(location.search);
     const spOccurrenceID = parseInt(searchParams.get('context_id'), 10) || -1;
@@ -27,7 +28,7 @@ const Track = () => {
     const [ streamingPlatformsLInks, setStreamingPlatformsLInks ] = useState([]);
 
     useEffect(() => {
-        console.log(`Render-Episode (onMount): ${location.href}\nTrackID:${track_id}\nOccurrenceID:${spOccurrenceID}`)
+        console.log(`Render-Episode (onMount): ${window.location.href}\nTrackID:${track_id}\nOccurrenceID:${spOccurrenceID}`)
         FetchPageData(track_id, spOccurrenceID);
     }, []);
     
@@ -72,7 +73,7 @@ const Track = () => {
                     plaftormLink.link_url = trackInfo.streaming_platform_links.data.amazon_music;
                     streamingPlatformsLInks.push(plaftormLink);
                 } if (trackInfo.streaming_platform_links.data.hasOwnProperty('non_basic') && !IsEmpty(trackInfo.streaming_platform_links.data.non_basic)) {
-                    for (var i = 0; i < trackInfo.streaming_platform_links.data.non_basic.length; i++) {
+                    for (let i = 0; i < trackInfo.streaming_platform_links.data.non_basic.length; i++) {
                         let plaftormLink = {};
                         plaftormLink.platform_type = 'non_basic';
                         plaftormLink.link_url = trackInfo.streaming_platform_links.data.non_basic[i].url;
@@ -118,8 +119,8 @@ const Track = () => {
      */
     const FetchTrackDetails_FTO = async (nTrackID, nOccurrenceID) => {
         try {
-            var apiUrl_fto = `/getTrack/${Number(nTrackID)}`;
-            if (nOccurrenceID != -1) {
+            let apiUrl_fto = `/getTrack/${Number(nTrackID)}`;
+            if (nOccurrenceID !== -1) {
                 apiUrl_fto += `/context_id/${Number(nOccurrenceID)}`
             }
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
@@ -146,21 +147,21 @@ const Track = () => {
     }
 
     const GetPlatformIcon = (strPlatformType) => {
-        if (strPlatformType == 'youtube') {
+        if (strPlatformType === 'youtube') {
             return icon_platform_youtube;
-        } else if (strPlatformType == 'youtube_music') {
+        } else if (strPlatformType === 'youtube_music') {
             return icon_platform_youtube_music;
-        } else if (strPlatformType == 'spotify') {
+        } else if (strPlatformType === 'spotify') {
             return icon_platform_spotify;
-        } else if (strPlatformType == 'shazam') {
+        } else if (strPlatformType === 'shazam') {
             return icon_platform_shazam;
-        } else if (strPlatformType == 'soundcloud') {
+        } else if (strPlatformType === 'soundcloud') {
             return icon_platform_soundcloud;
-        } else if (strPlatformType == 'apple_music') {
+        } else if (strPlatformType === 'apple_music') {
             return icon_platform_apple;
-        } else if (strPlatformType == 'amazon_music') {
+        } else if (strPlatformType === 'amazon_music') {
             return icon_platform_amazon_music;
-        } else if (strPlatformType == 'non_basic') {
+        } else if (strPlatformType === 'non_basic') {
             return icon_platform_non_basic;
         } else {
             return icon_platform_non_basic;  
@@ -168,21 +169,21 @@ const Track = () => {
     }
 
     const GetPlatformString = (strPlatformType) => {
-        if (strPlatformType == 'youtube') {
+        if (strPlatformType === 'youtube') {
             return 'Youtube';
-        } else if (strPlatformType == 'youtube_music') {
+        } else if (strPlatformType === 'youtube_music') {
             return 'Youtube Music';
-        } else if (strPlatformType == 'spotify') {
+        } else if (strPlatformType === 'spotify') {
             return 'Spotify';
-        } else if (strPlatformType == 'shazam') {
+        } else if (strPlatformType === 'shazam') {
             return 'Shazam';
-        } else if (strPlatformType == 'soundcloud') {
+        } else if (strPlatformType === 'soundcloud') {
             return 'Soundcloud';
-        } else if (strPlatformType == 'apple_music') {
+        } else if (strPlatformType === 'apple_music') {
             return 'Apple Music';
-        } else if (strPlatformType == 'amazon_music') {
+        } else if (strPlatformType === 'amazon_music') {
             return 'Amazon Music';
-        } else if (strPlatformType == 'non_basic') {
+        } else if (strPlatformType === 'non_basic') {
             return 'Unsupported Platform';
         } else {
             return icon_platform_non_basic;
@@ -212,7 +213,7 @@ const Track = () => {
                         <div className='fto__page__track-main_content'>
                             <div className='fto__page__track-main_content--track_details'>
                                 <div className='fto__page__track-main_content--track_details-left'>
-                                    <img alt='Album Image' className='fto__page__track-main_content--almbum_thumbnail' src={ParsePosterImage_Square(ftoTrackInfo.fandom_image_link)}/>
+                                    <img alt='Album Thumbnail' className='fto__page__track-main_content--almbum_thumbnail' src={ParsePosterImage_Square(ftoTrackInfo.fandom_image_link)}/>
                                 </div>
                                 <div className='fto__page__track-main_content--track_details-right'>
                                     <h3>Track Information</h3>
@@ -247,8 +248,8 @@ const Track = () => {
                                     <div className='fto__page__track--streaming_platform_items'>
                                         {streamingPlatformsLInks.map((streamPlatformInfo, it) => {
                                             return (
-                                                <a className='fto__page__track--streaming_platform_item' target="_blank" key={it} href={streamPlatformInfo.link_url}>
-                                                    <img src={GetPlatformIcon(streamPlatformInfo.platform_type)}/>
+                                                <a className='fto__page__track--streaming_platform_item' target="_blank" rel="noopener noreferrer" key={it} href={streamPlatformInfo.link_url}>
+                                                    <img src={GetPlatformIcon(streamPlatformInfo.platform_type)} alt='platform_icon'/>
                                                     <div className='fto__page__track--streaming_platform_item_right'> 
                                                         <p>{GetPlatformString(streamPlatformInfo.platform_type)}</p>
                                                         <h5 className='fto__page__track--streaming_platform_item-subheader subheader_color'>
