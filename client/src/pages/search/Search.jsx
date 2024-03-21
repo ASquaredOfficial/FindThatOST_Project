@@ -112,7 +112,7 @@ const Search = () => {
             }
         }
         
-        var pagesElem = createElement(
+        let pagesElem = createElement(
             'span', 
             {
                 className: 'fto__page__search-page_links',
@@ -158,7 +158,7 @@ const Search = () => {
 
     // Fetch anime asyncronously via MAL Api
     const FetchAnimeList_MAL = async (query, pgNum = 1) => {
-        var apiUrl_mal = `https://api.jikan.moe/v4/anime?${createSearchParams({
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime?${createSearchParams({
             q: (query),
             unnaproved: false,
             sfw: true,
@@ -226,7 +226,7 @@ const Search = () => {
             if (responseStatus === 200) {
                 const responseData = await response.json();
                 if (responseData.length > 0) {
-                    var animeID = responseData[0].anime_id
+                    let animeID = responseData[0].anime_id
         
                     // Navigate to the next page with the row ID
                     console.log("Navigate to anime:", animeID)
@@ -248,7 +248,7 @@ const Search = () => {
 
     const FetchAnimeMapping_KITSU = async (malAnimeID) => {
         // Find mapping (if exists) from Kitsu API
-        var apiUrl_kitsu = `https://kitsu.io/api/edge/mappings?${createSearchParams({
+        let apiUrl_kitsu = `https://kitsu.io/api/edge/mappings?${createSearchParams({
             'filter[externalSite]': 'myanimelist/anime',
             'filter[externalId]': malAnimeID,
             'include': 'item'
@@ -262,9 +262,9 @@ const Search = () => {
             .then((resObject) => {
                 if (resObject.meta.count > 0) {
                     // Get Kitsu ID for anime
-                    var kitsuAnimeMappingsArray = resObject.data;
-                    var kitsuMappedAnimeObj = kitsuAnimeMappingsArray[0].relationships.item.data;
-                    var kitsuAnimeID = kitsuMappedAnimeObj.id;
+                    let kitsuAnimeMappingsArray = resObject.data;
+                    let kitsuMappedAnimeObj = kitsuAnimeMappingsArray[0].relationships.item.data;
+                    let kitsuAnimeID = kitsuMappedAnimeObj.id;
 
                     // Insert Anime into DB and return new fto anime id
                     let apiUrl_fto = `//findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
@@ -272,13 +272,13 @@ const Search = () => {
                     fetch(apiUrl_fto)
                         .then(response => response.json())
                         .then(response => {
-                            var affectedRows = response.affectedRows;
+                            let affectedRows = response.affectedRows;
                             if (affectedRows === 1) {
-                                var insertedAnimeId = response.insertId;
+                                let insertedAnimeId = response.insertId;
                                 navigateToAnime(insertedAnimeId);
                             }
                             else {
-                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}}`);
+                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}`);
                                 console.error(response)
                             }
                         });
@@ -290,13 +290,13 @@ const Search = () => {
                     fetch(apiUrl_fto)
                         .then(response => response.json())
                         .then(response => {
-                            var affectedRows = response.affectedRows;
+                            let affectedRows = response.affectedRows;
                             if (affectedRows === 1) {
-                                var insertedAnimeId = response.insertId;
+                                let insertedAnimeId = response.insertId;
                                 navigateToAnime(insertedAnimeId);
                             }
                             else {
-                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}}`);
+                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID})`);
                                 console.error(response)
                             }
                         });

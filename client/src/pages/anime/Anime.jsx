@@ -50,7 +50,7 @@ const Anime = () => {
     useEffect(() => {
         if (malAnimeInfo !== undefined) {
             // Process MAL API anime titles to output to display
-            var arrMalAnimeTitles = malAnimeInfo.titles;
+            let arrMalAnimeTitles = malAnimeInfo.titles;
             const objMalAnimeTitles = arrMalAnimeTitles.reduce((result, item) => {
                 if (item.type) {
                   result[item.type] = item.title || null;
@@ -116,12 +116,12 @@ const Anime = () => {
         //If all show episodes not in database
         if (animeEpisodesData !== undefined && animeEpisodesData.length !== nLatestEpisodeNum) {
             
-            var nListOfEpisodeNos = [];
+            let nListOfEpisodeNos = [];
             for (let i = 0; i < animeEpisodesData.length ; i++ ) {
                 nListOfEpisodeNos.push(animeEpisodesData[i].episode_no);
             }
 
-            var nListOfEpisodeNosToAdd = [];
+            let nListOfEpisodeNosToAdd = [];
             for (let i = 0; i < nLatestEpisodeNum ; i++ ) {
                 if (!nListOfEpisodeNos.includes(i+1)) {
                     nListOfEpisodeNosToAdd.push(i+1);
@@ -180,7 +180,7 @@ const Anime = () => {
      */
     const FetchAllAnimeEpisodeDetails = async (nLatestAnimeEpisode) => {
         // Get All MAL Episodes
-        var allMALAnimeEpisodes = [];
+        let allMALAnimeEpisodes = [];
         let malQueryPage = 1;
         while (malQueryPage > 0) {
             const malPageEipsodes = await FetchEpisodeData_MAL(malAnimeInfo.mal_id, malQueryPage);
@@ -191,15 +191,15 @@ const Anime = () => {
         }
 
         // Get All Kitsu Episodes
-        var allKitsuAnimeEpisodes = [];
-        var nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
-        var kitsuQueryOffset = 0;
+        let allKitsuAnimeEpisodes = [];
+        let nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
+        let kitsuQueryOffset = 0;
         let iter = 0;
         while (kitsuQueryOffset <= ((nLastOffset * 20) - 20) && iter < nLastOffset) {
             const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, kitsuQueryOffset);
             allKitsuAnimeEpisodes.push(...kitsuPageEpisodes.data);
 
-            var apiLinks = kitsuPageEpisodes.links;
+            let apiLinks = kitsuPageEpisodes.links;
             if (!('next' in apiLinks)) {
                 break;
             }
@@ -211,20 +211,20 @@ const Anime = () => {
         // Create a combined array of episode details
         const episodesInfo = [];
         for (let it = 0; it < nLatestAnimeEpisode; it++) {
-            var epInfo = {};
-            var episodeTitleEn = '';
-            var episodeNumber = it + 1;
+            let epInfo = {};
+            let episodeTitleEn = '';
+            let episodeNumber = it + 1;
             epInfo.episode_no = episodeNumber;
             
             if (allMALAnimeEpisodes.length > (episodeNumber-1)%100) {
-                var malEpisodeinfo = allMALAnimeEpisodes[((episodeNumber-1)%100)];
+                let malEpisodeinfo = allMALAnimeEpisodes[((episodeNumber-1)%100)];
                 epInfo.mal_episode_id = Number(malEpisodeinfo.mal_id);
                 if (malEpisodeinfo.title !== '') {
                     episodeTitleEn = malEpisodeinfo.title;
                 }
             }
             if (allKitsuAnimeEpisodes.length > (episodeNumber-1)%100) {
-                var kitsuEpisodeinfo = allKitsuAnimeEpisodes[it];
+                let kitsuEpisodeinfo = allKitsuAnimeEpisodes[it];
                 epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
                 if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
                     episodeTitleEn = (episodeTitleEn === '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
@@ -253,7 +253,7 @@ const Anime = () => {
         );
 
         // Add missing episodes to episode database.
-        var data = listOfMissingEpisodesDetails;
+        let data = listOfMissingEpisodesDetails;
         if (listOfMissingEpisodesDetails.length > 0) {
             let apiUrl_fto = `/findthatost_api/postMissingEpisodes/${id}`;
             try {
@@ -307,8 +307,8 @@ const Anime = () => {
      * 
      */
     const FetchFullAnimeData_MAL = async (dataFromBackend) => {
-        var malID = dataFromBackend[0].mal_id;
-        var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malID}/full`;
+        let malID = dataFromBackend[0].mal_id;
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malID}/full`;
         console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
         try {
             const response = await fetch(apiUrl_mal);
@@ -330,9 +330,7 @@ const Anime = () => {
      */
     const FetchFullAnimeData_AniList = async (dataFromBackend) => {
         try {
-            var malID = dataFromBackend.mal_id;
-
-            //var apiUrl_aniList = `https://api.jikan.moe/v4/anime/${malID}/full`;
+            let malID = dataFromBackend.mal_id;
             const newResponse = await fetch('https://graphql.anilist.co', {
                 method: 'POST',
                 headers: {
@@ -383,9 +381,9 @@ const Anime = () => {
      */
     const FetchEpisodeData = async (malAnimeDetails, ftoEpisodePageNum = 1) => {
         //Asuming each page on FTO anime page has 20 episodes
-        var episodeCount = malAnimeDetails.episodes;
-        var latestEpisodeNumber = episodeCount;
-        var airStatus = malAnimeDetails.status;
+        let episodeCount = malAnimeDetails.episodes;
+        let latestEpisodeNumber = episodeCount;
+        let airStatus = malAnimeDetails.status;
 
         if (airStatus !== 'Not yet aired') {
             if (airStatus === 'Currently Airing') {
@@ -400,33 +398,33 @@ const Anime = () => {
                 }
             }
 
-            var malToFtoRangeSize = 5;
-            var malEpisodeQueryPage = (ftoEpisodePageNum + malToFtoRangeSize - 1) / malToFtoRangeSize | 0;
+            let malToFtoRangeSize = 5;
+            let malEpisodeQueryPage = (ftoEpisodePageNum + malToFtoRangeSize - 1) / malToFtoRangeSize | 0;
             const malPageEpisodesResponse = await FetchEpisodeData_MAL(malAnimeDetails.mal_id, malEpisodeQueryPage);
             const malPageEpisodes = malPageEpisodesResponse.data;
 
-            var startEpisode = 1 + ((ftoEpisodePageNum - 1) * 20);
+            let startEpisode = 1 + ((ftoEpisodePageNum - 1) * 20);
             const kitsuPageEpisodesResponse = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, startEpisode-1 );
             const kitsuPageEpisodes = kitsuPageEpisodesResponse.data;
 
             const episodesInfo = [];
-            var endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;
-            var loopEnd = (endEpisode%20 === 0) ? 20 : endEpisode%20;
+            let endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;
+            let loopEnd = (endEpisode%20 === 0) ? 20 : endEpisode%20;
             for (let it = 0; it < loopEnd; it++) {
-                var epInfo = {};
-                var episodeTitleEn = '';
-                var episodeNumber = startEpisode + it;
+                let epInfo = {};
+                let episodeTitleEn = '';
+                let episodeNumber = startEpisode + it;
                 epInfo.episode_no = episodeNumber;
                 
                 if (malPageEpisodes.length > (episodeNumber-1)%100) {
-                    var malEpisodeinfo = malPageEpisodes[(episodeNumber-1)%100];
+                    let malEpisodeinfo = malPageEpisodes[(episodeNumber-1)%100];
                     epInfo.mal_episode_id = malEpisodeinfo.mal_id;
                     if (malEpisodeinfo.title !== '') {
                         episodeTitleEn = malEpisodeinfo.title;
                     }
                 }
                 if (kitsuPageEpisodes.length > (episodeNumber-1)%100 ) {
-                    var kitsuEpisodeinfo = kitsuPageEpisodes[it];
+                    let kitsuEpisodeinfo = kitsuPageEpisodes[it];
                     epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
                     if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
                         episodeTitleEn = (episodeTitleEn === '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
@@ -606,13 +604,13 @@ const Anime = () => {
             return;
         }
 
-        var latestEpisodeNumber = (malAnimeDetails.status === 'Currently Airing') ? 
+        let latestEpisodeNumber = (malAnimeDetails.status === 'Currently Airing') ? 
             anilistEpisodeDetails.data.Media.nextAiringEpisode.episode - 1 : malAnimeDetails.episodes;
 
-        var nFirstPage = 1;
-        var nCurrentPage = ftoEpisodePageNum;
-        var nLastPage = Math.ceil(latestEpisodeNumber / 20);
-        var pageList = [];
+        let nFirstPage = 1;
+        let nCurrentPage = ftoEpisodePageNum;
+        let nLastPage = Math.ceil(latestEpisodeNumber / 20);
+        let pageList = [];
 
         if (nCurrentPage - 3  >= nFirstPage) {
             // Show prev 2 pages nos
@@ -623,7 +621,7 @@ const Anime = () => {
             pageList.push(nCurrentPage - 1)
         } else if (nCurrentPage - 3  < nFirstPage) {
             // Show rest of previous pages
-            var nPageNo = nFirstPage;
+            let nPageNo = nFirstPage;
             while (nPageNo !== nCurrentPage) {
                 pageList.push(nPageNo);
                 nPageNo = nPageNo + 1;
@@ -640,7 +638,7 @@ const Anime = () => {
         } else if (nCurrentPage + 3  >= nLastPage) {
             // Show rest of next pages
             if (nCurrentPage !== nLastPage) {
-                var nPageNo = nCurrentPage;
+                let nPageNo = nCurrentPage;
                 while (nPageNo !== nLastPage) {
                     nPageNo = nPageNo + 1;
                     pageList.push(nPageNo);
@@ -648,7 +646,7 @@ const Anime = () => {
             }
         }
         
-        var pagesElem = createElement(
+        let pagesElem = createElement(
             'span', 
             {
                 className: 'fto__page__anime-page_links',

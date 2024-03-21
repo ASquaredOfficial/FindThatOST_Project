@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
-import { Home, Search, Anime, Episode, Track, Submit_TrackAdd } from './pages'
+import { Home, Search, Anime, Episode, Track, SubmitTrackAdd } from './pages'
 import './App.css'
 import './pages/general.css'
 
@@ -20,7 +20,7 @@ const App = () => {
 				<Route element={<Anime />} path="/anime/:id" />
 				<Route element={<Episode />} path="/anime/:anime_id/episode/:episode_no" />
 				<Route element={<Track />} path="/track/:track_id/" />
-				<Route element={<Submit_TrackAdd />} path="/submission/track_add/:anime_id/" />+
+				<Route element={<SubmitTrackAdd />} path="/submission/track_add/:anime_id/" />+
 				{/*<Route element={ErrorPage} path="*" /> */}
 			</Routes>
 		</BrowserRouter>

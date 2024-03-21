@@ -5,8 +5,8 @@ import './submission.css';
 import { Navbar, Footer} from "../../components";
 import { IoAdd, IoTrash } from "react-icons/io5";
 import { IsEmpty, sortJsonObjectAlphabeticallyExceptLast } from '../../utils/RegularUtils';
-import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl } from '../../utils/HyperlinkUtils';
-import { useCustomNavigate } from './../../routing/navigation'
+import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl } from '../../utils/HyperlinkUtils';
+import { useCustomNavigate } from '../../routing/navigation'
 
 const Submit_TrackAdd = () => {
     const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
@@ -61,7 +61,6 @@ const Submit_TrackAdd = () => {
             if (submissionContextInfo.hasOwnProperty('episode_id')) {
                 setFtoEpisodeID(submissionContextInfo.episode_id);
             }
-            setDefaultValues();
         }
     }, [submissionContextInfo]);
 
@@ -204,7 +203,8 @@ const Submit_TrackAdd = () => {
                                     // Variable still exists, remove error
                                     let inputClassNames = inputElem.className.split(" ");
                                     console.log(`Duplicate Input Element does exists, and has classes:`, inputClassNames);
-                                    var errorClassNameIndex = Number(inputClassNames.findIndex(item => item === "fto_input-error"));
+
+                                    let errorClassNameIndex = Number(inputClassNames.findIndex(item => item === "fto_input-error"));
                                     inputClassNames.splice(errorClassNameIndex, 1);
                                     inputElem.className = inputClassNames.join(' ').trim();
                                     console.log(`Duplicate Input ID(submit_streamPlat_item_${platformInputDetails.id}) Element New classes:`, inputClassNames);
@@ -290,72 +290,6 @@ const Submit_TrackAdd = () => {
         handleChange_TrackAdd(event)
     }
 
-    const setDefaultValues = () => {
-        document.getElementById('submit_trackName').value = 'My test track';
-        document.getElementById('submit_songType').value = 'songType_OP';
-        document.getElementById('submit_releaseDate').value = '2023-12-23';
-        document.getElementById('submit_artistName').value = 'ASquaredOfficial';
-        document.getElementById('submit_labelName').value = 'ASquaredProducer';
-        document.getElementById('submit_wikiaImgUrl').value = 'https://static.wikia.nocookie.net/jujutsu-kaisen/images/2/29/SPECIAL_Cover.png/revision/latest/scale-to-width-down/1000?cb=20230806050444';
-        document.getElementById('submit_wikiaWebpageUrl').value = 'https://jujutsu-kaisen.fandom.com/wiki/SpecialZ';
-        document.getElementById('submit_embeddedYtUrl').value = 'https://www.youtube.com/watch?v=5yb2N3pnztU&pp=ygUTeW91IGFyZSBteSBzcGVjaWFsIA%3D%3D';
-        document.getElementById('submit_sceneDesc').value = 'Nanami Sensei';
-        setCharCount_SceneDesc(document.getElementById('submit_sceneDesc').value);
-        
-        const initPlatformItems = [
-            { 
-                id: 1, platform: 'youtube', 
-                inputString: 'https://youtu.be/5RaU8K8sLTM?feature=shared' 
-            },
-            { 
-                id: 2, platform: 'spotify', 
-                inputString: 'https://open.spotify.com/track/0GWNtMohuYUEHVZ40tcnHF?si=3a359543d4984116' 
-            },
-            { 
-                id: 3, platform: 'shazam', 
-                inputString: 'https://www.shazam.com/track/5933774/dont-speak' 
-            },
-            { 
-                id: 4, platform: 'non_basic', 
-                inputString: 'https://deezer.page.link/7eaLrDMjxMiU1Mco8' 
-            },
-            { 
-                id: 5, platform: 'apple_music', 
-                inputString: 'https://music.apple.com/gb/album/you-say-run/1127313836?i=1127314187' 
-            },
-            { 
-                id: 6, platform: 'deezer', 
-                inputString: 'https://www.deezer.com/us/track/2413426495?host=0&utm_campaign=clipboard-generic&utm_source=user_sharing&utm_content=track-2413426495&deferredFl=1d' 
-            },
-            { 
-                id: 7, platform: 'non_basic', 
-                inputString: '' 
-            },
-            { 
-                id: 8, platform: 'amazon_music', 
-                inputString: 'https://music.amazon.com.au/albums/B07VZ3WBQ1?trackAsin=B07W164Q6Q' 
-            },
-        ]
-
-        setPlatformItems(initPlatformItems);
-        setNoOfPlatInputsCreated(initPlatformItems.length)
-        setPageInputs(values => (
-            {
-                ...values, 
-                [`submit_trackName`]: document.getElementById('submit_trackName').value,
-                [`submit_songType`]: document.getElementById('submit_songType').value,
-                [`submit_releaseDate`]: document.getElementById('submit_releaseDate').value,
-                [`submit_artistName`]: document.getElementById('submit_artistName').value,
-                [`submit_labelName`]: document.getElementById('submit_labelName').value,
-                [`submit_wikiaImgUrl`]: document.getElementById('submit_wikiaImgUrl').value,
-                [`submit_wikiaWebpageUrl`]: document.getElementById('submit_wikiaWebpageUrl').value,
-                [`submit_embeddedYtUrl`]: document.getElementById('submit_embeddedYtUrl').value,
-                [`submit_sceneDesc`]: document.getElementById('submit_sceneDesc').value,
-                [`submit_streamPlat`]: initPlatformItems,
-            }
-        ));
-    }
-
     /**
      * Add error border (and thus enable listener) for page input .
      * @function AddErrorToFtoInput
@@ -372,7 +306,7 @@ const Submit_TrackAdd = () => {
     }
 
     const ValidateInputs = () => {
-        var listOfPlatformInputs = platformItems;
+        let listOfPlatformInputs = platformItems;
         let strElemIdFirstInvalidInput = '';
         let inputElement = HTMLElement;
 
@@ -595,6 +529,9 @@ const Submit_TrackAdd = () => {
                 }
                 else if (key === 'submit_embeddedYtUrl') {
                     updatedSubmission[key] = GetIdFromYoutubeUrl(value);
+                }
+                else if (key === 'submit_wikiaImgUrl') {
+                    updatedSubmission[key] = GetFandomImageUrlFromFullUrl(value);
                 }
                 else {
                     updatedSubmission[key] = value;

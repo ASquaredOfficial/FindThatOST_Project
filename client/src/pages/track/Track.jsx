@@ -36,12 +36,12 @@ const Track = () => {
         if (ftoTrackInfo !== undefined) {
             // Convert the escaped string of streaming_platform_links to a JSON Object
             if (typeof (ftoTrackInfo.streaming_platform_links) == 'string' && !IsEmpty(ftoTrackInfo.streaming_platform_links)) {
-                var trackInfo = ftoTrackInfo;
+                let trackInfo = ftoTrackInfo;
                 trackInfo.streaming_platform_links = JSON.parse(ftoTrackInfo.streaming_platform_links);
                 setFTOTrackInfo(trackInfo);
 
                 // Set streaming platforms page variable
-                var streamingPlatformsLInks = [];
+                let streamingPlatformsLInks = [];
                 if (trackInfo.streaming_platform_links.data.hasOwnProperty('youtube') && !IsEmpty(trackInfo.streaming_platform_links.data.youtube)) {
                     let plaftormLink = {};
                     plaftormLink.platform_type = 'youtube';
@@ -228,7 +228,7 @@ const Track = () => {
                                             <p className='fto__page__track-main_content-text'><b>Episode No: </b>{ftoTrackInfo.episode_no}</p>
                                             <p className='fto__page__track-main_content-text'><b>Episode Title: </b>{ftoTrackInfo.episode_title}</p>
                                             <p className='fto__page__track-main_content-text'><b>Track Type: </b>{MapTrackType(ftoTrackInfo.track_type)}</p>
-                                            <p className='fto__page__track-main_content-text'><u>Scene Description</u></p>
+                                            <p className='fto__page__track-main_content-text' style={{marginTop : '8px'}}><u>Scene Description</u></p>
                                             <p className='fto__page__track-main_content-text'>{ftoTrackInfo.scene_description}</p>
                                         </div>
                                     )}

@@ -37,7 +37,7 @@ const Episode = () => {
 
     useEffect(() => {
         if (malEpisodeInfo !== undefined || kitsuEpisodeInfo !== undefined) {
-            var episodeInfo = {};
+            let episodeInfo = {};
 
             // episodeInfo.title_en = () ? malEpisodeInfo.title;
             if (malEpisodeInfo !== undefined) {
@@ -131,7 +131,7 @@ const Episode = () => {
      * 
      */
     const FetchFullAnimeData_MAL = async (malAnimeID) => {
-        var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/full`;
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/full`;
         console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
         try {
             const response = await fetch(apiUrl_mal);
@@ -154,16 +154,16 @@ const Episode = () => {
     const FetchUpdateAnimeData_FTO = async (ftoID, malAnimeDetails) => {
         try {
             // Get Prequel Anime in FTO DB (if present)
-            var ftoPrequelAnimeID = 0;
-            var arrMalAnimeRelations = malAnimeDetails.relations;
+            let ftoPrequelAnimeID = 0;
+            let arrMalAnimeRelations = malAnimeDetails.relations;
             for (let it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
-                var animeRelation = arrMalAnimeRelations[it]
+                let animeRelation = arrMalAnimeRelations[it]
                 let animeRelationEntry = animeRelation.entry;
                 let animeRelationType = animeRelation.relation;
                 if (animeRelationType === 'Prequel') {
-                    var prequelEntries = animeRelationEntry;
+                    let prequelEntries = animeRelationEntry;
 
-                    var nLowestMalID = malAnimeInfo.mal_id;
+                    let nLowestMalID = malAnimeInfo.mal_id;
                     prequelEntries.map(entry => {
                         if (entry.mal_id < nLowestMalID) {
                             nLowestMalID = entry.mal_id;
@@ -190,9 +190,9 @@ const Episode = () => {
                 }
             }
 
-            var bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id === null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
-            var bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
-            var ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
+            let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id === null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
+            let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
+            let ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
             
             // Createn update query
             let apiUrl_fto = '';
@@ -258,8 +258,8 @@ const Episode = () => {
     const FetchEpisodeImageData_MAL = async (malAnimeID, malEpisodeID) => {
         try {
             //Finished aring, check if mal has individual episode details
-            var bEpisodeNotFound = true;
-            var nLastPageNumber = 0;
+            let bEpisodeNotFound = true;
+            let nLastPageNumber = 0;
             let nPageNumber = 1;
             while (bEpisodeNotFound) {
                 let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/videos/episodes?page=${nPageNumber}`;
@@ -269,8 +269,8 @@ const Episode = () => {
 
                 nLastPageNumber = (nLastPageNumber === 0) ? responseData_mal.pagination.last_visible_page : nLastPageNumber;
                 if (responseData_mal.data.length > 0) {
-                    var nMalID_first = responseData_mal.data[0].mal_id;
-                    var nMalID_last = responseData_mal.data[responseData_mal.data.length - 1].mal_id;
+                    let nMalID_first = responseData_mal.data[0].mal_id;
+                    let nMalID_last = responseData_mal.data[responseData_mal.data.length - 1].mal_id;
                     if (malEpisodeID <= nMalID_first && malEpisodeID >= nMalID_last) {
                         for (let i = 0; i < responseData_mal.data.length; i++) {
                             if (responseData_mal.data[i].mal_id === malEpisodeID) {
@@ -383,7 +383,7 @@ const Episode = () => {
             setFTOEpisodeInfo(episodeDataFromBackend);
 
             // Use data from the backend to make the second fetch to the external API
-            var malID = animeDataFromBackend[0].mal_id;
+            let malID = animeDataFromBackend[0].mal_id;
             const dataFromExternalAPI_MAL = await FetchFullAnimeData_MAL(malID);
             const episodeData_malAPI = await FetchEpisodeData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);
             const episodeImageData_malAPI = await FetchEpisodeImageData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);

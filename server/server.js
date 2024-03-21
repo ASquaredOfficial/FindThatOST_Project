@@ -39,7 +39,7 @@ app.get("/findthatost_api/getAnimes", async (req, res) => {
         res.status(200).json(allAnime);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -57,7 +57,7 @@ app.get("/findthatost_api/getAnime/:nFtoAnimeID", async (req, res) => {
         res.status(200).json(ftoAnimeDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -74,7 +74,7 @@ app.get("/findthatost_api/postAnimeIntoDB/:nMalID", async (req, res) => {
         res.status(200).json(ftoResponse);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -91,7 +91,7 @@ app.get("/findthatost_api/postAnimeIntoDB/:nMalID/:nKitsuID", async (req, res) =
         res.status(200).json(ftoResponse);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -108,7 +108,7 @@ app.get("/findthatost_api/patchAnime/:nFtoAnimeID/title/:strAnimeTitle/parent_id
         res.status(200).json(ftoResponse);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -125,7 +125,7 @@ app.get("/findthatost_api/patchAnime/:nFtoAnimeID/title/:strAnimeTitle", async (
         res.status(200).json(ftoResponse);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -142,7 +142,7 @@ app.get("/findthatost_api/patchAnime/:nFtoAnimeID/parent_id/:nAnimePrequel", asy
         res.status(200).json(ftoResponse);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -160,7 +160,7 @@ app.get("/findthatost_api/getAnimeMappingMAL/:nMalID", async (req, res) => {
         res.status(200).json(ftoAnimeDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -179,7 +179,7 @@ app.get("/findthatost_api/getEpisodes/anime/:nFtoAnimeID/episode_no/:nEpisodeNo"
         res.status(200).json(ftoEpisodeDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -197,7 +197,7 @@ app.get("/findthatost_api/getEpisodes/anime/:nFtoAnimeID", async (req, res) => {
         res.status(200).json(ftoEpisodeDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -235,7 +235,7 @@ app.post("/findthatost_api/postMissingEpisodes/:nFtoAnimeID", async (req, res) =
         }
     } 
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Request Error';
         objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
         objError.details = error;
@@ -255,7 +255,7 @@ app.get("/findthatost_api/getTracks/episode_id/:nEpisodeID/", async (req, res) =
         res.status(200).json(ftoEpisodeTracksDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -273,7 +273,7 @@ app.get("/findthatost_api/getTrack/:nTrackID/", async (req, res) => {
         res.status(200).json(ftoTracksDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -292,7 +292,7 @@ app.get("/findthatost_api/getTrack/:nTrackID/context_id/:nOccurrenceID", async (
         res.status(200).json(ftoTracksDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -310,7 +310,7 @@ app.get("/findthatost_api/getSubmissionContext/track_add/:nFtoAnimeID/", async (
         res.status(200).json(ftoTracksDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.details = error;
         res.status(500).json(objError);
@@ -329,7 +329,7 @@ app.get("/findthatost_api/getSubmissionContext/track_add/:nFtoAnimeID/episode_no
         res.status(200).json(ftoTracksDetails);
     }
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Server Error';
         objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', {
             minimumIntegerDigits: 2,
@@ -355,7 +355,7 @@ app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFt
         res.status(200).json(ftoResponse);
     } 
     catch (error) {
-        var objError = {};
+        let objError = {};
         objError.error = 'Internal Request Error';
         objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
         {

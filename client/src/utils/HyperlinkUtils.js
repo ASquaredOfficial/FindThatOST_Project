@@ -653,6 +653,35 @@ const IsFandomCommunityWebsiteUrl = (fandomWebpageUrl) => {
     }
 }
 
+/**
+ * Extract fandom wikia image url from fandomImage url.
+ * @function GetFandomImageUrlFromFullUrl
+ * @param {String}  fandomImageUrl - String supposedly a url for youtube platform.
+ * @returns {String|null} Extracted URL or null.
+ * 
+ */
+const GetFandomImageUrlFromFullUrl = (fandomImageUrl) => {
+    /*
+        Possibile Fandom Image urls.
+        https://static.wikia.nocookie.net/jujutsu-kaisen/images/2/29/SPECIAL_Cover.png/revision/latest/scale-to-width-down/1000?cb=20230806050444
+        https://static.wikia.nocookie.net/bokunoheroacademia/images/e/e4/Season_4_Poster_3.png/revision/latest?cb=20191230035840
+        https://static.wikia.nocookie.net/zombie-100/images/9/9e/Anime_Key_Visual_1.jpg
+        http://www.youtube.com/v/WK0YhfKqdaI
+        https://static.wikia.nocookie.net/zombie-100/images/9/9e/Anime_Key_Visual_1.jpg/revision/latest/scale-to-width-down/1000?cb=20230624103603
+        https://static.wikia.nocookie.net/psychopass/images/6/61/Psycho-Pass_Providence.png/revision/latest?cb=20220814101204
+    */
+   
+    const pattern = /^(http(s)?:\/\/)?(static\.wikia\.nocookie\.net\/)+([0-9A-z_-].+\/images)+(\/[0-9A-z]+)(\/[0-9A-z]+)\/(?:[0-9A-z-_]*)\.(?:png|jpg)/
+    const match = fandomImageUrl.match(pattern);
+    if (match) {
+        // Double check the extracted link is still valid
+        if (IsFandomImageUrl(match[0])) {
+            return match[0];
+        }
+    }
+    return null;
+}
+
 const GetFandomWikiaIcon = (wikiaLinkType, linkUrl = null) => {
     if (wikiaLinkType === 'fandom_img' && IsFandomImageUrl(linkUrl)) {
         return icon_platform_fandom_wikia;
@@ -687,5 +716,6 @@ export {
 
     IsFandomImageUrl,
     IsFandomCommunityWebsiteUrl,
+    GetFandomImageUrlFromFullUrl,
     GetFandomWikiaIcon,
 };

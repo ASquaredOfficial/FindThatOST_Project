@@ -9,7 +9,7 @@ export const useCustomNavigate = () => {
   };
 
   const navigateToSearch = (query, pageNum = 1) => {
-    var curentPage = window.location.href;
+    let curentPage = window.location.href;
     navigate({
         pathname: '/search',
         search: `?query=${encodeURIComponent(query)}&page=${pageNum}`,

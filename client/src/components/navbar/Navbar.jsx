@@ -92,7 +92,7 @@ const Navbar = () => {
           <div className='fto__navbar-menu_container sclae-up-center'>
             <div className='fto__navbar-menu_container-links'>
               <Menu />
-              {(typeof backendData.username == 'underfined') ? (
+              {(typeof backendData.username === 'undefined') ? (
                 //If no username passed, load non signed in navbar
                 <div className='fto__navbar-menu_container-links-sign'>
                   <p><strong>Log in</strong></p>

@@ -77,7 +77,7 @@ class SQLArrayHandler {
 }
 
 const LogError = (strFunctionName, strErrorMessage, strLineNumber = '') => {
-  var date = new Date(); // for now
+  let date = new Date(); // for now
   let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`
   
 
