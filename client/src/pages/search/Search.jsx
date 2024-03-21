@@ -20,7 +20,7 @@ const Search = () => {
 
     // Render (onMount)
     useEffect(() => {
-        console.debug(`Render-Search (onMount): ${location.href}`);  
+        console.debug(`Render-Search (onMount): ${window.location.href}`);  
         if (spQuery == null || !spQuery) {
             alert('No query was performed. Search appropriate anime name');
             setViewStyle({ height: '100vh', justifyContent: 'flex-start'});
@@ -73,10 +73,10 @@ const Search = () => {
             // If no results, hide pagination
             return;
         }
-        var nFirstPage = 1;
-        var nCurrentPage = paginationDetails.current_page;
-        var nLastPage = paginationDetails.last_visible_page;
-        var pageList = [];
+        let nFirstPage = 1;
+        let nCurrentPage = paginationDetails.current_page;
+        let nLastPage = paginationDetails.last_visible_page;
+        let pageList = [];
         
         if (nCurrentPage - 3  >= nFirstPage) {
             // Show prev 2 pages nos
@@ -87,8 +87,8 @@ const Search = () => {
             pageList.push(nCurrentPage - 1)
         } else if (nCurrentPage - 3  < nFirstPage) {
             // Show rest of previous pages
-            var nPageNo = nFirstPage;
-            while (nPageNo != nCurrentPage) {
+            let nPageNo = nFirstPage;
+            while (nPageNo !== nCurrentPage) {
                 pageList.push(nPageNo);
                 nPageNo = nPageNo + 1;
             }
@@ -103,16 +103,16 @@ const Search = () => {
             pageList.push(nLastPage);
         } else if (nCurrentPage + 3  >= nLastPage) {
             // Show rest of next pages
-            if (nCurrentPage != nLastPage) {
-                var nPageNo = nCurrentPage;
-                while (nPageNo != nLastPage) {
+            if (nCurrentPage !== nLastPage) {
+                let nPageNo = nCurrentPage;
+                while (nPageNo !== nLastPage) {
                     nPageNo = nPageNo + 1;
                     pageList.push(nPageNo);
                 }
             }
         }
         
-        var pagesElem = createElement(
+        let pagesElem = createElement(
             'span', 
             {
                 className: 'fto__page__search-page_links',
@@ -158,7 +158,7 @@ const Search = () => {
 
     // Fetch anime asyncronously via MAL Api
     const FetchAnimeList_MAL = async (query, pgNum = 1) => {
-        var apiUrl_mal = `https://api.jikan.moe/v4/anime?${createSearchParams({
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime?${createSearchParams({
             q: (query),
             unnaproved: false,
             sfw: true,
@@ -170,7 +170,7 @@ const Search = () => {
         const response = await fetch(apiUrl_mal);
         const responseJson = await response.json();
         console.log("Response", responseJson)
-        if (responseJson.status == undefined || responseJson.status !== 500) {
+        if (responseJson.status === undefined || responseJson.status !== 500) {
             setPageSearchData(responseJson.data);
             setPagignationData(responseJson.pagination);
             setViewStyle({ height: 'auto', justifyContent: 'flex-center' });
@@ -206,42 +206,49 @@ const Search = () => {
     }
 
     const HandleSearchRowOnclick = (malID, malAnimeInfo) => {
-        if (malAnimeInfo.status == 'Not yet aired') {
+        if (malAnimeInfo.status === 'Not yet aired') {
             alert('We do not support shows that have not aired yet.');
             return;
         }
+        console.log("Go to anime with mal id:", malID)
 
         // Get FTO Anime ID from FTO DB, then navigate to anime page
         FetchAnimeMapping_FTO(malID);
     }
       
     const FetchAnimeMapping_FTO = async (malAnimeID) => {
-        var apiUrl_fto = `/getAnimeMappingMAL/${malAnimeID}`;
-        console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-        const response = await fetch(apiUrl_fto)
-
-        const responseStatus = response.status;
-        if (responseStatus == 200) {
-            const responseData = await response.json();
-            if (responseData.length > 0) {
-                var animeID = responseData[0].anime_id
+        let apiUrl_fto = `/findthatost_api/getAnimeMappingMAL/${malAnimeID}`;
+        console.debug(`Fetch url:, '${apiUrl_fto}'`);
+        try {
+            const response = await fetch(apiUrl_fto)
     
-                // Navigate to the next page with the row ID
-                navigateToAnime(animeID);
+            const responseStatus = response.status;
+            if (responseStatus === 200) {
+                const responseData = await response.json();
+                if (responseData.length > 0) {
+                    let animeID = responseData[0].anime_id
+        
+                    // Navigate to the next page with the row ID
+                    console.log("Navigate to anime:", animeID)
+                    navigateToAnime(animeID);
+                }
+            }
+            else if (responseStatus === 204) {
+                // Get Kitsu Mapping, then insert new anime to Fto DB
+                FetchAnimeMapping_KITSU(malAnimeID);
+            }
+            else {
+                // TODO Redirect to 'server is down' page. I.e. status is 500
             }
         }
-        else if (responseStatus == 204) {
-            // Get Kitsu Mapping, then insert new anime to Fto DB
-            FetchAnimeMapping_KITSU(malAnimeID);
-        }
-        else {
-            // TODO Redirect to 'server is down' page
+        catch (error) {
+            throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
         }
     }
 
     const FetchAnimeMapping_KITSU = async (malAnimeID) => {
         // Find mapping (if exists) from Kitsu API
-        var apiUrl_kitsu = `https://kitsu.io/api/edge/mappings?${createSearchParams({
+        let apiUrl_kitsu = `https://kitsu.io/api/edge/mappings?${createSearchParams({
             'filter[externalSite]': 'myanimelist/anime',
             'filter[externalId]': malAnimeID,
             'include': 'item'
@@ -255,41 +262,41 @@ const Search = () => {
             .then((resObject) => {
                 if (resObject.meta.count > 0) {
                     // Get Kitsu ID for anime
-                    var kitsuAnimeMappingsArray = resObject.data;
-                    var kitsuMappedAnimeObj = kitsuAnimeMappingsArray[0].relationships.item.data;
-                    var kitsuAnimeID = kitsuMappedAnimeObj.id;
+                    let kitsuAnimeMappingsArray = resObject.data;
+                    let kitsuMappedAnimeObj = kitsuAnimeMappingsArray[0].relationships.item.data;
+                    let kitsuAnimeID = kitsuMappedAnimeObj.id;
 
                     // Insert Anime into DB and return new fto anime id
-                    var apiUrl_fto = `/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
+                    let apiUrl_fto = `//findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
                     console.debug(`Fetch url:, '${apiUrl_fto}'`);
                     fetch(apiUrl_fto)
                         .then(response => response.json())
                         .then(response => {
-                            var affectedRows = response.affectedRows;
-                            if (affectedRows == 1) {
-                                var insertedAnimeId = response.insertId;
+                            let affectedRows = response.affectedRows;
+                            if (affectedRows === 1) {
+                                let insertedAnimeId = response.insertId;
                                 navigateToAnime(insertedAnimeId);
                             }
                             else {
-                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}}`);
+                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}`);
                                 console.error(response)
                             }
                         });
                 }
                 else {
                     // Insert Anime into DB (without kitsu) and return new fto anime id
-                    var apiUrl_fto = `/postAnimeIntoDB/${malAnimeID}`;
+                    let apiUrl_fto = `//findthatost_api/postAnimeIntoDB/${malAnimeID}`;
                     console.debug(`Fetch url:, '${apiUrl_fto}'`);
                     fetch(apiUrl_fto)
                         .then(response => response.json())
                         .then(response => {
-                            var affectedRows = response.affectedRows;
-                            if (affectedRows == 1) {
-                                var insertedAnimeId = response.insertId;
+                            let affectedRows = response.affectedRows;
+                            if (affectedRows === 1) {
+                                let insertedAnimeId = response.insertId;
                                 navigateToAnime(insertedAnimeId);
                             }
                             else {
-                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}}`);
+                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID})`);
                                 console.error(response)
                             }
                         });
@@ -330,7 +337,7 @@ const Search = () => {
                                 return (
                                     <tr key={it}>
                                         <td onClick={() => HandleSearchRowOnclick(animeInfo.mal_id, animeInfo)}>
-                                            <img width={66} height={100} src={animeInfo.images.jpg.image_url} alt="Anime Image" />
+                                            <img width={66} height={100} src={animeInfo.images.jpg.image_url} alt="Anime Thumbnail" />
                                         </td>
                                         <td>
                                             <p className='fto__page__search-content_default_title' onClick={() => HandleSearchRowOnclick(animeInfo.mal_id, animeInfo)}>

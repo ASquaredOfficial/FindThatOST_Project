@@ -30,8 +30,8 @@ const Ftologo = () => {
   }, []);
 
   const HandleLogoOnClick = () => {
-    var curentPage = location.href;
-    if (curentPage.startsWith(location.origin + '/home')) {
+    let curentPage = window.location.href;
+    if (curentPage.startsWith(window.location.origin + '/home')) {
       //if home page, refresh
       navigate(0)
     }
@@ -44,7 +44,7 @@ const Ftologo = () => {
       <img 
         style={{cursor: 'pointer'}}
         src={mediaSize === 'small' ? smallLogo : largeLogo } 
-        alt="Dynamic Image" 
+        alt="Logo" 
         onClick={HandleLogoOnClick}
       />
   );

@@ -41,7 +41,6 @@
     .fto__page__episode-content_header_subtitle {
         font-family: var(--font-family-manrope);
         color: white;
-        font-size: 1em;
         font-weight: 400;
         align-self: flex-start;
     }

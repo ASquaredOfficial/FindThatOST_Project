@@ -11,7 +11,7 @@ import pencil_icon from '../../assets/Pencil_Icon.svg'
 
 const Episode = () => {
     const location = useLocation();
-    const { id, episode_id } = useParams();
+    const { anime_id, episode_no } = useParams();
     
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
@@ -23,21 +23,21 @@ const Episode = () => {
     const [ episodeListOfTracks, setEpisodeListOfTracks ] = useState();
 
     useEffect(() => {
-        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${id}\nEpisodeID:${episode_id}`)
-        FetchPageData(id, episode_id);
+        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${anime_id}\nEpisodeID:${episode_no}`)
+        FetchPageData(anime_id, episode_no);
     }, []);
 
     useEffect(() => {
         if (malAnimeInfo !== undefined) {
             if (ftoAnimeInfo !== undefined) {
-                FetchUpdateAnimeData_FTO(id, malAnimeInfo);
+                FetchUpdateAnimeData_FTO(anime_id, malAnimeInfo);
             }
         }
     }, [malAnimeInfo]);
 
     useEffect(() => {
         if (malEpisodeInfo !== undefined || kitsuEpisodeInfo !== undefined) {
-            var episodeInfo = {};
+            let episodeInfo = {};
 
             // episodeInfo.title_en = () ? malEpisodeInfo.title;
             if (malEpisodeInfo !== undefined) {
@@ -88,9 +88,9 @@ const Episode = () => {
      * 
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
+        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}`
+        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
-            var apiUrl_fto = `/getAnime/${Number(ftoAnimeID)}`
-            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
             const data = await response.json();
             return data;
@@ -110,9 +110,9 @@ const Episode = () => {
      * 
      */
     const FetchEpisodeData_FTO = async (ftoAnimeID, nEpisodeNo) => {
+        let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${Number(ftoAnimeID)}/episode_no/${Number(nEpisodeNo)}`
+        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
-            var apiUrl_fto = `/getEpisodes/anime/${Number(ftoAnimeID)}/episode_no/${Number(nEpisodeNo)}`
-            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
             const data = await response.json();
             return data;
@@ -131,9 +131,9 @@ const Episode = () => {
      * 
      */
     const FetchFullAnimeData_MAL = async (malAnimeID) => {
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/full`;
+        console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
         try {
-            var apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/full`;
-            console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
             const response = await fetch(apiUrl_mal);
             const externalData = await response.json();
             return externalData;
@@ -154,29 +154,30 @@ const Episode = () => {
     const FetchUpdateAnimeData_FTO = async (ftoID, malAnimeDetails) => {
         try {
             // Get Prequel Anime in FTO DB (if present)
-            var ftoPrequelAnimeID = 0;
-            var arrMalAnimeRelations = malAnimeDetails.relations;
-            for (var it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
-                var animeRelation = arrMalAnimeRelations[it]
+            let ftoPrequelAnimeID = 0;
+            let arrMalAnimeRelations = malAnimeDetails.relations;
+            for (let it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
+                let animeRelation = arrMalAnimeRelations[it]
                 let animeRelationEntry = animeRelation.entry;
                 let animeRelationType = animeRelation.relation;
-                if (animeRelationType == 'Prequel') {
-                    var prequelEntries = animeRelationEntry;
+                if (animeRelationType === 'Prequel') {
+                    let prequelEntries = animeRelationEntry;
 
-                    var nLowestMalID = malAnimeInfo.mal_id;
+                    let nLowestMalID = malAnimeInfo.mal_id;
                     prequelEntries.map(entry => {
                         if (entry.mal_id < nLowestMalID) {
                             nLowestMalID = entry.mal_id;
                         }
+                        return entry;
                     });
                     
                     if (nLowestMalID !== malAnimeInfo.mal_id) {
 
-                        var apiUrl_fto = `/getAnimeMappingMAL/${nLowestMalID}`
+                        let apiUrl_fto = `/getAnimeMappingMAL/${nLowestMalID}`
                         try {
                             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
                             const response = await fetch(apiUrl_fto);
-                            if (response.status == 200) {
+                            if (response.status === 200) {
                                 const data = await response.json();
                                 ftoPrequelAnimeID = data[0].anime_id;
                             }
@@ -189,18 +190,18 @@ const Episode = () => {
                 }
             }
 
-            var bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id == 0) && ftoPrequelAnimeID !== 0;
-            var bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title == '');
-            var ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
+            let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id === null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
+            let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
+            let ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
             
             // Createn update query
-            var apiUrl_fto = '';
+            let apiUrl_fto = '';
             if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
-                apiUrl_fto =`/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
+                apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
             } else if (bUpdateCanonicalTitle) {
-                apiUrl_fto = `/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
+                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
             } else if (bUpdateParentAnimeID) {
-                apiUrl_fto = `/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
+                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
             }
 
             // Perform Fetch Query to update anime
@@ -208,7 +209,7 @@ const Episode = () => {
                 try {
                     console.debug(`Fetch put data from the mal api to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
                     const response = await fetch(apiUrl_fto);
-                    const responseData = await response.json();
+                    await response.json();
                 }
                 catch (error) {
                     throw new Error('Error:', error);
@@ -231,10 +232,10 @@ const Episode = () => {
      * 
      */
     const FetchEpisodeData_MAL = async (malAnimeID, malEpisodeID) => {
+        //Finished aring, check if mal has individual episode details
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/episodes/${malEpisodeID}`;
+        console.debug(`Fetch Episode data from External API, MAL url: '${apiUrl_mal}'`);
         try {
-            //Finished aring, check if mal has individual episode details
-            let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/episodes/${malEpisodeID}`;
-            console.debug(`Fetch Episode data from External API, MAL url: '${apiUrl_mal}'`);
             const response_mal = await fetch(apiUrl_mal);
             const responseData_mal = await response_mal.json();
             return responseData_mal;
@@ -257,20 +258,19 @@ const Episode = () => {
     const FetchEpisodeImageData_MAL = async (malAnimeID, malEpisodeID) => {
         try {
             //Finished aring, check if mal has individual episode details
-            var bEpisodeNotFound = true;
-            var nLastPageNumber = 0;
+            let bEpisodeNotFound = true;
+            let nLastPageNumber = 0;
             let nPageNumber = 1;
-            let attempt = 0;
             while (bEpisodeNotFound) {
                 let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malAnimeID}/videos/episodes?page=${nPageNumber}`;
                 console.debug(`Fetch Episode Image data from External API, MAL url: '${apiUrl_mal}'`);
                 const response_mal = await fetch(apiUrl_mal);
                 const responseData_mal = await response_mal.json();
 
-                nLastPageNumber = (nLastPageNumber == 0) ? responseData_mal.pagination.last_visible_page : nLastPageNumber;
+                nLastPageNumber = (nLastPageNumber === 0) ? responseData_mal.pagination.last_visible_page : nLastPageNumber;
                 if (responseData_mal.data.length > 0) {
-                    var nMalID_first = responseData_mal.data[0].mal_id;
-                    var nMalID_last = responseData_mal.data[responseData_mal.data.length - 1].mal_id;
+                    let nMalID_first = responseData_mal.data[0].mal_id;
+                    let nMalID_last = responseData_mal.data[responseData_mal.data.length - 1].mal_id;
                     if (malEpisodeID <= nMalID_first && malEpisodeID >= nMalID_last) {
                         for (let i = 0; i < responseData_mal.data.length; i++) {
                             if (responseData_mal.data[i].mal_id === malEpisodeID) {
@@ -281,7 +281,7 @@ const Episode = () => {
                     }
                     else if (malEpisodeID > nMalID_first) {
                         // Go to previous page (if possible)
-                        if (nPageNumber != 1) {
+                        if (nPageNumber !== 1) {
                             if (nMalID_first + 40 >= malEpisodeID) {
                                 nPageNumber--;
                             }
@@ -296,7 +296,7 @@ const Episode = () => {
                     }
                     else if (malEpisodeID < nMalID_last) {
                         // Go to a later page (if possible)
-                        if (nMalID_last - 40 < malEpisodeID && responseData_mal.pagination.has_next_page == true) {
+                        if (nMalID_last - 40 < malEpisodeID && responseData_mal.pagination.has_next_page === true) {
                             nPageNumber++;
                         }
                         else {
@@ -327,14 +327,14 @@ const Episode = () => {
      */
     const FetchEpisodeData_KITSU = async (kitsuEpisodeID) => {
         try {
-            if (kitsuEpisodeID != -1 || (kitsuEpisodeID == null)) {
+            if (kitsuEpisodeID !== -1 || (kitsuEpisodeID == null)) {
                 let apiUrl_kitsu = `https://kitsu.io/api/edge/episodes/${kitsuEpisodeID}`;
                 console.debug(`Fetch Episode data from External API, Kitsu url: '${apiUrl_kitsu}'`);
                 const response_kitsu = await fetch(apiUrl_kitsu);
                 const responseData_kitsu = await response_kitsu.json();
                 return responseData_kitsu;
             }
-            return []
+            return [];
         }
         catch (error) {
             console.error("My error:", error);
@@ -353,7 +353,7 @@ const Episode = () => {
      */
     const FetchEpisodeListOfTracks_FTO = async (nEpisodeID) => {
         try {
-            var apiUrl_fto = `/getTracks/episode_id/${Number(nEpisodeID)}`
+            let apiUrl_fto = `/findthatost_api/getTracks/episode_id/${Number(nEpisodeID)}`
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
             const data = await response.json();
@@ -383,7 +383,7 @@ const Episode = () => {
             setFTOEpisodeInfo(episodeDataFromBackend);
 
             // Use data from the backend to make the second fetch to the external API
-            var malID = animeDataFromBackend[0].mal_id;
+            let malID = animeDataFromBackend[0].mal_id;
             const dataFromExternalAPI_MAL = await FetchFullAnimeData_MAL(malID);
             const episodeData_malAPI = await FetchEpisodeData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);
             const episodeImageData_malAPI = await FetchEpisodeImageData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);
@@ -449,6 +449,8 @@ const Episode = () => {
                 return 'Background Music'
             case ('OST'):
                 return 'Original SoundTrack'
+            default:
+                return ''
         }
     }
 
@@ -463,16 +465,16 @@ const Episode = () => {
                         
                         <div className='fto__page__episode-content_heading_section'>
                             <h1 className='fto__page__episode-content_header_title gradient__text'>
-                                Episode {episode_id}
+                                Episode {episode_no}
                             </h1>
-                            <h1 className='fto__page__episode-content_header_subtitle'><strong>{malAnimeInfo.titles[0].title}</strong></h1>
+                            <h4 className='fto__page__episode-content_header_subtitle'><strong>{malAnimeInfo.titles[0].title}</strong></h4>
                         </div>
                         <hr className='fto__page__episode-horizontal_hr' />
                         
                         <div className='fto__page__episode-main_content'>
                             <div className='fto__page__episode-main_content--episode_details'>
                                 <div className='fto__page__episode-main_content--episode_details-left'>
-                                    <img alt='Episode Image' className='fto__page__episode-main_content--episode_details-thumbnail' src={ParsePosterImage_Horzontal(pageEpisodeInfo.image_url)}/>
+                                    <img alt='Episode Thumbnail' className='fto__page__episode-main_content--episode_details-thumbnail' src={ParsePosterImage_Horzontal(pageEpisodeInfo.image_url)}/>
                                 </div>
                                 <div className='fto__page__episode-main_content--episode_details-right'>
                                     <h2>{pageEpisodeInfo.title_en_us}</h2>
@@ -497,13 +499,13 @@ const Episode = () => {
                             {malAnimeInfo !== undefined && (
                                 <div className='fto__page__episode-main_content--soundtrack_section'>
                                     <div className='fto__page__episode-main_content--add_track_section'>
-                                        <button className='fto__button__pink'>Add new Track</button>
+                                        <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + 12}>Add New Track</a>
                                     </div>
 
                                     <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>
                                     <hr />
                                     
-                                    {(episodeListOfTracks == undefined || episodeListOfTracks.length == 0) ? (
+                                    {(episodeListOfTracks === undefined || episodeListOfTracks.length === 0) ? (
                                         /* If no tracks show this messahe*/
                                         <p className='fto__page__episode-main_content-no_soundtracks'>
                                             No Soundtracks Added yet.
@@ -520,7 +522,7 @@ const Episode = () => {
                                                         <div className='fto__page__episode-main_content--track_item-header_right'>
                                                             <a className='fto__page__episode-main_content--track_item-goto_track_button button' 
                                                             href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}>
-                                                                <img src={arrow_icon}/>
+                                                                <img src={arrow_icon} alt='arrow_icon'/>
                                                             </a>
                                                         </div>
                                                     </div>
@@ -532,7 +534,7 @@ const Episode = () => {
                                                         </div>
                                                         <div className='fto__page__episode-main_content--track_item-scene_description_right'>
                                                             <button className='fto__page__episode-main_content--track_item-edit_track_button' type='submit'>
-                                                                <img src={pencil_icon}/>&nbsp;Edit
+                                                                <img src={pencil_icon} alt='pencil_icon'/>&nbsp;Edit
                                                             </button>
                                                         </div>
                                                     </div>

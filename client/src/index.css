@@ -8,7 +8,10 @@
     --gradient-text: linear-gradient(89.97deg, #AE67FA 1.84%, #F49867 102.67%);
     --gradient-bar: linear-gradient(103.22deg, #AE67FA -13.86%, #F49867 99.55%);
 
-    --color-pink: #FF0099;
+    --color-pink: #F133A5;
+    --color-pink_bright: #FF0099;
+    --color-pink_medium: #D80082;
+    --color-pink_dark: #AD0068;
 
     --color-bg-navbar: #222222;
     --color-bg-main: #040C18;

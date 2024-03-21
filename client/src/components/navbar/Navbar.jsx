@@ -13,7 +13,7 @@ const Navbar = () => {
   //username info rom backend
   const [backendData, setBackendData] = useState ([{}])
 	useEffect(() => {
-		fetch("/api").then(
+		fetch("/findthatost_api/username").then(
 			response => response.json()
 		).then(
 			data => {
@@ -27,11 +27,11 @@ const Navbar = () => {
   
   useEffect(() => {
     // Render (onMount)
-    console.log(`Render-Navbar (onMount): ${location.href}`);  
+    console.log(`Render-Navbar (onMount): ${window.location.href}`);  
 
-    if (location.href.startsWith(location.origin + '/search')) {
+    if (window.location.href.startsWith(window.location.origin + '/search')) {
       //if search page, add search string from url to searchbar
-      setFormData(new URLSearchParams(location.search).get('query'))
+      setFormData(new URLSearchParams(window.location.search).get('query'))
     }
   }, [])
 
@@ -68,7 +68,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {(typeof backendData.username == 'underfined') ? (
+      {(typeof backendData.username == 'undefined') ? (
         //If no username passed, load non signed in navbar
         <div className='fto__navbar-sign'>
           <p><strong>Log in</strong></p>
@@ -92,7 +92,7 @@ const Navbar = () => {
           <div className='fto__navbar-menu_container sclae-up-center'>
             <div className='fto__navbar-menu_container-links'>
               <Menu />
-              {(typeof backendData.username == 'underfined') ? (
+              {(typeof backendData.username === 'undefined') ? (
                 //If no username passed, load non signed in navbar
                 <div className='fto__navbar-menu_container-links-sign'>
                   <p><strong>Log in</strong></p>

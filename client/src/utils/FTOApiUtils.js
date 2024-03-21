@@ -11,15 +11,17 @@
 const MapTrackType = (strShorthandTrackType) => {
     switch (strShorthandTrackType) {
         case ('OP'):
-            return 'Opening'
+            return 'Opening';
         case ('ED'):
-            return 'Ending'
+            return 'Ending';
         case ('IM'):
-            return 'Insert Song'
+            return 'Insert Song';
         case ('BGM'):
-            return 'Background Music'
+            return 'Background Music';
         case ('OST'):
-            return 'Original SoundTrack'
+            return 'Original SoundTrack';
+        default:
+            return '';
     }
 }
 

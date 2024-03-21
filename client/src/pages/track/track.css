@@ -28,7 +28,6 @@
 .fto__page__track-content_header_subtitle {
     font-family: var(--font-family-manrope);
     color: white;
-    font-size: 1em;
     font-weight: 400;
 }
 
@@ -43,18 +42,6 @@
     .fto__page__track-content_header_title {
         font-family: var(--font-family-manrope);
         font-weight: 800;
-    }
-
-    .fto__page__track-content_header_subtitle {
-        font-family: var(--font-family-manrope);
-        color: white;
-        font-size: 1em;
-        font-weight: 400;
-        align-self: flex-start;
-    }
-
-    .fto__page__track-subheader_color {
-        color: grey;
     }
 }
 

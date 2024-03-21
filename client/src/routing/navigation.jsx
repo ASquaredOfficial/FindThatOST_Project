@@ -1,14 +1,15 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const useCustomNavigate = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const navigateToHome = () => {
     navigate('/home');
   };
 
   const navigateToSearch = (query, pageNum = 1) => {
-    var curentPage = location.href;
+    let curentPage = window.location.href;
     navigate({
         pathname: '/search',
         search: `?query=${encodeURIComponent(query)}&page=${pageNum}`,
@@ -20,7 +21,7 @@ export const useCustomNavigate = () => {
   };
 
   const navigateToAnime = (nFtoID = -1, objAnimeData = {}) => {
-    if (!process.env.REACT_APP_DEBUG_MODE && nFtoID == -1) {
+    if (!process.env.REACT_APP_DEBUG_MODE && nFtoID  === -1) {
       alert('Operation failed');
       console.error(`Unable to navigate to page (Anime) because variable 'nFtoID' is an invalid value '${nFtoID}'`);
       return;
@@ -35,18 +36,18 @@ export const useCustomNavigate = () => {
     });
   };
 
-  const navigateToEpisode = (nFtoAnimeID = -1, nFtoEpisodeID = -1, objAnimeEpisodeData = {}) => {
-    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoAnimeID == -1 || nFtoEpisodeID == -1)) {
+  const navigateToEpisode = (nFtoAnimeID = -1, nEpisodeNo = -1, objAnimeEpisodeData = {}) => {
+    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoAnimeID  === -1 || nEpisodeNo  === -1)) {
       alert('Operation failed');
       console.error(`Unable to navigate to page (Anime) because parameters contain an invalid value`);
       return;
     }
     
-    navigate(`/anime/${nFtoAnimeID}/episode/${nFtoEpisodeID}`,
+    navigate(`/anime/${nFtoAnimeID}/episode/${nEpisodeNo}`,
     {
       state: {
         fto_anime_id: nFtoAnimeID,
-        fto_episode_id: nFtoEpisodeID,
+        episode_no: nEpisodeNo,
         anime_episode_data: objAnimeEpisodeData,
       }
     });
