@@ -78,8 +78,10 @@ class SQLArrayHandler {
 
 const LogError = (strFunctionName, strErrorMessage, strLineNumber = '') => {
   let date = new Date(); // for now
-  let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`
-  
+  let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', {
+	minimumIntegerDigits: 2,
+	useGrouping: false
+  })}:${date.getMilliseconds()}`;
 
   let errorString = `Error in function (${strFunctionName}-${filename}:${strLineNumber}).`;
   errorString += `\nDatetime: (${strDatetimeNow})`
@@ -322,7 +324,6 @@ const GetSubmissionContext_TrackAdd = (nFtoAnimeID, nEpisodeNo = -1) => {
   });
 }
 
-
 /**
  * Submits a new track to the FTO database.
  * @function PostSubmission_TrackAdd
@@ -481,6 +482,31 @@ const PostSubmission_TrackAdd = (nFtoAnimeID, nFtoEpisodeID = -1, objSubmitDetai
 	});
 }
 
+const GetSubmissionContext_TrackEdit = (nFtoTrackID, nFtoOccurrenceID = -1) => {
+  return new Promise((resolve, reject) => {
+    let sqlQuery = [
+		"SELECT *",
+		"FROM `fto_track`",
+		`WHERE track_id = ${nFtoTrackID}`,
+    ];
+	
+    if (nFtoOccurrenceID !== -1) {
+		sqlQuery.splice(2, 0, "INNER JOIN `fto_occurrence` ON fto_track.track_id = fto_occurrence.fto_track_id");
+		sqlQuery.push(`AND occurrence_id = ${nFtoOccurrenceID}`)
+    }
+    const handler = new SQLArrayHandler(sqlQuery);
+    const sqlQueryString = handler.CombineStringsToQuery();
+    FtoConnection.query(sqlQueryString, (error, results) => {
+		if (error) {
+			LogError('GetSubmissionContext', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+			reject(error);
+		} else {
+			resolve(results);
+		}
+    });
+  });
+}
+
 module.exports = {
 	GetAllAnime,
 	GetAnime,
@@ -493,4 +519,5 @@ module.exports = {
 	GetTrack,
 	GetSubmissionContext_TrackAdd,
 	PostSubmission_TrackAdd,
+	GetSubmissionContext_TrackEdit,
 };

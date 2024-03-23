@@ -1,40 +1,47 @@
 import React, {useEffect, useState} from 'react';
 import { useLocation, useParams } from "react-router-dom";
-import { ValidateInputs, AddErrorToFtoInput, AddPlatformInputToPage, RemovePlatformInputFomPage, ListenToPlatformInput } from "./submission";
 import './submission.css';
 
 import { Navbar, Footer} from "../../components";
 import { IoAdd, IoTrash } from "react-icons/io5";
-import { IsEmpty, sortJsonObjectAlphabeticallyExceptLast } from '../../utils/RegularUtils';
-import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetIdFromTrackUrl } from '../../utils/HyperlinkUtils';
+import { GetShorthandDateFromString, IsEmpty, sortJsonObjectAlphabeticallyExceptLast } from '../../utils/RegularUtils';
+import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetPlatformTrackBaseUrl, GeneratePlatformUrlFromID } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from '../../routing/navigation'
+import { AddPlatformInputToPage, ListenToPlatformInput, RemovePlatformInputFomPage, ValidateInputs } from './submission';
+import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
 
-const Submit_TrackAdd = () => {
-    const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
+const SubmitTrackEdit = () => {
+    const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
     const location = useLocation();
-    const { anime_id } = useParams();
+    const { track_id } = useParams();
 
     const searchParams = new URLSearchParams(location.search);
-    const spEpisodeNo = parseInt(searchParams.get('episode_no'), 10) || -1;
+    const spOccurrenceId = parseInt(searchParams.get('context_id'), 10) || -1;
+    const spEpisodeNo = parseInt(searchParams.get('occurrence_id'), 10) || -1;
 
     const [ ftoEpisodeID, setFtoEpisodeID ] = useState(-1);
     const [ pageLoading, setPageLoading ] = useState(false);
     const [ pageInputs, setPageInputs ] = useState({});
     const [ userSubmission, setUserSubmission ] = useState({submit_streamPlat: []});
     const [ submissionContextInfo, setSubmissionContextInfo ] = useState();
-    const [ platformItems, setPlatformItems ] = useState([{ id: 1, platform: 'non_basic', inputString: '' }]);
+    const [ platformItems, setPlatformItems ] = useState([{ id: 1, platform: 'non_basic', inputString: '', placeholder: '' }]);
     const [ noOfPlatInputsCreated, setNoOfPlatInputsCreated ] = useState(1);
-    const [ submitPreExistingTrack, setSubmitPreExistingTrack ] = useState(false);
+    const [ selectedSongType, setSelectedSongType ] = useState('');
+    const [ originalSongTypeOption, setDefaultSongTypeOption ] = useState('');
+    const [ enteredReleaseDate, setEnteredReleaseDate ] = useState('');
+    const [ originalReleaseDate, setOriginalReleaseDate ] = useState('');
     const [ successfulSubmitQuery, setSuccessfulSubmitQuery ] = useState();
     const [ charCount_SceneDesc, setCharCount_SceneDesc] = useState('');
+    const [ charCount_editReasons, setCharCount_editReasons] = useState('');
     const maxCharCountLength_SceneDesc = 200;
+    const maxCharCountLength_editReasons = 200;
     
     useEffect(() => {
-        document.title = `Submit | Add Track | AnimeID(${anime_id}) and EpisodeNo(${spEpisodeNo})`;
-        console.log(`Render-Submit_TrackAdd (onMount): ${window.location.href}\nAnimeID:${anime_id}\nEpisodeNo:${spEpisodeNo}`);
+        document.title = `Submit | Edit Track | TrackID(${track_id}) and OccurrenceID(${spOccurrenceId})`;
+        console.log(`Render-SubmitTrackEdit (onMount): ${window.location.href}\nTrackID:${track_id}\nOccurrenceID:${spOccurrenceId}`);
 
         // Fetch page data for anime and corresponding epsiode
-        FetchPageData(anime_id, spEpisodeNo);
+        FetchPageData(track_id, spOccurrenceId);
     }, []);
 
     useEffect(() => {
@@ -62,7 +69,8 @@ const Submit_TrackAdd = () => {
             if (submissionContextInfo.hasOwnProperty('episode_id')) {
                 setFtoEpisodeID(submissionContextInfo.episode_id);
             }
-            setPageFormValues();
+            
+            setPageFormValues(submissionContextInfo);
         }
     }, [submissionContextInfo]);
 
@@ -71,36 +79,48 @@ const Submit_TrackAdd = () => {
      * 
      * @async
      * @function FetchPageData
-     * @param {number|string}  nAnimeID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
-     * @param {number|string}  nEpisodeNo -  Episode No track is being added to. -1 if added to no specific episode.
+     * @param {number|string}  nTrackID - Page/Track ID from url, corresponds to FindThatOST Track ID.
+     * @param {number|string}  nOccurrenceID -  Occurrence ID for the episode the track was in. -1 if added to no specific episode.
      * 
      */
-    const FetchPageData = async (nAnimeID, nEpisodeNo = -1) => {
+    const FetchPageData = async (nTrackID, nOccurrenceID = -1) => {
         try {
             // Fetch data from the backend
-            const contextDataFromBackend = await FetchSubmissionContextDetails_FTO(nAnimeID, nEpisodeNo);
+            const contextDataFromBackend = await FetchSubmissionContextDetails_FTO(nTrackID, nOccurrenceID);
             console.log('Context Data from backend:', contextDataFromBackend[0]);
-            setSubmissionContextInfo(contextDataFromBackend[0]);
+
+            const submissionContext = {};
+            submissionContext['submit_trackName'] = String(contextDataFromBackend[0].track_name);
+            submissionContext['submit_songType'] = (!IsEmpty(contextDataFromBackend[0].release_date)) ? ConvertTrackTypeToValue(contextDataFromBackend[0].track_type) : '';
+            submissionContext['submit_releaseDate'] = (!IsEmpty(contextDataFromBackend[0].release_date)) ? GetShorthandDateFromString(contextDataFromBackend[0].release_date) : '';
+            submissionContext['submit_artistName'] = (!IsEmpty(contextDataFromBackend[0].artist_name)) ? String(contextDataFromBackend[0].artist_name) : '';
+            submissionContext['submit_labelName'] = (!IsEmpty(contextDataFromBackend[0].label_name)) ? String(contextDataFromBackend[0].label_name) : '';
+            submissionContext['submit_wikiaImgUrl'] = (!IsEmpty(contextDataFromBackend[0].fandome_image_link)) ? String(contextDataFromBackend[0].fandome_image_link) : '';
+            submissionContext['submit_wikiaWebpageUrl'] = (!IsEmpty(contextDataFromBackend[0].fandom_webpage_link)) ? String(contextDataFromBackend[0].fandom_webpage_link) : '';
+            submissionContext['submit_embeddedYtUrl'] = (!IsEmpty(contextDataFromBackend[0].embedded_yt_video_id)) ? String(contextDataFromBackend[0].embedded_yt_video_id) : '';
+            submissionContext['submit_sceneDesc'] = (!IsEmpty(contextDataFromBackend[0].scene_description)) ? String(contextDataFromBackend[0].scene_description) : '';
+            submissionContext['submit_streamPlat'] = (!IsEmpty(contextDataFromBackend[0].streaming_platform_links)) ? JSON.parse(contextDataFromBackend[0].streaming_platform_links) : {};
+            setSubmissionContextInfo(submissionContext);
         } catch (error) {
             console.error('Error:', error.message);
         }
     }
 
     /**
-     * Get anime details for anime with corresponding FTO Anime ID.
+     * Get track details for anime with corresponding FTO Track ID (and occurrence ID if applicable).
      * 
      * @async
      * @function FetchSubmissionContextDetails_FTO
-     * @param {number|string}  nAnimeID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
-     * @param {number|string}  nEpisodeNo -  Episode No track is being added to. -1 if added to no specific episode.
+     * @param {number|string}  nTrackID - Page/Track ID from url, corresponds to FindThatOST Track ID.
+     * @param {number|string}  nOccurrenceID -  Occurrence ID for the episode the track was in. -1 if added to no specific episode.
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects (max length 1) containing anime details.
      * 
      */
-    const FetchSubmissionContextDetails_FTO = async (nAnimeID, nEpisodeNo) => {
+    const FetchSubmissionContextDetails_FTO = async (nTrackID, nOccurrenceID) => {
         try {
-            let apiUrl_fto = `/findthatost_api/getSubmissionContext/track_add/${Number(nAnimeID)}`;
-            if (nEpisodeNo !== -1) {
-                apiUrl_fto += `/episode_no/${Number(nEpisodeNo)}`
+            let apiUrl_fto = `/findthatost_api/getSubmissionContext/track_edit/${Number(nTrackID)}`;
+            if (nOccurrenceID !== -1) {
+                apiUrl_fto += `/occurrence_id/${Number(nOccurrenceID)}`
             }
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
@@ -111,7 +131,7 @@ const Submit_TrackAdd = () => {
             const data = await response.json();
             return data;
         } catch (error) {
-            throw new Error('Error fetching data from backend.');
+            throw new Error('Error fetching data from backend.\nError:', error.message);
         }
     }
 
@@ -135,7 +155,7 @@ const Submit_TrackAdd = () => {
         RemovePlatformInputFomPage(itemId, {setPlatformItems, setUserSubmission})
     }
 
-    const handleChange_TrackAdd = (event) => {
+    const handleChange_TrackEdit = (event) => {
         let inputElement = HTMLElement;
         inputElement = event.target;
         const inputElementName = String(inputElement.name);
@@ -256,9 +276,21 @@ const Submit_TrackAdd = () => {
             event.target.className = listOfClassNames.join(' ').trim();
         }
 
-        // Update character count label
+        // Update character count label for sceneDescription
         if (inputElementName === 'submit_sceneDesc') {
             setCharCount_SceneDesc(inputElementValue);
+        }
+        // Update character count label for sceneDescription
+        else if (inputElementName === 'submit_editReason') {
+            setCharCount_editReasons(inputElementValue);
+        }
+        // Update input tracker for placeholder styling
+        else if (inputElementName === 'submit_songType') {
+            setSelectedSongType(inputElementValue)
+        }
+        // Update input tracker for placeholder styling
+        else if (inputElementName === 'submit_releaseDate') {
+            setEnteredReleaseDate(inputElementValue)
         }
         // Update input platform icon
         else if (inputElementName.startsWith('submit_streamPlat_item_')) {
@@ -272,84 +304,122 @@ const Submit_TrackAdd = () => {
         }
     }
 
-    const setPageFormValues = () => {
-        const trackAddform = document.getElementById('track_add_form');
-        trackAddform['submit_trackName'].value = 'My test track';
-        trackAddform['submit_songType'].value = 'songType_OP';
-        trackAddform['submit_releaseDate'].value = '2023-12-23';
-        trackAddform['submit_artistName'].value = 'ASquaredOfficial';
-        trackAddform['submit_labelName'].value = 'ASquaredProducer';
-        trackAddform['submit_wikiaImgUrl'].value = 'https://static.wikia.nocookie.net/jujutsu-kaisen/images/2/29/SPECIAL_Cover.png/revision/latest/scale-to-width-down/1000?cb=20230806050444';
-        trackAddform['submit_wikiaWebpageUrl'].value = 'https://jujutsu-kaisen.fandom.com/wiki/SpecialZ';
-        trackAddform['submit_embeddedYtUrl'].value = 'https://www.youtube.com/watch?v=5yb2N3pnztU&pp=ygUTeW91IGFyZSBteSBzcGVjaWFsIA%3D%3D';
-        trackAddform['submit_sceneDesc'].value = 'Nanami Sensei';
-        setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
-        
-        const initPlatformItems = [
-            { 
-                id: 1, platform: 'youtube', 
-                inputString: 'https://youtu.be/5RaU8K8sLTM?feature=shared' 
-            },
-            { 
-                id: 2, platform: 'spotify', 
-                inputString: 'https://open.spotify.com/track/0GWNtMohuYUEHVZ40tcnHF?si=3a359543d4984116' 
-            },
-            { 
-                id: 3, platform: 'shazam', 
-                inputString: 'https://www.shazam.com/track/5933774/dont-speak' 
-            },
-            { 
-                id: 4, platform: 'non_basic', 
-                inputString: 'https://deezer.page.link/7eaLrDMjxMiU1Mco8' 
-            },
-            { 
-                id: 5, platform: 'apple_music', 
-                inputString: 'https://music.apple.com/gb/album/you-say-run/1127313836?i=1127314187' 
-            },
-            { 
-                id: 6, platform: 'deezer', 
-                inputString: 'https://www.deezer.com/us/track/2413426495?host=0&utm_campaign=clipboard-generic&utm_source=user_sharing&utm_content=track-2413426495&deferredFl=1d' 
-            },
-            { 
-                id: 7, platform: 'non_basic', 
-                inputString: '', 
-            },
-            { 
-                id: 8, platform: 'amazon_music', 
-                inputString: 'https://music.amazon.com.au/albums/B07VZ3WBQ1?trackAsin=B07W164Q6Q' 
-            },
-        ]
-
-        setPlatformItems(initPlatformItems);
-        setNoOfPlatInputsCreated(initPlatformItems.length)
-        setPageInputs(values => {
-            return {
-                ...values, 
-                [`submit_trackName`]: trackAddform['submit_trackName'].value,
-                [`submit_songType`]: trackAddform['submit_songType'].value,
-                [`submit_releaseDate`]: trackAddform['submit_releaseDate'].value,
-                [`submit_artistName`]: trackAddform['submit_artistName'].value,
-                [`submit_labelName`]: trackAddform['submit_labelName'].value,
-                [`submit_wikiaImgUrl`]: trackAddform['submit_wikiaImgUrl'].value,
-                [`submit_wikiaWebpageUrl`]: trackAddform['submit_wikiaWebpageUrl'].value,
-                [`submit_embeddedYtUrl`]: trackAddform['submit_embeddedYtUrl'].value,
-                [`submit_sceneDesc`]: trackAddform['submit_sceneDesc'].value,
-                [`submit_streamPlat`]: initPlatformItems,
+    const setPageFormValues = (pageValues) => {
+        // Set original (placeholder) values to edit
+        const pageform = document.getElementById('track_edit_form');
+        if (!IsEmpty(pageValues.submit_trackName)) {
+            pageform['submit_trackName'].placeholder = pageValues.submit_trackName;
+        }
+        if (!IsEmpty(pageValues.submit_songType)) {
+            pageform['submit_songType'].value = pageValues.submit_songType;
+            setDefaultSongTypeOption(pageform['submit_songType'].value); // Apply Setter Functions 
+            setSelectedSongType(pageform['submit_songType'].value); // Apply Setter Functions 
+        }
+        if (!IsEmpty(pageValues.submit_releaseDate)) {
+            pageform['submit_releaseDate'].value = pageValues.submit_releaseDate;
+            setEnteredReleaseDate(pageform['submit_releaseDate'].value)
+            setOriginalReleaseDate(pageform['submit_releaseDate'].value)
+        }
+        if (!IsEmpty(pageValues.submit_artistName)) {
+            pageform['submit_artistName'].placeholder = pageValues.submit_artistName;
+        }
+        if (!IsEmpty(pageValues.submit_labelName)) {
+            pageform['submit_labelName'].placeholder = pageValues.submit_labelName;
+        }
+        if (!IsEmpty(pageValues.submit_wikiaImgUrl)) {
+            pageform['submit_wikiaImgUrl'].placeholder = pageValues.submit_wikiaImgUrl;
+        }
+        if (!IsEmpty(pageValues.submit_wikiaWebpageUrl)) {
+            pageform['submit_wikiaWebpageUrl'].placeholder = pageValues.submit_wikiaWebpageUrl;
+        }
+        if (!IsEmpty(pageValues.submit_embeddedYtUrl)) {
+            pageform['submit_embeddedYtUrl'].placeholder = GetPlatformTrackBaseUrl('youtube') + pageValues.submit_embeddedYtUrl;
+        }
+        if (!IsEmpty(pageValues.submit_sceneDesc)) {
+            pageform['submit_sceneDesc'].placeholder = pageValues.submit_sceneDesc;
+            setCharCount_SceneDesc(pageform['submit_sceneDesc'].value); // Apply Setter Functions 
+        }
+        if (!IsEmpty(pageValues['submit_streamPlat']) && typeof (pageValues['submit_streamPlat']) == 'object' && pageValues['submit_streamPlat'].hasOwnProperty('data')) {
+            // Set streaming platforms page variable
+            let itemId = 1;
+            let trackPlatformData = pageValues['submit_streamPlat'].data;
+            let streamingPlatformsItems = [];
+            if (trackPlatformData.hasOwnProperty('youtube') && !IsEmpty(trackPlatformData.youtube)) {
+                let plaftormLink = {
+                    id: itemId++, 
+                    platform: 'youtube',
+                    inputString: '',
+                };
+                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.youtube;
+                streamingPlatformsItems.push(plaftormLink);
+            } if (trackPlatformData.hasOwnProperty('youtube_music') && !IsEmpty(trackPlatformData.youtube_music)) {
+                let plaftormLink = {
+                    id: itemId++, 
+                    platform: 'youtube_music',
+                    inputString: '',
+                };
+                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.youtube_music;
+                streamingPlatformsItems.push(plaftormLink);
+            } if (trackPlatformData.hasOwnProperty('spotify') && !IsEmpty(trackPlatformData.spotify)) {
+                let plaftormLink = {
+                    id: itemId++, 
+                    platform: 'spotify',
+                    inputString: '',
+                };
+                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.spotify;
+                streamingPlatformsItems.push(plaftormLink);
+            } if (trackPlatformData.hasOwnProperty('shazam') && !IsEmpty(trackPlatformData.shazam)) {
+                let plaftormLink = {
+                    id: itemId++, 
+                    platform: 'shazam',
+                    inputString: '',
+                };
+                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.shazam;
+                streamingPlatformsItems.push(plaftormLink);
+            } if (trackPlatformData.hasOwnProperty('apple_music') && !IsEmpty(trackPlatformData.apple_music)) {
+                let plaftormLink = {
+                    id: itemId++, 
+                    platform: 'apple_music',
+                    inputString: '',
+                };
+                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.apple_music;
+                streamingPlatformsItems.push(plaftormLink);
+            } if (trackPlatformData.hasOwnProperty('amazon_music') && !IsEmpty(trackPlatformData.amazon_music)) {
+                let plaftormLink = {
+                    id: itemId++, 
+                    platform: 'amazon_music',
+                    inputString: '',
+                };
+                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.amazon_music;
+                streamingPlatformsItems.push(plaftormLink);
+            } if (trackPlatformData.hasOwnProperty('non_basic') && !IsEmpty(trackPlatformData.non_basic)) {
+                for (let i = 0; i < trackPlatformData.non_basic.length; i++) {
+                    let plaftormLink = {
+                        id: itemId++, 
+                        platform: 'non_basic',
+                        inputString: '',
+                    };
+                    plaftormLink.placeholder = trackPlatformData.non_basic[i].url;
+                    streamingPlatformsItems.push(plaftormLink);
+                }
             }
-        });
+            console.log("New Streaming Links:", streamingPlatformsItems);
+            setPlatformItems(streamingPlatformsItems);
+            setNoOfPlatInputsCreated(streamingPlatformsItems.length)
+        }
     }
 
     /**
      * Perform all fetches to set up the webpage.
      * @async
-     * @function FetchPostSubmissionTrackAdd_FTO
+     * @function FetchPostSubmissionTrackEdit_FTO
      * @param {number|string}  nAnimeID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
      * @param {number|string}  nEpisodeNo -  Episode No track is being added to. -1 if added to no specific episode.
      * @param {object}  objUserSubmission - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackAdd_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId = 1) => {
+    const FetchPostSubmissionTrackEdit_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId = 1) => {
         objUserSubmission['user_id'] = nUserId;
         let apiUrl_fto = `/findthatost_api/postSubmission/track_add/${Number(nAnimeID)}`;
         if (nEpisodeNo !== -1) {
@@ -376,7 +446,7 @@ const Submit_TrackAdd = () => {
         }
     }
 
-    const handleSubmit_TrackAdd = async (event) => {
+    const handleSubmit_TrackEdit = async (event) => {
         if (successfulSubmitQuery === true) {
             // Successfully added track, unauthorised attempt to submit request
             return;
@@ -385,7 +455,7 @@ const Submit_TrackAdd = () => {
         setPageLoading(true);
         
         const formValues = event.target.elements // as HTMLFormControlsCollection;
-        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs, submitPreExistingTrack);
+        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs);
         if (inputsValid) {
             //Format streaming platforms json
             let jsonDataObject = {}
@@ -393,7 +463,7 @@ const Submit_TrackAdd = () => {
             platformItems.forEach(platItem => {
                 if (!IsEmpty(platItem.inputString)) {
                     if (platItem.platform !== 'non_basic') {
-                        jsonDataObject[platItem.platform] = GetIdFromTrackUrl(platItem.inputString);
+                        jsonDataObject[platItem.platform] = StandardiseTrackUrl(platItem.inputString, platItem.platform);
                     }
                     else {
                         let nonBasicUrlObj = {};
@@ -401,7 +471,7 @@ const Submit_TrackAdd = () => {
                         listOfNonBasicUrls.push(nonBasicUrlObj);
                     }
                 }
-            });
+            })
             if (listOfNonBasicUrls.length > 0) {
                 jsonDataObject.non_basic = listOfNonBasicUrls;
             }
@@ -441,9 +511,8 @@ const Submit_TrackAdd = () => {
             setUserSubmission(updatedSubmission);
             
             console.debug(`Fetch data:`, updatedSubmission);  
-            console.debug(`Fetch data:`, updatedSubmission.submit_wikiaImgUrl);  
             await new Promise(resolve => setTimeout(resolve, 1000));  
-            // FetchPostSubmissionTrackAdd_FTO(anime_id, spEpisodeNo, updatedSubmission);
+            // FetchPostSubmissionTrackEdit_FTO(track_id, spEpisodeNo, updatedSubmission);
         }
         setPageLoading(false);
     }
@@ -451,16 +520,17 @@ const Submit_TrackAdd = () => {
     const handleModalOnButtonClick = () => {
         if (successfulSubmitQuery === true) {
             if (ftoEpisodeID !== -1) {
-                navigateToEpisode(anime_id, spEpisodeNo);
+                navigateToTrack(track_id, spOccurrenceId);
             }
             else {
-                navigateToAnime(anime_id);
+                //navigateToEpisode(anime_id, spEpisodeNo);
             }
         }
         else {
             setSuccessfulSubmitQuery();
         }
     }
+    
 
     return (
         <div id='fto__page' className='fto__page__submission'>
@@ -492,11 +562,11 @@ const Submit_TrackAdd = () => {
 
                     <div className='fto__page__submission-content_heading_section'>
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
-                            Add Track
+                            Edit Track
                             {(spEpisodeNo !== -1) ? (
-                                ' to Episode ' + spEpisodeNo
+                                ' in Episode ' + spEpisodeNo
                             ) : (
-                                ' to Series'
+                                ' in Series'
                             )}
                         </h1>
                         <h4 className='fto__page__submission-content_header_subtitle'><strong>{submissionContextInfo.canonical_title}</strong></h4>
@@ -504,55 +574,52 @@ const Submit_TrackAdd = () => {
                     </div>
                     
                     <div className='fto__page__submission-main_content'>
-                        <form id='track_add_form' onSubmit={ handleSubmit_TrackAdd }>
+                        <form id='track_edit_form' onSubmit={ handleSubmit_TrackEdit }>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_trackName'>Enter Track Name<span className='fto-red__asterisk'>*</span>:</label>
+                                <label htmlFor='submit_trackName'>Edit Track Name<span className='fto-red__asterisk'>*</span>:</label>
                                 <input id='submit_trackName' name='submit_trackName' type='text' className='fto_input' placeholder='Track Name'
-                                onChange={ handleChange_TrackAdd }/>
-                                <div className='fto__page__submission-main_content-align_end fto__pointer'>
-                                    <IoAdd />
-                                    <span>
-                                        Add track from series archive 
-                                    </span>
-                                </div>
+                                onChange={ handleChange_TrackEdit }/>
                             </div>
                             <div className='fto__page__submission-main_content-even_split fto__page__submission-main_content-even_split_gap'>
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-left'>
-                                    <label htmlFor='submit_songType'>Enter Song Type<span className='fto-red__asterisk'>*</span>:</label>
-                                    <select id='submit_songType' name='submit_songType' className='fto_input'
-                                    onChange={ handleChange_TrackAdd }> 
-                                        <option value="" style={{ color : 'gray' }} defaultValue>
+                                    <label htmlFor='submit_songType'>Edit Song Type<span className='fto-red__asterisk'>*</span>:</label>
+                                    <select id='submit_songType' name='submit_songType' className='fto_input' value={selectedSongType}
+                                    style={{ color: originalSongTypeOption === selectedSongType ? 'grey' : 'white' }}
+                                    onChange={ handleChange_TrackEdit }> 
+                                        <option value="" defaultValue style={{ color: originalSongTypeOption === '' ? 'grey' : 'white' }}>
                                             -- Select Song Type --
                                         </option>
-                                        <option value="songType_OP">
+                                        <option value="songType_OP" style={{ color: originalSongTypeOption === 'songType_OP' ? 'grey' : 'white' }}>
                                             Opening Theme Song
                                         </option>
-                                        <option value="songType_ED">
+                                        <option value="songType_ED" style={{ color: originalSongTypeOption === 'songType_ED' ? 'grey' : 'white' }}>
                                             Ending Theme Song
                                         </option>
-                                        <option value="songType_BGM">
+                                        <option value="songType_BGM" style={{ color: originalSongTypeOption === 'songType_BGM' ? 'grey' : 'white' }}>
                                             Background Song
                                         </option>
                                     </select>
                                 </div>
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-right'>
-                                    <label htmlFor='submit_releaseDate'>Enter Release Date:</label>
-                                    <input id='submit_releaseDate' name='submit_releaseDate' type='date' className='fto_input' max={new Date().toLocaleDateString('fr-ca')}
-                                    onChange={ handleChange_TrackAdd }/>
+                                    <label htmlFor='submit_releaseDate'>Edit Release Date:</label>
+                                    <input id='submit_releaseDate' name='submit_releaseDate' type='date' className='fto_input' 
+                                    max={new Date().toLocaleDateString('fr-ca')} value={enteredReleaseDate}
+                                    style={{ color: originalReleaseDate === enteredReleaseDate ? 'grey' : 'white' }}
+                                    onChange={ handleChange_TrackEdit }/>
                                 </div>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_artistName'>Enter Artist Name:</label>
+                                <label htmlFor='submit_artistName'>Edit Artist Name:</label>
                                 <input id='submit_artistName' name='submit_artistName' type='text' className='fto_input' placeholder='Artist Name'
-                                onChange={ handleChange_TrackAdd }/>
+                                onChange={ handleChange_TrackEdit }/>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_labelName'>Enter Label Name:</label>
+                                <label htmlFor='submit_labelName'>Edit Label Name:</label>
                                 <input id='submit_labelName' name='submit_labelName' type='text' className='fto_input' placeholder='Label Name'
-                                onChange={ handleChange_TrackAdd }/>
+                                onChange={ handleChange_TrackEdit }/>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_streamPlat'>Add Streaming Platform(s):</label>
+                                <label htmlFor='submit_streamPlat'>Edit Streaming Platform(s):</label>
                                 <div id='fto__page__submission-main_content-streamPlat_items' name='submit_streamPlat'>
                                     {platformItems.map(item => {
                                         return (
@@ -562,10 +629,11 @@ const Submit_TrackAdd = () => {
                                                     <IoTrash id={`delete_streamPlat_item_`+ item.id} onClick={() => handleRemovePlatform(item.id)}/>
                                                 </div>
                                                 <label className='fto-input-drawableIconStart_label'>
-                                                    <img src={ GetPlatformIcon( item.platform ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
-                                                    <input id={`submit_streamPlat_item_${item.id}`} name={`submit_streamPlat_item_${item.id}`} type='text' className='fto_input' placeholder='Enter Streaming Platform URL'
-                                                    value={ item.inputString }
-                                                    onChange={ (ev) => { handleChange_TrackAdd(ev) } }/>
+                                                    <img src={ GetPlatformIcon( (IsEmpty(item.inputString) && !IsEmpty(item.placeholder)) ? GetUrlPlatform(item.placeholder) : item.platform ) } 
+                                                    className='fto-input-drawableIconStart_img' alt='platform_img'/>
+                                                    <input id={`submit_streamPlat_item_${item.id}`} name={`submit_streamPlat_item_${item.id}`} type='text' className='fto_input' 
+                                                    placeholder={ !IsEmpty(item.placeholder) ? item.placeholder : 'Enter Streaming Platform URL' } value={ item.inputString }
+                                                    onChange={ (ev) => { handleChange_TrackEdit(ev) } }/>
                                                 </label>
                                             </div>
                                         );
@@ -579,37 +647,57 @@ const Submit_TrackAdd = () => {
                                 </div>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_wikiaImgUrl'>Enter Fandom/Wikia Image URL:</label>
+                                <label htmlFor='submit_wikiaImgUrl'>Edit Fandom/Wikia Image URL:</label>
                                 <label className='fto-input-drawableIconStart_label'>
-                                    <img src={ GetFandomWikiaIcon( 'fandom_img', pageInputs.submit_wikiaImgUrl ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
+                                    <img src={ GetFandomWikiaIcon( 'fandom_img', (IsEmpty(pageInputs.submit_wikiaImgUrl)) ? submissionContextInfo.submit_wikiaImgUrl : pageInputs.submit_wikiaImgUrl ) } 
+                                    className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                     <input id='submit_wikiaImgUrl' name='submit_wikiaImgUrl' type='text' className='fto_input' 
-                                        placeholder='Wikia Image URL' onChange={ handleChange_TrackAdd }/>
+                                        placeholder='Wikia Image URL' onChange={ handleChange_TrackEdit }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_wikiaWebpageUrl'>Enter Fandom/Wikia Webpage URL:</label>
+                                <label htmlFor='submit_wikiaWebpageUrl'>Edit Fandom/Wikia Webpage URL:</label>
                                 <label className='fto-input-drawableIconStart_label'>
-                                    <img src={ GetFandomWikiaIcon( 'fandom_web', pageInputs.submit_wikiaWebpageUrl ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
+                                    <img src={ GetFandomWikiaIcon( 'fandom_web', (IsEmpty(pageInputs.submit_wikiaWebpageUrl)) ? submissionContextInfo.submit_wikiaWebpageUrl : pageInputs.submit_wikiaWebpageUrl ) }
+                                    className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                     <input id='submit_wikiaWebpageUrl' name='submit_wikiaWebpageUrl' type='text' className='fto_input'
-                                        placeholder='Wikia Webpage URL' onChange={ handleChange_TrackAdd }/>
+                                        placeholder='Wikia Webpage URL' onChange={ handleChange_TrackEdit }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_embeddedYtUrl'>Enter Embedded YT Video URL:</label>
+                                <label htmlFor='submit_embeddedYtUrl'>Edit Embedded YT Video URL:</label>
                                 <label className='fto-input-drawableIconStart_label'>
-                                    <img src={ GetPlatformIcon( GetUrlPlatform(pageInputs.submit_embeddedYtUrl, 'youtube') ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
+                                    <img src={ 
+                                        GetPlatformIcon( 
+                                            GetUrlPlatform((IsEmpty(pageInputs.submit_embeddedYtUrl)) ? 
+                                            GeneratePlatformUrlFromID(submissionContextInfo.submit_embeddedYtUrl, 'youtube') : pageInputs.submit_embeddedYtUrl), 
+                                            'youtube' 
+                                        ) 
+                                    } 
+                                    className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                     <input id='submit_embeddedYtUrl' name='submit_embeddedYtUrl' type='text' className='fto_input'
-                                    plaeholder='Embedded YT Video URL' onChange={ handleChange_TrackAdd }/>
+                                    plaeholder='Embedded YT Video URL' onChange={ handleChange_TrackEdit }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_sceneDesc'>Enter Scene Description:</label>
+                                <label htmlFor='submit_sceneDesc'>Edit Scene Description:</label>
                                 <textarea id='submit_sceneDesc' name='submit_sceneDesc' type='text' className='fto_input'
-                                placeholder='Add Scene Description' onChange={ handleChange_TrackAdd }
+                                placeholder='Add Scene Description' onChange={ handleChange_TrackEdit }
                                 maxLength={ maxCharCountLength_SceneDesc } />
                                 <div className='fto__page__submission-main_content-align_end'>
                                     <span>
                                         {charCount_SceneDesc.length}/{maxCharCountLength_SceneDesc} characters
+                                    </span>
+                                </div>
+                            </div>
+                            <div className='fto__page__submission-main_content-input_section'>
+                                <label htmlFor='submit_editReason'>Reason For Edits:</label>
+                                <textarea id='submit_editReason' name='submit_editReason' type='text' className='fto_input'
+                                placeholder='Short desctription of reason for edits' onChange={ handleChange_TrackEdit }
+                                maxLength={ maxCharCountLength_editReasons } />
+                                <div className='fto__page__submission-main_content-align_end'>
+                                    <span>
+                                        {charCount_editReasons.length}/{maxCharCountLength_editReasons} characters
                                     </span>
                                 </div>
                             </div>
@@ -664,4 +752,4 @@ const Submit_TrackAdd = () => {
     )
 }
 
-export default Submit_TrackAdd
+export default SubmitTrackEdit

@@ -42,8 +42,29 @@ const sortJsonObjectAlphabeticallyExceptLast = (jsonData, specialKey) => {
     return sortedJsonObject;
 };
 
+/**
+ * Converts a string date to a shorthand string representation.
+ * @function GetShorthandDateFromString
+ * @param {string} dateString - The string date to convert (in format 'YYYY-MM-DDTHH:MM:SS.SSSZ').
+ * @returns {string} A shorthand string representation of the date ('YYYY-MM-DD').
+ */
+const GetShorthandDateFromString = (dateString) => {
+  // Create a Date object from the input string
+  const date = new Date(dateString);
+
+  // Get the individual components of the date
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // Add 1 to month since it's zero-based
+  const day = date.getDate();
+
+  // Format the date components into a shorthand string
+  const shorthandDate = `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
+  return shorthandDate;
+}
+
 export { 
     ParseClassName, 
     IsEmpty, 
     sortJsonObjectAlphabeticallyExceptLast,
+    GetShorthandDateFromString,
 };

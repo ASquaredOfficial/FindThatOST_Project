@@ -499,7 +499,7 @@ const Episode = () => {
                             {malAnimeInfo !== undefined && (
                                 <div className='fto__page__episode-main_content--soundtrack_section'>
                                     <div className='fto__page__episode-main_content--add_track_section'>
-                                        <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + 12}>Add New Track</a>
+                                        <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + episode_no}>Add New Track</a>
                                     </div>
 
                                     <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>

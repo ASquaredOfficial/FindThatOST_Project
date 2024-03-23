@@ -63,7 +63,7 @@ const Navbar = () => {
                 (e) => setFormData(e.target.value)
               } 
             />
-            <button type='submit'><img src={search_icon}/></button>
+            <button type='submit'><img src={search_icon} alt='search'/></button>
           </form>
         </div>
       </div>

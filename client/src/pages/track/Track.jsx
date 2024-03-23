@@ -16,6 +16,7 @@ import icon_platform_spotify from '../../assets/drawables/ic_platform_spotify.sv
 import icon_platform_youtube from '../../assets/drawables/ic_platform_youtube.svg'
 import icon_platform_youtube_music from '../../assets/drawables/ic_platform_youtube_music.svg'
 import icon_platform_non_basic from '../../assets/drawables/ic_platform_non_basic.svg'
+import { GetPlatformTrackBaseUrl } from '../../utils/HyperlinkUtils';
 
 const Track = () => {
     const { track_id } = useParams();
@@ -42,41 +43,42 @@ const Track = () => {
 
                 // Set streaming platforms page variable
                 let streamingPlatformsLInks = [];
-                if (trackInfo.streaming_platform_links.data.hasOwnProperty('youtube') && !IsEmpty(trackInfo.streaming_platform_links.data.youtube)) {
+                let platformData = trackInfo.streaming_platform_links.data;
+                if (platformData.hasOwnProperty('youtube') && !IsEmpty(platformData.youtube)) {
                     let plaftormLink = {};
                     plaftormLink.platform_type = 'youtube';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.youtube;
+                    plaftormLink.link_url = GetPlatformTrackBaseUrl(plaftormLink.platform_type) + platformData.youtube;
                     streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('youtube_music') && !IsEmpty(trackInfo.streaming_platform_links.data.youtube_music)) {
+                } if (platformData.hasOwnProperty('youtube_music') && !IsEmpty(platformData.youtube_music)) {
                     let plaftormLink = {};
                     plaftormLink.platform_type = 'youtube_music';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.youtube_music;
+                    plaftormLink.link_url = GetPlatformTrackBaseUrl(plaftormLink.platform_type) + platformData.youtube_music;
                     streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('spotify') && !IsEmpty(trackInfo.streaming_platform_links.data.spotify)) {
+                } if (platformData.hasOwnProperty('spotify') && !IsEmpty(platformData.spotify)) {
                     let plaftormLink = {};
                     plaftormLink.platform_type = 'spotify';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.spotify;
+                    plaftormLink.link_url = GetPlatformTrackBaseUrl(plaftormLink.platform_type) + platformData.spotify;
                     streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('shazam') && !IsEmpty(trackInfo.streaming_platform_links.data.shazam)) {
+                } if (platformData.hasOwnProperty('shazam') && !IsEmpty(platformData.shazam)) {
                     let plaftormLink = {};
                     plaftormLink.platform_type = 'shazam';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.shazam;
+                    plaftormLink.link_url = GetPlatformTrackBaseUrl(plaftormLink.platform_type) + platformData.shazam;
                     streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('apple_music') && !IsEmpty(trackInfo.streaming_platform_links.data.apple_music)) {
+                } if (platformData.hasOwnProperty('apple_music') && !IsEmpty(platformData.apple_music)) {
                     let plaftormLink = {};
                     plaftormLink.platform_type = 'apple_music';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.apple_music;
+                    plaftormLink.link_url = GetPlatformTrackBaseUrl(plaftormLink.platform_type) + platformData.apple_music;
                     streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('amazon_music') && !IsEmpty(trackInfo.streaming_platform_links.data.amazon_music)) {
+                } if (platformData.hasOwnProperty('amazon_music') && !IsEmpty(platformData.amazon_music)) {
                     let plaftormLink = {};
                     plaftormLink.platform_type = 'amazon_music';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.amazon_music;
+                    plaftormLink.link_url = GetPlatformTrackBaseUrl(plaftormLink.platform_type) + platformData.amazon_music;
                     streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('non_basic') && !IsEmpty(trackInfo.streaming_platform_links.data.non_basic)) {
-                    for (let i = 0; i < trackInfo.streaming_platform_links.data.non_basic.length; i++) {
+                } if (platformData.hasOwnProperty('non_basic') && !IsEmpty(platformData.non_basic)) {
+                    for (let i = 0; i < platformData.non_basic.length; i++) {
                         let plaftormLink = {};
                         plaftormLink.platform_type = 'non_basic';
-                        plaftormLink.link_url = trackInfo.streaming_platform_links.data.non_basic[i].url;
+                        plaftormLink.link_url = platformData.non_basic[i].url;
                         streamingPlatformsLInks.push(plaftormLink);
                     }
                 }
@@ -236,7 +238,11 @@ const Track = () => {
                             </div>
 
                             <div className='fto__page__track-main_content--edit_track_section'>
-                                <a className='fto__button__pink' href={'/submission/track_edit/'}>Edit Track</a>
+                                {(spOccurrenceID !== -1 ) ? (
+                                    <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '?context_id=' + spOccurrenceID}>Edit Track</a>
+                                ) : (
+                                    <a className='fto__button__pink' href={'/submission/track_edit/' + track_id}>Edit Track</a>
+                                )}
                             </div>
 
                             <div>

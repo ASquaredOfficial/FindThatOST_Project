@@ -15,6 +15,7 @@ const {
     GetTrack, 
     GetSubmissionContext_TrackAdd, 
     PostSubmission_TrackAdd,
+    GetSubmissionContext_TrackEdit,
 } = require('./sql/database');
 
 app.use(express.json());
@@ -205,7 +206,6 @@ app.get("/findthatost_api/getEpisodes/anime/:nFtoAnimeID", async (req, res) => {
 });
 
 app.post("/findthatost_api/postMissingEpisodes/:nFtoAnimeID", async (req, res) => {
-    var date = new Date(); // for now
     const { data } = req.body;
 
     if (!data || !Array.isArray(data) || data.length === 0) {
@@ -237,10 +237,8 @@ app.post("/findthatost_api/postMissingEpisodes/:nFtoAnimeID", async (req, res) =
     catch (error) {
         let objError = {};
         objError.error = 'Internal Request Error';
-        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
         objError.details = error;
         res.status(500).json(objError);
-        console.log(`Insert Request Error (${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}):\n`, error);
     }
 }); 
 
@@ -331,10 +329,6 @@ app.get("/findthatost_api/getSubmissionContext/track_add/:nFtoAnimeID/episode_no
     catch (error) {
         let objError = {};
         objError.error = 'Internal Server Error';
-        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', {
-            minimumIntegerDigits: 2,
-            useGrouping: false
-          })}`;
         objError.details = error;
         res.status(500).json(objError);
     }
@@ -366,6 +360,43 @@ app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFt
         res.status(500).json(objError);
         console.log(`Insert Requestf Error (${objError.time}):\n`, error);
     } 
+});
+
+app.get("/findthatost_api/getSubmissionContext/track_edit/:nFtoTrackID/", async (req, res) => {
+    //Get Conext information to add a track to the anime with corresponding FTO Anime ID
+    const nFtoTrackID = req.params.nFtoTrackID;
+    try {
+        const ftoTracksDetails = await GetSubmissionContext_TrackEdit(nFtoTrackID);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.get("/findthatost_api/getSubmissionContext/track_edit/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", async (req, res) => {
+    //Get Conext information to add a track to the anime with corresponding FTO Anime ID and episode number
+    const nFtoTrackID = req.params.nFtoTrackID;
+    const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
+    try {
+        const ftoTracksDetails = await GetSubmissionContext_TrackEdit(nFtoTrackID, nFtoOccurrenceID);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
 });
 
 app.listen(port, ()=> {console.log(`Server started on port ${port}`)});
