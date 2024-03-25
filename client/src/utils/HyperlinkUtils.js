@@ -395,9 +395,11 @@ const GetIdFromDeezerUrl = (deezerUrl) => {
         https://www.deezer.com/track/2413426495
         https://www.deezer.com/us/track/2413426495
         https://www.deezer.com/us/track/2413426495?host=0&utm_campaign=clipboard-generic&utm_source=user_sharing&utm_content=track-2413426495&deferredFl=1d
+        https://www.deezer.com/us/track/1059340662
+        https://www.deezer.com/en/track/2413426495?host=0&utm_campaign=clipboard-generic&utm_source=user_sharing&utm_content=track-2413426495&deferredFl=1
     */
     //Get Track ASIN
-    const pattern = /\/track\/([A-Za-z0-9]+)\?/;
+    const pattern = /deezer.com\/(?:[A-Za-z]{2}\/)?track\/([0-9]+)/;
     const match = deezerUrl.match(pattern);
     if (match) {
         return match[1];
@@ -425,14 +427,14 @@ const GetUrlPlatform = (linkUrl) => {
     else if (IsShazamTrackUrl(linkUrl)) {
         return 'shazam';
     }
+    else if (IsDeezerTrackUrl(linkUrl)) {
+        return 'deezer';
+    }
     else if (IsAppleMusicTrackUrl(linkUrl)) {
         return 'apple_music';
     }
     else if (IsAmazonMusicTrackUrl(linkUrl)) {
         return 'amazon_music';
-    }
-    else if (IsDeezerTrackUrl(linkUrl)) {
-        return 'deezer';
     }
     else {
         return 'non_basic';
@@ -503,15 +505,46 @@ const GetPlatformTrackBaseUrl = (strPlatform) => {
             return "https://open.spotify.com/track/";
         case 'shazam':
             return "https://www.shazam.com/track/";
+        case 'deezer':
+            return "https://www.deezer.com/track/";
         case 'apple_music':
             return "https://music.apple.com/song/";
         case 'amazon_music':
             return "https://music.amazon.com/albums/";
-        case 'deezer':
-            return "https://www.deezer.com/track/";
         case 'non_basic':
         default:
             return "";
+    }
+}
+
+/**
+ * Get Name of platform based on platform type.
+ * @function GetPlatformNameString
+ * @param {String}  strPlatformType - Streaming Platform Type.
+ * @returns {String} Name of Platform.
+ * 
+ */
+const GetPlatformNameString = (strPlatformType) => {
+    if (strPlatformType === 'youtube') {
+        return 'Youtube';
+    } else if (strPlatformType === 'youtube_music') {
+        return 'Youtube Music';
+    } else if (strPlatformType === 'spotify') {
+        return 'Spotify';
+    } else if (strPlatformType === 'shazam') {
+        return 'Shazam';
+    } else if (strPlatformType === 'soundcloud') {
+        return 'Soundcloud';
+    } else if (strPlatformType === 'deezer') {
+        return 'Deezer';
+    } else if (strPlatformType === 'apple_music') {
+        return 'Apple Music';
+    } else if (strPlatformType === 'amazon_music') {
+        return 'Amazon Music';
+    } else if (strPlatformType === 'non_basic') {
+        return 'Unknown Platform';
+    } else {
+        return 'Unknown Platform';
     }
 }
 
@@ -706,6 +739,7 @@ export {
     IsSpotifyTrackUrl,
     IsShazamUrl,
     IsShazamTrackUrl, 
+    IsDeezerTrackUrl,
     IsAppleMusicUrl,
     IsAppleMusicTrackUrl,
     IsAmazonMusicUrl, 
@@ -717,6 +751,7 @@ export {
 
     GetUrlPlatform,
     GetPlatformIcon,
+    GetPlatformNameString,
     StandardiseTrackUrl,
     GetPlatformTrackBaseUrl,
     GeneratePlatformUrlFromID,

@@ -16,7 +16,9 @@ const {
     GetSubmissionContext_TrackAdd, 
     PostSubmission_TrackAdd,
     GetSubmissionContext_TrackEdit,
+    PostSubmission_TrackEdit,
 } = require('./sql/database');
+const { IsEmpty } = require('./utils/BackendUtils');
 
 app.use(express.json());
 // app.use((req, res, next) => {
@@ -345,7 +347,7 @@ app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFt
     try {
         const nFtoAnimeID = req.params.nFtoAnimeID;
         const nFtoEpisodeID = req.params.nFtoEpisodeID;
-        const ftoResponse = await PostSubmission_TrackAdd(nFtoAnimeID, nFtoEpisodeID, objUserSubmission, objUserSubmission.user_id);
+        const ftoResponse = await PostSubmission_TrackAdd(nFtoAnimeID, nFtoEpisodeID, objUserSubmission);
         res.status(200).json(ftoResponse);
     } 
     catch (error) {
@@ -397,6 +399,39 @@ app.get("/findthatost_api/getSubmissionContext/track_edit/:nFtoTrackID/occurrenc
         objError.details = error;
         res.status(500).json(objError);
     }
+});
+
+app.post("/findthatost_api/postSubmission/track_edit/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", async (req, res) => {
+    const { objUserSubmission } = req.body;
+    if (!objUserSubmission) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const nFtoTrackID = req.params.nFtoTrackID;
+        const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
+        console.log("Details:", objUserSubmission);
+        const ftoResponse = await PostSubmission_TrackEdit(nFtoTrackID, nFtoOccurrenceID, objUserSubmission);
+        if (!IsEmpty(ftoResponse)) {
+            res.status(200).json(ftoResponse);
+        }
+        else {
+            throw new Error("Expected non empty array.");
+        }
+    } 
+    catch (error) {
+        let date = new Date(); // for now
+        let objError = {};
+        objError.error = 'Internal Request Error';
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
+        {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })}`;
+        objError.details = error;
+        res.status(500).json(objError);
+        console.log(`Insert Request Error (${objError.time}):\n`, error);
+    } 
 });
 
 app.listen(port, ()=> {console.log(`Server started on port ${port}`)});

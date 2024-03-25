@@ -5,26 +5,28 @@ import { IsFandomImageUrl, IsFandomCommunityWebsiteUrl, IsYoutubeVideoUrl, GetUr
  * Check if page has any errors.
  * @function ValidateInputs
  * @param {HTMLFormControlsCollection|object}  formElements - Form Elements with page inputs.
- * @param {{id: number; platform: string; inputString: string;}[]}  listOfPlatformInputs - List of objects for each platform input.
+ * @param {{id: number; platform_type: string; inputString: string;}[]}  listOfPlatformInputs - List of objects for each platform input.
  * @param {Object} stateSetterFunctions - Object containing state setter functions.
  * @param {function} stateSetterFunctions.setUserSubmission - State setter function for updating the userSubmission state to send to database
  * @param {function} stateSetterFunctions.setPlatformItems - State setter function for updating platformItems state.
  * @param {function} stateSetterFunctions.setPageInputs - State setter function for updating pageInputs state.
- * @param {boolean} submitPreExistingTrack - Are we validating inputs for pre-existing track
+ * @param {boolean} [submitPreExistingTrack=false] - Are we validating inputs for pre-existing track
  * @param {object} pageInputs - pageInputs
  * @returns {boolean} 
  * 
  */
-const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions, pageInputs, submitPreExistingTrack = false) => {
+const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions, pageInputs, submitPreExistingTrack = false, submitEditTrack = false) => {
     const { setUserSubmission, setPlatformItems, setPageInputs } = stateSetterFunctions;
     let strElemIdFirstInvalidInput = '';
     let inputElement = HTMLElement;
 
     // Validate Track Name
-    inputElement = formElements[`submit_trackName`];
-    if (IsEmpty(inputElement.value)) {
-        AddErrorToFtoInput(inputElement);
-        strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
+    if (!submitEditTrack) {
+        inputElement = formElements[`submit_trackName`];
+        if (IsEmpty(inputElement.value)) {
+            AddErrorToFtoInput(inputElement);
+            strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
+        }
     }
 
     // Validate Song Type
@@ -76,11 +78,11 @@ const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions
             }
 
             // Validate for unique streaming platforms
-            const uniquePlatformNames = [...new Set(listOfPlatformInputs.map(platObj => platObj.platform))];
+            const uniquePlatformNames = [...new Set(listOfPlatformInputs.map(platObj => platObj.platform_type))];
             uniquePlatformNames.forEach(platformName => {
                 if (platformName !== 'non_basic') {
                     // Get sublist of objects with platform {platformName}
-                    const sublist = listOfPlatformInputs.filter(platObj => platObj.platform === platformName);
+                    const sublist = listOfPlatformInputs.filter(platObj => platObj.platform_type === platformName);
                     if (sublist.length >= 2) {
                         sublist.forEach(platObj => {
                             // Add error to each platform duplicate 
@@ -118,6 +120,15 @@ const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions
                 AddErrorToFtoInput(inputElement);
                 strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
             }
+        }
+    }
+ 
+    // Validate Track Name
+    if (submitEditTrack) {
+        inputElement = formElements[`submit_editReason`];
+        if (IsEmpty(inputElement.value)) {
+            AddErrorToFtoInput(inputElement);
+            strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
         }
     }
 
@@ -177,7 +188,7 @@ const AddErrorToFtoInput = (ftoInputElement) => {
  */
 const AddPlatformInputToPage = (stateSetterFunctions, noOfPlatInputsCreated, strNewPlatform = '') => {
     const { setPlatformItems, setNoOfPlatInputsCreated } = stateSetterFunctions;
-    const newPlatform = { id: noOfPlatInputsCreated + 1, platform: 'non_basic', inputString: '' };
+    const newPlatform = { id: noOfPlatInputsCreated + 1, platform_type: 'non_basic', inputString: '' };
     setPlatformItems(prevItems => [...prevItems, newPlatform]);
     setNoOfPlatInputsCreated(count => count + 1);
 
@@ -218,7 +229,7 @@ const RemovePlatformInputFomPage = (platformItemId, stateSetterFunctions) => {
  * @function ListenToPlatformInput
  * @param {String} inputValue - Platform Item ID for input to delete.
  * @param {Number} item_id - Platform Item ID for input to delete.
- * @param {{id: number; platform: string; inputString: string;}[]}  listOfPlatformInputs - List of objects for each platform input.
+ * @param {{id: number; platform_type: string; inputString: string;}[]}  listOfPlatformInputs - List of objects for each platform input.
  * @param {Object} stateSetterFunctions - Object containing state setter functions.
  * @param {function} stateSetterFunctions.setPlatformItems - State setter function for updating platformItems state.
  * @param {String} strInputUrl - Input url for input, to use instead of the inputValue setter function for updating platformItems state.
@@ -229,11 +240,11 @@ const ListenToPlatformInput = (inputValue, item_id, listOfPlatformInputs, stateS
     const { setPlatformItems } = stateSetterFunctions;
     let urlString = (IsEmpty(strInputUrl)) ? inputValue : strInputUrl;
     let platformString = GetUrlPlatform(String(urlString).trim());
-    console.log("Get platform of string:", urlString, "\nPlatform is:", platformString)
+    console.debug("Get platform of string:", urlString, "\nPlatform is:", platformString)
 
     const updatedItems = listOfPlatformInputs.map(item => {
         if (item.id === item_id) {
-            return { ...item, platform: platformString, inputString: urlString };
+            return { ...item, platform_type: platformString, inputString: urlString };
         }
         return item;
     });

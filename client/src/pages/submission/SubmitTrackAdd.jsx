@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import { useLocation, useParams } from "react-router-dom";
-import { ValidateInputs, AddErrorToFtoInput, AddPlatformInputToPage, RemovePlatformInputFomPage, ListenToPlatformInput } from "./submission";
+import { ValidateInputs, AddPlatformInputToPage, RemovePlatformInputFomPage, ListenToPlatformInput } from "./submission";
 import './submission.css';
 
 import { Navbar, Footer} from "../../components";
 import { IoAdd, IoTrash } from "react-icons/io5";
-import { IsEmpty, sortJsonObjectAlphabeticallyExceptLast } from '../../utils/RegularUtils';
-import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetIdFromTrackUrl } from '../../utils/HyperlinkUtils';
+import { FormatStreamingPlatformsToJson, IsEmpty } from '../../utils/RegularUtils';
+import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from '../../routing/navigation'
 
-const Submit_TrackAdd = () => {
+const SubmitTrackAdd = () => {
     const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
     const location = useLocation();
     const { anime_id } = useParams();
@@ -22,7 +22,7 @@ const Submit_TrackAdd = () => {
     const [ pageInputs, setPageInputs ] = useState({});
     const [ userSubmission, setUserSubmission ] = useState({submit_streamPlat: []});
     const [ submissionContextInfo, setSubmissionContextInfo ] = useState();
-    const [ platformItems, setPlatformItems ] = useState([{ id: 1, platform: 'non_basic', inputString: '' }]);
+    const [ platformItems, setPlatformItems ] = useState([{ id: 1, platform_type: 'non_basic', inputString: '' }]);
     const [ noOfPlatInputsCreated, setNoOfPlatInputsCreated ] = useState(1);
     const [ submitPreExistingTrack, setSubmitPreExistingTrack ] = useState(false);
     const [ successfulSubmitQuery, setSuccessfulSubmitQuery ] = useState();
@@ -31,7 +31,7 @@ const Submit_TrackAdd = () => {
     
     useEffect(() => {
         document.title = `Submit | Add Track | AnimeID(${anime_id}) and EpisodeNo(${spEpisodeNo})`;
-        console.log(`Render-Submit_TrackAdd (onMount): ${window.location.href}\nAnimeID:${anime_id}\nEpisodeNo:${spEpisodeNo}`);
+        console.log(`Render-SubmitTrackAdd (onMount): ${window.location.href}\nAnimeID:${anime_id}\nEpisodeNo:${spEpisodeNo}`);
 
         // Fetch page data for anime and corresponding epsiode
         FetchPageData(anime_id, spEpisodeNo);
@@ -161,7 +161,7 @@ const Submit_TrackAdd = () => {
                     const foundObject = pageInputs.submit_streamPlat.find(platObj => platObj.id === platElemId);
                     console.debug(`Platform input for element Name${inputElementName} used to be:`, foundObject);
 
-                    const inputDuplucatePlatform = foundObject.platform;
+                    const inputDuplucatePlatform = foundObject.platform_type;
                     if (inputDuplucatePlatform !== 'non_basic') {
                         // Get check if current input is still the same platform
                         if (GetUrlPlatform(inputElementValue) === inputDuplucatePlatform) {
@@ -171,7 +171,7 @@ const Submit_TrackAdd = () => {
 
                         // Un-error duplicate platform inputs, if no more duplicate platforms
                         const filteredArray = pageInputs.submit_streamPlat.filter(platObj => {
-                            return ((platObj.platform === inputDuplucatePlatform) && (platObj.id !== platElemId));
+                            return ((platObj.platform_type === inputDuplucatePlatform) && (platObj.id !== platElemId));
                         });
                         const numberOfObjects = filteredArray.length;
                         if (numberOfObjects < 2) {
@@ -287,41 +287,41 @@ const Submit_TrackAdd = () => {
         
         const initPlatformItems = [
             { 
-                id: 1, platform: 'youtube', 
+                id: 1, platform_type: 'youtube', 
                 inputString: 'https://youtu.be/5RaU8K8sLTM?feature=shared' 
             },
             { 
-                id: 2, platform: 'spotify', 
+                id: 2, platform_type: 'spotify', 
                 inputString: 'https://open.spotify.com/track/0GWNtMohuYUEHVZ40tcnHF?si=3a359543d4984116' 
             },
             { 
-                id: 3, platform: 'shazam', 
+                id: 3, platform_type: 'shazam', 
                 inputString: 'https://www.shazam.com/track/5933774/dont-speak' 
             },
             { 
-                id: 4, platform: 'non_basic', 
+                id: 4, platform_type: 'non_basic', 
                 inputString: 'https://deezer.page.link/7eaLrDMjxMiU1Mco8' 
             },
             { 
-                id: 5, platform: 'apple_music', 
+                id: 5, platform_type: 'apple_music', 
                 inputString: 'https://music.apple.com/gb/album/you-say-run/1127313836?i=1127314187' 
             },
             { 
-                id: 6, platform: 'deezer', 
+                id: 6, platform_type: 'deezer', 
                 inputString: 'https://www.deezer.com/us/track/2413426495?host=0&utm_campaign=clipboard-generic&utm_source=user_sharing&utm_content=track-2413426495&deferredFl=1d' 
             },
             { 
-                id: 7, platform: 'non_basic', 
+                id: 7, platform_type: 'non_basic', 
                 inputString: '', 
             },
             { 
-                id: 8, platform: 'amazon_music', 
+                id: 8, platform_type: 'amazon_music', 
                 inputString: 'https://music.amazon.com.au/albums/B07VZ3WBQ1?trackAsin=B07W164Q6Q' 
             },
         ]
 
         setPlatformItems(initPlatformItems);
-        setNoOfPlatInputsCreated(initPlatformItems.length)
+        setNoOfPlatInputsCreated(initPlatformItems.length);
         setPageInputs(values => {
             return {
                 ...values, 
@@ -387,30 +387,10 @@ const Submit_TrackAdd = () => {
         const formValues = event.target.elements // as HTMLFormControlsCollection;
         let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs, submitPreExistingTrack);
         if (inputsValid) {
-            //Format streaming platforms json
-            let jsonDataObject = {}
-            let listOfNonBasicUrls = [];
-            platformItems.forEach(platItem => {
-                if (!IsEmpty(platItem.inputString)) {
-                    if (platItem.platform !== 'non_basic') {
-                        jsonDataObject[platItem.platform] = GetIdFromTrackUrl(platItem.inputString);
-                    }
-                    else {
-                        let nonBasicUrlObj = {};
-                        nonBasicUrlObj['url'] = platItem.inputString;
-                        listOfNonBasicUrls.push(nonBasicUrlObj);
-                    }
-                }
-            });
-            if (listOfNonBasicUrls.length > 0) {
-                jsonDataObject.non_basic = listOfNonBasicUrls;
-            }
-            const jsonSubmission = {data: sortJsonObjectAlphabeticallyExceptLast(jsonDataObject, 'non_basic')};
-
             // Update userSubmission
             const updatedSubmission = { 
                 ...userSubmission, 
-                submit_streamPlat: jsonSubmission 
+                submit_streamPlat: FormatStreamingPlatformsToJson(platformItems), 
             }; 
             for (const [key, value] of Object.entries(pageInputs)) {
                 if (key.startsWith('submit_streamPlat')) {
@@ -429,10 +409,10 @@ const Submit_TrackAdd = () => {
                     }
                 }
                 else if (key === 'submit_embeddedYtUrl') {
-                    updatedSubmission[key] = GetIdFromYoutubeUrl(value);
+                    updatedSubmission[key] = !IsEmpty(GetIdFromYoutubeUrl(value)) ?  GetIdFromYoutubeUrl(value) : '';
                 }
                 else if (key === 'submit_wikiaImgUrl') {
-                    updatedSubmission[key] = GetFandomImageUrlFromFullUrl(value);
+                    updatedSubmission[key] = !IsEmpty(GetFandomImageUrlFromFullUrl(value)) ? GetFandomImageUrlFromFullUrl(value) : '';
                 }
                 else {
                     updatedSubmission[key] = value;
@@ -441,9 +421,8 @@ const Submit_TrackAdd = () => {
             setUserSubmission(updatedSubmission);
             
             console.debug(`Fetch data:`, updatedSubmission);  
-            console.debug(`Fetch data:`, updatedSubmission.submit_wikiaImgUrl);  
             await new Promise(resolve => setTimeout(resolve, 1000));  
-            // FetchPostSubmissionTrackAdd_FTO(anime_id, spEpisodeNo, updatedSubmission);
+            FetchPostSubmissionTrackAdd_FTO(anime_id, spEpisodeNo, updatedSubmission);
         }
         setPageLoading(false);
     }
@@ -507,14 +486,16 @@ const Submit_TrackAdd = () => {
                         <form id='track_add_form' onSubmit={ handleSubmit_TrackAdd }>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_trackName'>Enter Track Name<span className='fto-red__asterisk'>*</span>:</label>
-                                <input id='submit_trackName' name='submit_trackName' type='text' className='fto_input' placeholder='Track Name'
-                                onChange={ handleChange_TrackAdd }/>
-                                <div className='fto__page__submission-main_content-align_end fto__pointer'>
-                                    <IoAdd />
-                                    <span>
-                                        Add track from series archive 
-                                    </span>
-                                </div>
+                                <input id='submit_trackName' name='submit_trackName' type='text' className='fto_input' 
+                                    placeholder='Track Name' onChange={ handleChange_TrackAdd }/>
+                                <button className='fto__button__pink fto__button__right fto__pointer' type='button' onClick={handleAddPlatform}>
+                                    <div className='fto__page__submission-main_content-align_end'>
+                                        <IoAdd />
+                                        <span style={{margin: '0px 5px'}}>
+                                            Add track from series archive 
+                                        </span>
+                                    </div>
+                                </button>
                             </div>
                             <div className='fto__page__submission-main_content-even_split fto__page__submission-main_content-even_split_gap'>
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-left'>
@@ -538,7 +519,7 @@ const Submit_TrackAdd = () => {
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-right'>
                                     <label htmlFor='submit_releaseDate'>Enter Release Date:</label>
                                     <input id='submit_releaseDate' name='submit_releaseDate' type='date' className='fto_input' max={new Date().toLocaleDateString('fr-ca')}
-                                    onChange={ handleChange_TrackAdd }/>
+                                        onChange={ handleChange_TrackAdd }/>
                                 </div>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
@@ -558,25 +539,27 @@ const Submit_TrackAdd = () => {
                                         return (
                                             <div id={`streamPlat_item_section_`+ item.id} key={item.id}
                                             className='fto__page__submission-main_content-streamPlat_item'>
-                                                <div className='delete_streamPlat_item'>
+                                                <div className='delete_streamPlat_item' tabIndex='0'>
                                                     <IoTrash id={`delete_streamPlat_item_`+ item.id} onClick={() => handleRemovePlatform(item.id)}/>
                                                 </div>
                                                 <label className='fto-input-drawableIconStart_label'>
-                                                    <img src={ GetPlatformIcon( item.platform ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
+                                                    <img src={ GetPlatformIcon( item.platform_type ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                                     <input id={`submit_streamPlat_item_${item.id}`} name={`submit_streamPlat_item_${item.id}`} type='text' className='fto_input' placeholder='Enter Streaming Platform URL'
-                                                    value={ item.inputString }
-                                                    onChange={ (ev) => { handleChange_TrackAdd(ev) } }/>
+                                                        value={ item.inputString }
+                                                        onChange={ (ev) => { handleChange_TrackAdd(ev) } }/>
                                                 </label>
                                             </div>
                                         );
                                     })}
                                 </div>
-                                <div className='fto__page__submission-main_content-align_end fto__pointer' onClick={handleAddPlatform}>
-                                    <span>
-                                        Add platform 
-                                    </span>
-                                    <IoAdd />
-                                </div>
+                                <button className='fto__button__pink fto__button__right fto__pointer' type='button' onClick={handleAddPlatform}>
+                                    <div className='fto__page__submission-main_content-align_end'>
+                                        <span style={{margin: '0px 5px'}}>
+                                            Add platform 
+                                        </span>
+                                        <IoAdd />
+                                    </div>
+                                </button>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_wikiaImgUrl'>Enter Fandom/Wikia Image URL:</label>
@@ -591,7 +574,7 @@ const Submit_TrackAdd = () => {
                                 <label className='fto-input-drawableIconStart_label'>
                                     <img src={ GetFandomWikiaIcon( 'fandom_web', pageInputs.submit_wikiaWebpageUrl ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                     <input id='submit_wikiaWebpageUrl' name='submit_wikiaWebpageUrl' type='text' className='fto_input'
-                                        placeholder='Wikia Webpage URL' onChange={ handleChange_TrackAdd }/>
+                                        placeholder='Wikia Album Webpage URL' onChange={ handleChange_TrackAdd }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
@@ -599,14 +582,14 @@ const Submit_TrackAdd = () => {
                                 <label className='fto-input-drawableIconStart_label'>
                                     <img src={ GetPlatformIcon( GetUrlPlatform(pageInputs.submit_embeddedYtUrl, 'youtube') ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                     <input id='submit_embeddedYtUrl' name='submit_embeddedYtUrl' type='text' className='fto_input'
-                                    plaeholder='Embedded YT Video URL' onChange={ handleChange_TrackAdd }/>
+                                        placeholder='Embedded YT Video URL' onChange={ handleChange_TrackAdd }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_sceneDesc'>Enter Scene Description:</label>
                                 <textarea id='submit_sceneDesc' name='submit_sceneDesc' type='text' className='fto_input'
-                                placeholder='Add Scene Description' onChange={ handleChange_TrackAdd }
-                                maxLength={ maxCharCountLength_SceneDesc } />
+                                    placeholder='Add Scene Description' onChange={ handleChange_TrackAdd }
+                                    maxLength={ maxCharCountLength_SceneDesc } />
                                 <div className='fto__page__submission-main_content-align_end'>
                                     <span>
                                         {charCount_SceneDesc.length}/{maxCharCountLength_SceneDesc} characters
@@ -664,4 +647,4 @@ const Submit_TrackAdd = () => {
     )
 }
 
-export default Submit_TrackAdd
+export default SubmitTrackAdd

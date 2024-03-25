@@ -53,14 +53,14 @@ export const useCustomNavigate = () => {
     });
   };
 
-  const navigateToTrack = (nFtoAnimeID = -1, nEpisodeNo = -1, objAnimeEpisodeData = {}) => {
-    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoAnimeID  === -1 || nEpisodeNo  === -1)) {
+  const navigateToTrack = (nFtoAnimeID = -1, nFtoEpisodeID = -1) => {
+    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoAnimeID  === -1 || nFtoEpisodeID  === -1)) {
       alert('Operation failed');
       console.error(`Unable to navigate to page (Track) because parameters contain an invalid value`);
       return;
     }
     
-    navigate(`/track/${nFtoAnimeID}/episode/${nEpisodeNo}`);
+    navigate(`/track/${nFtoAnimeID}?context_id=${nFtoEpisodeID}`);
   };
 
 

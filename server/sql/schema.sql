@@ -96,3 +96,28 @@ CREATE TABLE `fto_request_track_add` (
     FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`),
     FOREIGN KEY (`fto_episode_id`) REFERENCES `fto_episode` (`episode_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `fto_request_track_edit` (
+    `request_track_edit_id` int(11) NOT NULL AUTO_INCREMENT,
+    `request_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `request_state` enum('PENDING','ACCEPTED','REJECTED') NOT NULL DEFAULT 'ACCEPTED',
+    `request_rejection_reason` varchar(200) DEFAULT NULL,
+    `fto_user_id` int(11) NOT NULL,
+    `fto_track_id` int(11) NOT NULL,
+    `fto_occurrence_id` int(11) NOT NULL,
+    `track_type` enum('OP','ED','IM','BGM') DEFAULT NULL,
+    `scene_description` varchar(250) DEFAULT NULL,
+    `track_name` varchar(255) DEFAULT NULL,
+    `artist_name` varchar(255) DEFAULT NULL,
+    `label_name` varchar(255) DEFAULT NULL,
+    `release_date` date DEFAULT NULL,
+    `streaming_platform_links` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+    `fandom_image_link` varchar(2048) DEFAULT NULL,
+    `fandom_webpage_link` varchar(2048) DEFAULT NULL,
+    `embedded_yt_video_id` varchar(11) DEFAULT NULL,
+    `track_edit_reason` varchar(200) NOT NULL,
+    PRIMARY KEY (`request_track_edit_id`),
+    FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`),
+    FOREIGN KEY (`fto_occurrence_id`) REFERENCES `fto_occurrence` (`occurrence_id`),
+    FOREIGN KEY (`fto_track_id`) REFERENCES `fto_track` (`track_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

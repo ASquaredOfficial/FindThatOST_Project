@@ -27,9 +27,7 @@ const Navbar = () => {
   
   useEffect(() => {
     // Render (onMount)
-    console.log(`Render-Navbar (onMount): ${window.location.href}`);  
-
-    if (window.location.href.startsWith(window.location.origin + '/search')) {
+   if (window.location.href.startsWith(window.location.origin + '/search')) {
       //if search page, add search string from url to searchbar
       setFormData(new URLSearchParams(window.location.search).get('query'))
     }

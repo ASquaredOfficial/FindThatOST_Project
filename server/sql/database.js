@@ -330,13 +330,12 @@ const GetSubmissionContext_TrackAdd = (nFtoAnimeID, nEpisodeNo = -1) => {
  * @param {number} nFtoAnimeID -  The ID of the episode submission is for.
  * @param {number} nFtoEpisodeID - The ID of the episode submission is for.
  * @param {object} objSubmitDetails - The data being submitted by the user.
- * @param {number} nUserID - The User ID of user submitting this submission.
  * @returns {Promise<object[]>} A promise that resolves to an array of anime objects matching the provided ID.
  *                              Each object represents an anime record from the database.
  *                              If no matching records are found, the promise resolves to an empty array.
  *                              If an error occurs during the database query, the promise rejects with the error.
  */
-const PostSubmission_TrackAdd = (nFtoAnimeID, nFtoEpisodeID = -1, objSubmitDetails, nUserID) => {
+const PostSubmission_TrackAdd = (nFtoAnimeID, nFtoEpisodeID = -1, objSubmitDetails) => {
 	return new Promise((resolve, reject) => {
     	
 		FtoConnectionPool.getConnection((err, ftoConnectionPool) => {
@@ -410,6 +409,7 @@ const PostSubmission_TrackAdd = (nFtoAnimeID, nFtoEpisodeID = -1, objSubmitDetai
 						submissionResults['fto_occurrence'] = result2;
 						
 						// Retrieve the auto-incremented ID from the first insert and Prepare Third insert query using the retrieved ID
+						const nUserID = Number(objSubmitDetails['user_id']);
 						const insertedOccurrenceId = Number(result2.insertId);
 						const sqlQuery3 = 'INSERT INTO `fto_request_track_add` SET ?';
 						const postData3 = { 
@@ -492,6 +492,7 @@ const GetSubmissionContext_TrackEdit = (nFtoTrackID, nFtoOccurrenceID = -1) => {
 	
     if (nFtoOccurrenceID !== -1) {
 		sqlQuery.splice(2, 0, "INNER JOIN `fto_occurrence` ON fto_track.track_id = fto_occurrence.fto_track_id");
+		sqlQuery.splice(3, 0, "INNER JOIN fto_episode ON fto_occurrence.fto_episode_id = fto_episode.episode_id");
 		sqlQuery.push(`AND occurrence_id = ${nFtoOccurrenceID}`)
     }
     const handler = new SQLArrayHandler(sqlQuery);
@@ -507,6 +508,186 @@ const GetSubmissionContext_TrackEdit = (nFtoTrackID, nFtoOccurrenceID = -1) => {
   });
 }
 
+
+/**
+ * Submits a new track to the FTO database.
+ * @function PostSubmission_TrackEdit
+ * @param {number} nFtoTrackID -  The ID of the track submission is for.
+ * @param {number} nFtoOccurrenceID - The ID of the occurrence submission is for.
+ * @param {object} objUserSubmission - The data being submitted by the user.
+ * @returns {Promise<object[]>} A promise that resolves to an array of anime objects matching the provided ID.
+ *                              Each object represents an anime record from the database.
+ *                              If no matching records are found, the promise resolves to an empty array.
+ *                              If an error occurs during the database query, the promise rejects with the error.
+ */
+const PostSubmission_TrackEdit = (nFtoTrackID, nFtoOccurrenceID, objUserSubmission) => {
+	return new Promise((resolve, reject) => {
+    	
+		FtoConnectionPool.getConnection((err, ftoConnectionPool) => {
+			if (err) {
+				LogError('PostSubmission_TrackEdit', `Failed to connect to the database.\nError Message: ${err.sqlMessage}`, LineNumber());
+				reject(GetSqlErrorObj(err));
+				return;
+			}
+
+			const submissionResults = {}
+			// Edit Track details
+			const postData1 = {};
+			if (objUserSubmission.hasOwnProperty('submit_trackName')) {
+				postData1[`track_name`] = String(objUserSubmission.submit_trackName);
+			} if (objUserSubmission.hasOwnProperty('submit_artistName')) {
+				postData1[`artist_name`] = String(objUserSubmission.submit_artistName);
+			} if (objUserSubmission.hasOwnProperty('submit_labelName')) {
+				postData1[`label_name`] = String(objUserSubmission.submit_labelName);
+			} if (objUserSubmission.hasOwnProperty('submit_releaseDate')) {
+				postData1[`release_date`] = String(objUserSubmission.submit_releaseDate);
+			} if (objUserSubmission.hasOwnProperty('submit_wikiaImgUrl')) {
+				postData1[`fandom_image_link`] = String(objUserSubmission.submit_wikiaImgUrl);
+			} if (objUserSubmission.hasOwnProperty('submit_wikiaWebpageUrl')) {
+				postData1[`fandom_webpage_link`] = String(objUserSubmission.submit_wikiaWebpageUrl);
+			} if (objUserSubmission.hasOwnProperty('submit_embeddedYtUrl')) {
+				postData1[`embedded_yt_video_id`] = String(objUserSubmission.submit_embeddedYtUrl);
+			} if (objUserSubmission.hasOwnProperty('submit_streamPlat')) {
+				postData1[`streaming_platform_links`] = JSON.stringify(objUserSubmission.submit_streamPlat);
+			}
+
+			// Edit Occurrence details
+			const postData2 = {};
+			if (objUserSubmission.hasOwnProperty('submit_songType')) {
+				postData2[`track_type`] = String(objUserSubmission.submit_songType);
+			} if (objUserSubmission.hasOwnProperty('submit_sceneDesc')) {
+				postData2[`scene_description`] = String(objUserSubmission.submit_sceneDesc);
+			}
+
+			ftoConnectionPool.beginTransaction(async (err0) => {
+				if (err0) {
+					LogError('PostSubmission_TrackEdit', `Failed to start transaction.\nError Message: ${err0.sqlMessage}`, LineNumber());
+					reject(GetSqlErrorObj(err0));
+					return;
+				}
+
+				let bFailedTrackTblQuery = false; 
+				let bFailedOccurrenceTblQuery = false; 
+				let bFailedRequestTrackEditTblQuery = false; 
+				let bFailedRequestSubmissionTblQuery = false; 
+
+				if (!IsEmpty(postData1)) {
+					const sqlQuery1 = 'UPDATE `fto_track` SET ? WHERE track_id =' + nFtoTrackID;
+					await ftoConnectionPool.query(sqlQuery1, postData1, (err1, result1) => {
+						if (err1) {
+							ftoConnectionPool.rollback(() => {
+								// Failed to insert data into table
+								bFailedTrackTblQuery = true;
+								reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
+							});
+							return;
+						}
+						submissionResults['fto_track_edit'] = result1;
+						console.log("Fto Track result:", result1);
+					}); 
+				}
+				else {
+					// Not executing query, thus failed
+					bFailedTrackTblQuery = true;
+				}
+
+				if (!IsEmpty(postData2)) {
+					const sqlQuery2 = 'UPDATE `fto_occurrence` SET ? WHERE occurrence_id = ' + nFtoOccurrenceID;
+					await ftoConnectionPool.query(sqlQuery2, postData2, (err2, result2) => {
+						if (err2) {
+							ftoConnectionPool.rollback(() => {
+								// Failed to insert data into table
+								bFailedOccurrenceTblQuery = true;
+								reject(GetSqlErrorObj(err2, `${filename}:${LineNumber()}`));
+							});
+							return;
+						}
+						submissionResults['fto_occurrence'] = result2;
+						console.log("Fto Occurrence Result:", result2);
+					});
+				}
+				else {
+					// Not executing query, thus failed
+					bFailedOccurrenceTblQuery = true;
+				}
+
+				// Save Edit changes records 
+				if (!IsEmpty(postData1) || !IsEmpty(postData2)) {
+					// Retrieve the auto-incremented ID from the first insert and Prepare Third insert query using the retrieved ID
+					const nUserID = Number(objUserSubmission['user_id']);
+					const sqlQuery3 = 'INSERT INTO `fto_request_track_edit` SET ?';
+					const postData3 = { 
+						...postData1, 
+						...postData2, 
+						fto_user_id: nUserID,
+						fto_track_id: nFtoTrackID,
+						fto_occurrence_id: nFtoOccurrenceID,
+						track_edit_reason: String(objUserSubmission.submit_editReason),
+					};
+					ftoConnectionPool.query(sqlQuery3, postData3, (err3, result3) => {
+						if (err3) {
+							ftoConnectionPool.rollback(() => {
+								// Failed to insert data into table
+								bFailedRequestTrackEditTblQuery = true;
+								reject(GetSqlErrorObj(err3, `${filename}:${LineNumber()}`));
+							});
+							return;
+						}
+						submissionResults['fto_request_track_edit'] = result3;
+						console.log("Fto Request Track Edit Result:", result3);
+
+						// Retrieve the auto-incremented ID from the first insert and Prepare Third insert query using the retrieved ID
+						const insertedTrackEditRequestId = Number(result3.insertId);
+						const sqlQuery4 = 'INSERT INTO `fto_request_submissions` SET ?';
+						const postData4 = {
+							submission_type: 'TRACK_EDIT',
+							request_id: insertedTrackEditRequestId,
+							fto_user_id: nUserID,
+							fto_track_id: nFtoTrackID,
+							fto_occurrence_id: nFtoOccurrenceID,
+						};
+						ftoConnectionPool.query(sqlQuery4, postData4, (err4, result4) => {
+							if (err4) {
+								ftoConnectionPool.rollback(() => {
+									// Failed to insert data into table
+									bFailedRequestSubmissionTblQuery = true;
+									reject(GetSqlErrorObj(err4, `${filename}:${LineNumber()}`));
+								});
+								return;
+							}
+							submissionResults['fto_request_submissions'] = result4;
+							console.log("Fto Request Submissions Result:", result4);
+
+							// Commit the transaction if relevant insert queries are successful
+							if (MyXNOR(!bFailedTrackTblQuery, submissionResults.hasOwnProperty('fto_track_edit')) && 
+							MyXNOR(!bFailedOccurrenceTblQuery, submissionResults.hasOwnProperty('fto_occurrence')) && 
+							MyXNOR(!bFailedRequestTrackEditTblQuery, submissionResults.hasOwnProperty('fto_request_track_edit')) && 
+							MyXNOR(!bFailedRequestSubmissionTblQuery, submissionResults.hasOwnProperty('fto_request_submissions'))) {
+								ftoConnectionPool.commit((err) => {
+									if (err) {
+										ftoConnectionPool.rollback(() => {
+											LogError('PostSubmission_TrackEdit', `Failed to commit transaction.\nError Message: ${err.sqlMessage}`);
+											reject(GetSqlErrorObj(err, `${filename}:${LineNumber()}`));
+										});
+										return;
+									}
+									ftoConnectionPool.release();
+									console.log("Request have been commited");
+									resolve(submissionResults);
+								});
+							}
+							else {
+								// Insert queries not successful
+								ftoConnectionPool.release();
+							}
+						});
+					});
+				}
+			});
+		});
+	});
+}
+
 module.exports = {
 	GetAllAnime,
 	GetAnime,
@@ -520,4 +701,5 @@ module.exports = {
 	GetSubmissionContext_TrackAdd,
 	PostSubmission_TrackAdd,
 	GetSubmissionContext_TrackEdit,
+	PostSubmission_TrackEdit,
 };

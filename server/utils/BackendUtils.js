@@ -1,11 +1,23 @@
 /**
- * Checks if a value is empty or null.
+ * Checks if a value is empty, null, or an empty array.
  * @function IsEmpty
  * @param {*} value - The value to be checked.
- * @returns {boolean} - True if the value is empty or null, false otherwise.
+ * @returns {boolean} - True if the value is empty, null, or an empty array, false otherwise.
  */
-function IsEmpty(value) {
-    return (value == null || (typeof value === "string" && value.trim().length === 0));
+const IsEmpty = (value) => {
+    if ((value == null) || (value === undefined)) {
+        return true;
+    }
+    if (Array.isArray(value)) {
+        return value.length === 0;
+    }
+    if (typeof value == 'object') {
+        return Object.keys(value).length === 0;
+    }
+    else if (typeof value === "string") {
+        return value.trim().length === 0
+    }
+    return false;
 }
 
 /**
@@ -88,7 +100,7 @@ function LineNumber() {
     // browser and browser version, so we need to search for the second frame:
     let frameRE = /:(\d+):(?:\d+)[^\d]*$/;
     do {
-        let frame = stack.shift();
+        var frame = stack.shift();
     } while (!frameRE.exec(frame) && stack.length);
 
     return frameRE.exec(stack.shift())[1];

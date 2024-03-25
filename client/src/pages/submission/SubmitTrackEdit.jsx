@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import { useLocation, useParams } from "react-router-dom";
+import { AddPlatformInputToPage, ListenToPlatformInput, RemovePlatformInputFomPage, ValidateInputs } from './submission';
 import './submission.css';
 
 import { Navbar, Footer} from "../../components";
 import { IoAdd, IoTrash } from "react-icons/io5";
-import { GetShorthandDateFromString, IsEmpty, sortJsonObjectAlphabeticallyExceptLast } from '../../utils/RegularUtils';
-import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, StandardiseTrackUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetPlatformTrackBaseUrl, GeneratePlatformUrlFromID } from '../../utils/HyperlinkUtils';
+import { FindObjectDifferenceWithArrays, FormatStreamingPlatformsToJson, FormatStreamingPlatformsToList, GetShorthandDateFromString, IsEmpty } from '../../utils/RegularUtils';
+import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetPlatformTrackBaseUrl } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from '../../routing/navigation'
-import { AddPlatformInputToPage, ListenToPlatformInput, RemovePlatformInputFomPage, ValidateInputs } from './submission';
 import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
 
 const SubmitTrackEdit = () => {
@@ -17,19 +17,27 @@ const SubmitTrackEdit = () => {
 
     const searchParams = new URLSearchParams(location.search);
     const spOccurrenceId = parseInt(searchParams.get('context_id'), 10) || -1;
-    const spEpisodeNo = parseInt(searchParams.get('occurrence_id'), 10) || -1;
 
     const [ ftoEpisodeID, setFtoEpisodeID ] = useState(-1);
+    const [ ftoEpisodeContext, setFtoEpisodeContext ] = useState({ anime_id: -1, episode_id: -1, episode_no: -1, episode_title: -1,});
     const [ pageLoading, setPageLoading ] = useState(false);
-    const [ pageInputs, setPageInputs ] = useState({});
+    const [ pageInputs, setPageInputs ] = useState({
+        submit_trackName: '',
+        submit_songType: '',
+        submit_releaseDate: '',
+        submit_artistName: '',
+        submit_labelName: '',
+        submit_wikiaImgUrl: '',
+        submit_wikiaWebpageUrl: '',
+        submit_embeddedYtUrl: '',
+        submit_sceneDesc: '',
+        submit_streamPlat: [{}],
+    });
+    const [ orginalPageInputs, setOriginalPageInputs ] = useState({});
     const [ userSubmission, setUserSubmission ] = useState({submit_streamPlat: []});
     const [ submissionContextInfo, setSubmissionContextInfo ] = useState();
-    const [ platformItems, setPlatformItems ] = useState([{ id: 1, platform: 'non_basic', inputString: '', placeholder: '' }]);
+    const [ platformItems, setPlatformItems ] = useState([{ id: 1, platform_type: 'non_basic', inputString: '', placeholder: '' }]);
     const [ noOfPlatInputsCreated, setNoOfPlatInputsCreated ] = useState(1);
-    const [ selectedSongType, setSelectedSongType ] = useState('');
-    const [ originalSongTypeOption, setDefaultSongTypeOption ] = useState('');
-    const [ enteredReleaseDate, setEnteredReleaseDate ] = useState('');
-    const [ originalReleaseDate, setOriginalReleaseDate ] = useState('');
     const [ successfulSubmitQuery, setSuccessfulSubmitQuery ] = useState();
     const [ charCount_SceneDesc, setCharCount_SceneDesc] = useState('');
     const [ charCount_editReasons, setCharCount_editReasons] = useState('');
@@ -66,11 +74,8 @@ const SubmitTrackEdit = () => {
 
     useEffect(() => {
         if (submissionContextInfo !== undefined) {
-            if (submissionContextInfo.hasOwnProperty('episode_id')) {
-                setFtoEpisodeID(submissionContextInfo.episode_id);
-            }
-            
-            setPageFormValues(submissionContextInfo);
+            console.log("Submssion Context Info:", submissionContextInfo);
+            setPageInputValues(submissionContextInfo);
         }
     }, [submissionContextInfo]);
 
@@ -87,20 +92,30 @@ const SubmitTrackEdit = () => {
         try {
             // Fetch data from the backend
             const contextDataFromBackend = await FetchSubmissionContextDetails_FTO(nTrackID, nOccurrenceID);
-            console.log('Context Data from backend:', contextDataFromBackend[0]);
-
+            console.log("Submssion Context Info0:", contextDataFromBackend[0]);
             const submissionContext = {};
             submissionContext['submit_trackName'] = String(contextDataFromBackend[0].track_name);
-            submissionContext['submit_songType'] = (!IsEmpty(contextDataFromBackend[0].release_date)) ? ConvertTrackTypeToValue(contextDataFromBackend[0].track_type) : '';
+            submissionContext['submit_songType'] = (!IsEmpty(contextDataFromBackend[0].track_type)) ? contextDataFromBackend[0].track_type : '';
             submissionContext['submit_releaseDate'] = (!IsEmpty(contextDataFromBackend[0].release_date)) ? GetShorthandDateFromString(contextDataFromBackend[0].release_date) : '';
             submissionContext['submit_artistName'] = (!IsEmpty(contextDataFromBackend[0].artist_name)) ? String(contextDataFromBackend[0].artist_name) : '';
             submissionContext['submit_labelName'] = (!IsEmpty(contextDataFromBackend[0].label_name)) ? String(contextDataFromBackend[0].label_name) : '';
-            submissionContext['submit_wikiaImgUrl'] = (!IsEmpty(contextDataFromBackend[0].fandome_image_link)) ? String(contextDataFromBackend[0].fandome_image_link) : '';
+            submissionContext['submit_wikiaImgUrl'] = (!IsEmpty(contextDataFromBackend[0].fandom_image_link)) ? String(contextDataFromBackend[0].fandom_image_link) : '';
             submissionContext['submit_wikiaWebpageUrl'] = (!IsEmpty(contextDataFromBackend[0].fandom_webpage_link)) ? String(contextDataFromBackend[0].fandom_webpage_link) : '';
             submissionContext['submit_embeddedYtUrl'] = (!IsEmpty(contextDataFromBackend[0].embedded_yt_video_id)) ? String(contextDataFromBackend[0].embedded_yt_video_id) : '';
             submissionContext['submit_sceneDesc'] = (!IsEmpty(contextDataFromBackend[0].scene_description)) ? String(contextDataFromBackend[0].scene_description) : '';
             submissionContext['submit_streamPlat'] = (!IsEmpty(contextDataFromBackend[0].streaming_platform_links)) ? JSON.parse(contextDataFromBackend[0].streaming_platform_links) : {};
             setSubmissionContextInfo(submissionContext);
+            // TODO - investigate why no image url translates to showing nothing instead of the default image
+
+            if (contextDataFromBackend[0].hasOwnProperty('fto_episode_id')) {
+                setFtoEpisodeID(contextDataFromBackend[0].fto_episode_id);
+                setFtoEpisodeContext({
+                    anime_id: contextDataFromBackend[0].fto_anime_id,
+                    episode_id: contextDataFromBackend[0].episode_id,
+                    episode_no: contextDataFromBackend[0].episode_no,
+                    episode_title: contextDataFromBackend[0].episode_title,
+                })
+            }
         } catch (error) {
             console.error('Error:', error.message);
         }
@@ -181,7 +196,7 @@ const SubmitTrackEdit = () => {
                     const foundObject = pageInputs.submit_streamPlat.find(platObj => platObj.id === platElemId);
                     console.debug(`Platform input for element Name${inputElementName} used to be:`, foundObject);
 
-                    const inputDuplucatePlatform = foundObject.platform;
+                    const inputDuplucatePlatform = foundObject.platform_type;
                     if (inputDuplucatePlatform !== 'non_basic') {
                         // Get check if current input is still the same platform
                         if (GetUrlPlatform(inputElementValue) === inputDuplucatePlatform) {
@@ -191,24 +206,23 @@ const SubmitTrackEdit = () => {
 
                         // Un-error duplicate platform inputs, if no more duplicate platforms
                         const filteredArray = pageInputs.submit_streamPlat.filter(platObj => {
-                            return ((platObj.platform === inputDuplucatePlatform) && (platObj.id !== platElemId));
+                            return ((platObj.platform_type === inputDuplucatePlatform) && (platObj.id !== platElemId));
                         });
                         const numberOfObjects = filteredArray.length;
                         if (numberOfObjects < 2) {
                             filteredArray.forEach(platformInputDetails => {
-                                console.log(`Duplicate Input:`, platformInputDetails);
+                                console.debug(`Duplicate Input:`, platformInputDetails);
 
-                                let submissionFormElems = document.getElementById(`track_add_form`);
+                                let submissionFormElems = document.getElementById(`track_edit_form`);
                                 let inputElem = submissionFormElems[`submit_streamPlat_item_${platformInputDetails.id}`];
                                 if (inputElem !== null) {
                                     // Variable still exists, remove error
                                     let inputClassNames = inputElem.className.split(" ");
-                                    console.log(`Duplicate Input Element does exists, and has classes:`, inputClassNames);
 
                                     let errorClassNameIndex = Number(inputClassNames.findIndex(item => item === "fto_input-error"));
                                     inputClassNames.splice(errorClassNameIndex, 1);
                                     inputElem.className = inputClassNames.join(' ').trim();
-                                    console.log(`Duplicate Input ID(submit_streamPlat_item_${platformInputDetails.id}) Element New classes:`, inputClassNames);
+                                    console.debug(`Duplicate Input ID(submit_streamPlat_item_${platformInputDetails.id}) Element New classes:`, inputClassNames);
                                 }
                             })
     
@@ -284,14 +298,6 @@ const SubmitTrackEdit = () => {
         else if (inputElementName === 'submit_editReason') {
             setCharCount_editReasons(inputElementValue);
         }
-        // Update input tracker for placeholder styling
-        else if (inputElementName === 'submit_songType') {
-            setSelectedSongType(inputElementValue)
-        }
-        // Update input tracker for placeholder styling
-        else if (inputElementName === 'submit_releaseDate') {
-            setEnteredReleaseDate(inputElementValue)
-        }
         // Update input platform icon
         else if (inputElementName.startsWith('submit_streamPlat_item_')) {
             // Get platform input item id
@@ -304,108 +310,51 @@ const SubmitTrackEdit = () => {
         }
     }
 
-    const setPageFormValues = (pageValues) => {
+    const setPageInputValues = (pageValues) => {
         // Set original (placeholder) values to edit
-        const pageform = document.getElementById('track_edit_form');
         if (!IsEmpty(pageValues.submit_trackName)) {
-            pageform['submit_trackName'].placeholder = pageValues.submit_trackName;
+            setPageInputs(values => { return { ...values, submit_trackName: pageValues.submit_trackName } });
+            setOriginalPageInputs(values => { return { ...values, submit_trackName: pageValues.submit_trackName } });
         }
         if (!IsEmpty(pageValues.submit_songType)) {
-            pageform['submit_songType'].value = pageValues.submit_songType;
-            setDefaultSongTypeOption(pageform['submit_songType'].value); // Apply Setter Functions 
-            setSelectedSongType(pageform['submit_songType'].value); // Apply Setter Functions 
+            setPageInputs(values => { return { ...values, submit_songType: ConvertTrackTypeToValue(pageValues.submit_songType) } });
+            setOriginalPageInputs(values => { return { ...values, submit_songType: ConvertTrackTypeToValue(pageValues.submit_songType) } });
         }
         if (!IsEmpty(pageValues.submit_releaseDate)) {
-            pageform['submit_releaseDate'].value = pageValues.submit_releaseDate;
-            setEnteredReleaseDate(pageform['submit_releaseDate'].value)
-            setOriginalReleaseDate(pageform['submit_releaseDate'].value)
+            setPageInputs(values => { return { ...values, submit_releaseDate: pageValues.submit_releaseDate } });
+            setOriginalPageInputs(values => { return { ...values, submit_releaseDate: pageValues.submit_releaseDate } });
         }
         if (!IsEmpty(pageValues.submit_artistName)) {
-            pageform['submit_artistName'].placeholder = pageValues.submit_artistName;
+            setPageInputs(values => { return { ...values, submit_artistName: pageValues.submit_artistName } });
+            setOriginalPageInputs(values => { return { ...values, submit_artistName: pageValues.submit_artistName } });
         }
         if (!IsEmpty(pageValues.submit_labelName)) {
-            pageform['submit_labelName'].placeholder = pageValues.submit_labelName;
+            setPageInputs(values => { return { ...values, submit_labelName: pageValues.submit_labelName } });
+            setOriginalPageInputs(values => { return { ...values, submit_labelName: pageValues.submit_labelName } });
         }
         if (!IsEmpty(pageValues.submit_wikiaImgUrl)) {
-            pageform['submit_wikiaImgUrl'].placeholder = pageValues.submit_wikiaImgUrl;
+            setPageInputs(values => { return { ...values, submit_wikiaImgUrl: pageValues.submit_wikiaImgUrl } });
+            setOriginalPageInputs(values => { return { ...values, submit_wikiaImgUrl: pageValues.submit_wikiaImgUrl } });
         }
         if (!IsEmpty(pageValues.submit_wikiaWebpageUrl)) {
-            pageform['submit_wikiaWebpageUrl'].placeholder = pageValues.submit_wikiaWebpageUrl;
+            setPageInputs(values => { return { ...values, submit_wikiaWebpageUrl: pageValues.submit_wikiaWebpageUrl } });
+            setOriginalPageInputs(values => { return { ...values, submit_wikiaWebpageUrl: pageValues.submit_wikiaWebpageUrl } });
         }
         if (!IsEmpty(pageValues.submit_embeddedYtUrl)) {
-            pageform['submit_embeddedYtUrl'].placeholder = GetPlatformTrackBaseUrl('youtube') + pageValues.submit_embeddedYtUrl;
+            setPageInputs(values => { return { ...values, submit_embeddedYtUrl: GetPlatformTrackBaseUrl('youtube') + pageValues.submit_embeddedYtUrl } });
+            setOriginalPageInputs(values => { return { ...values, submit_embeddedYtUrl: GetPlatformTrackBaseUrl('youtube') + pageValues.submit_embeddedYtUrl } });
         }
         if (!IsEmpty(pageValues.submit_sceneDesc)) {
-            pageform['submit_sceneDesc'].placeholder = pageValues.submit_sceneDesc;
-            setCharCount_SceneDesc(pageform['submit_sceneDesc'].value); // Apply Setter Functions 
+            setPageInputs(values => { return { ...values, submit_sceneDesc: pageValues.submit_sceneDesc } });
+            setOriginalPageInputs(values => { return { ...values, submit_sceneDesc: pageValues.submit_sceneDesc } });
+            setCharCount_SceneDesc(pageValues.submit_sceneDesc); // Apply Setter Functions 
         }
         if (!IsEmpty(pageValues['submit_streamPlat']) && typeof (pageValues['submit_streamPlat']) == 'object' && pageValues['submit_streamPlat'].hasOwnProperty('data')) {
             // Set streaming platforms page variable
-            let itemId = 1;
-            let trackPlatformData = pageValues['submit_streamPlat'].data;
-            let streamingPlatformsItems = [];
-            if (trackPlatformData.hasOwnProperty('youtube') && !IsEmpty(trackPlatformData.youtube)) {
-                let plaftormLink = {
-                    id: itemId++, 
-                    platform: 'youtube',
-                    inputString: '',
-                };
-                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.youtube;
-                streamingPlatformsItems.push(plaftormLink);
-            } if (trackPlatformData.hasOwnProperty('youtube_music') && !IsEmpty(trackPlatformData.youtube_music)) {
-                let plaftormLink = {
-                    id: itemId++, 
-                    platform: 'youtube_music',
-                    inputString: '',
-                };
-                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.youtube_music;
-                streamingPlatformsItems.push(plaftormLink);
-            } if (trackPlatformData.hasOwnProperty('spotify') && !IsEmpty(trackPlatformData.spotify)) {
-                let plaftormLink = {
-                    id: itemId++, 
-                    platform: 'spotify',
-                    inputString: '',
-                };
-                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.spotify;
-                streamingPlatformsItems.push(plaftormLink);
-            } if (trackPlatformData.hasOwnProperty('shazam') && !IsEmpty(trackPlatformData.shazam)) {
-                let plaftormLink = {
-                    id: itemId++, 
-                    platform: 'shazam',
-                    inputString: '',
-                };
-                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.shazam;
-                streamingPlatformsItems.push(plaftormLink);
-            } if (trackPlatformData.hasOwnProperty('apple_music') && !IsEmpty(trackPlatformData.apple_music)) {
-                let plaftormLink = {
-                    id: itemId++, 
-                    platform: 'apple_music',
-                    inputString: '',
-                };
-                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.apple_music;
-                streamingPlatformsItems.push(plaftormLink);
-            } if (trackPlatformData.hasOwnProperty('amazon_music') && !IsEmpty(trackPlatformData.amazon_music)) {
-                let plaftormLink = {
-                    id: itemId++, 
-                    platform: 'amazon_music',
-                    inputString: '',
-                };
-                plaftormLink.placeholder = GetPlatformTrackBaseUrl(plaftormLink.platform) + trackPlatformData.amazon_music;
-                streamingPlatformsItems.push(plaftormLink);
-            } if (trackPlatformData.hasOwnProperty('non_basic') && !IsEmpty(trackPlatformData.non_basic)) {
-                for (let i = 0; i < trackPlatformData.non_basic.length; i++) {
-                    let plaftormLink = {
-                        id: itemId++, 
-                        platform: 'non_basic',
-                        inputString: '',
-                    };
-                    plaftormLink.placeholder = trackPlatformData.non_basic[i].url;
-                    streamingPlatformsItems.push(plaftormLink);
-                }
-            }
-            console.log("New Streaming Links:", streamingPlatformsItems);
+            let streamingPlatformsItems = FormatStreamingPlatformsToList(pageValues['submit_streamPlat'].data, true);
             setPlatformItems(streamingPlatformsItems);
-            setNoOfPlatInputsCreated(streamingPlatformsItems.length)
+            setNoOfPlatInputsCreated(streamingPlatformsItems.length);
+            setPageInputs(values => { return { ...values, submit_streamPlat: streamingPlatformsItems } });
         }
     }
 
@@ -419,11 +368,11 @@ const SubmitTrackEdit = () => {
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackEdit_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId = 1) => {
+    const FetchPostSubmissionTrackEdit_FTO = async (nTrackID, nFtoOccurrenceID, objUserSubmission, nUserId = 1) => {
         objUserSubmission['user_id'] = nUserId;
-        let apiUrl_fto = `/findthatost_api/postSubmission/track_add/${Number(nAnimeID)}`;
-        if (nEpisodeNo !== -1) {
-            apiUrl_fto += `/episode_id/${Number(submissionContextInfo.episode_id)}`
+        let apiUrl_fto = `/findthatost_api/postSubmission/track_edit/${Number(nTrackID)}`;
+        if (nFtoOccurrenceID !== -1) {
+            apiUrl_fto += `/occurrence_id/${nFtoOccurrenceID}`;
         }
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         const response = await fetch(apiUrl_fto, 
@@ -438,12 +387,104 @@ const SubmitTrackEdit = () => {
         const responseStatus = response.status;
         const responseData = await response.json();
         if (responseStatus === 200) {    
-            console.debug("Response Data:", responseData);
-            setSuccessfulSubmitQuery(true);
+            if (!IsEmpty(responseData)) {
+                setSuccessfulSubmitQuery(true);
+            }
+            else {
+                setSuccessfulSubmitQuery(false);
+            }
         } else {
             console.error('Error:', responseData);
             setSuccessfulSubmitQuery(false);
         }
+    }
+
+    /**
+     * Check differences between original inputs and new inputs. Returns filtered inputs.
+     * @function GetFormDifferences
+     * @param {JSON}  objUserSubmission - Object containing all the user entered page edit details.
+     * @param {JSON}  originalDetails - Object containing original page details.
+     * @returns {boolean} Returns whether changes have been made
+     * 
+     */
+    const GetFormDifferences = (objUserSubmission, originalDetails) => {
+        let bTrackNameChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_trackName')) {
+            // User entered something different
+            bTrackNameChanged = objUserSubmission['submit_trackName'] !== originalDetails['submit_trackName'];
+            if (!bTrackNameChanged) { delete objUserSubmission['submit_trackName']; }
+            else { console.log("TrackName Difference \n1: " +objUserSubmission['submit_trackName']+ "\nOG: " +originalDetails['submit_trackName']) }
+        }
+
+        let bTrackTypeChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_songType')) {
+            bTrackTypeChanged = objUserSubmission['submit_songType'] !== originalDetails['submit_songType'];
+            if (!bTrackTypeChanged) { delete objUserSubmission['submit_songType']; }
+            else { console.log("TrackType Difference \n1: " +objUserSubmission['submit_songType']+ "\nOG: " +originalDetails['submit_songType']) }
+        }
+
+        let bReleaseDateChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_releaseDate')) {
+            bReleaseDateChanged = objUserSubmission['submit_releaseDate'] !== originalDetails['submit_releaseDate'];
+            if (!bReleaseDateChanged) { delete objUserSubmission['submit_releaseDate']; }
+            else { console.log("ReleaseDate Difference \n1: " +objUserSubmission['submit_releaseDate']+ "\nOG: " +originalDetails['submit_releaseDate']) }
+        }
+
+        let bArtistNameChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_artistName')) {
+            bArtistNameChanged = objUserSubmission['submit_artistName'] !== originalDetails['submit_artistName'];
+            if (!bArtistNameChanged) { delete objUserSubmission['submit_artistName']; }
+            else { console.log("ArtistName Difference \n1: " +objUserSubmission['submit_artistName']+ "\nOG: " +originalDetails['submit_artistName'])}
+        }
+
+        let bLabelNameChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_labelName')) {
+            bLabelNameChanged = objUserSubmission['submit_labelName'] !== originalDetails['submit_labelName'];
+            if (!bLabelNameChanged) { delete objUserSubmission['submit_labelName']; }
+            else { console.log("LabelName Difference \n1: " +objUserSubmission['submit_labelName']+ "\nOG: " +originalDetails['submit_labelName']) }
+        }
+
+        let bFandomImageUrlChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_wikiaImgUrl')) {
+            bFandomImageUrlChanged = objUserSubmission['submit_wikiaImgUrl'] !== originalDetails['submit_wikiaImgUrl'];
+            if (!bFandomImageUrlChanged) { delete objUserSubmission['submit_wikiaImgUrl']; }
+            else { console.log("FandomImageUrl Difference \n1: " +objUserSubmission['submit_wikiaImgUrl']+ "\nOG: " +originalDetails['submit_wikiaImgUrl']) }
+        }
+
+        let bFandomWebpageUrlChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_wikiaWebpageUrl')) {
+            bFandomWebpageUrlChanged = objUserSubmission['submit_wikiaWebpageUrl'] !== originalDetails['submit_wikiaWebpageUrl'];
+            if (!bFandomWebpageUrlChanged) { delete objUserSubmission['submit_wikiaWebpageUrl']; }
+            else { console.log("FandomWebpageUrl Difference \n1: " +objUserSubmission['submit_wikiaWebpageUrl']+ "\nOG: " +originalDetails['submit_wikiaWebpageUrl']) }
+        }
+
+        let bEmbeddedYTVideoUrlChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_embeddedYtUrl')) {
+            bEmbeddedYTVideoUrlChanged = objUserSubmission['submit_embeddedYtUrl'] !== originalDetails['submit_embeddedYtUrl'];
+            if (!bEmbeddedYTVideoUrlChanged) { delete objUserSubmission['submit_embeddedYtUrl']; }
+            else { console.log("EmbeddedYTLinkUrl Difference \n1: " +objUserSubmission['submit_embeddedYtUrl']+ "\nOG: " +originalDetails['submit_embeddedYtUrl']) }
+        }
+
+        let bSceneDescriptionChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_sceneDesc')) {
+            bSceneDescriptionChanged = objUserSubmission['submit_sceneDesc'] !== originalDetails['submit_sceneDesc'];
+            if (!bSceneDescriptionChanged) { delete objUserSubmission['submit_sceneDesc']; }
+            else { console.log("bSceneDescriptionChanged Difference \n1: " +objUserSubmission['submit_sceneDesc']+ "\nOG: " +originalDetails['submit_sceneDesc']) }
+        }
+        
+        let bStreamingLinksChanged = false;
+        if (objUserSubmission.hasOwnProperty('submit_streamPlat')) {
+            const { diff1, diff2 } = FindObjectDifferenceWithArrays(objUserSubmission['submit_streamPlat'].data, originalDetails['submit_streamPlat'].data);
+            const addedTracks = diff1;
+            const removedTracks = diff2;
+            bStreamingLinksChanged = !IsEmpty(addedTracks) || !IsEmpty(removedTracks);
+            if (!bStreamingLinksChanged) { delete objUserSubmission['submit_streamPlat']; }
+            else { console.log('Added Tracks obj1:', addedTracks, '\nRemoved Tracks obj2:', removedTracks); }
+        }
+
+        let bSomethingHasChanged = !(bTrackNameChanged || bArtistNameChanged || bLabelNameChanged || bReleaseDateChanged || bTrackTypeChanged ||
+                bSceneDescriptionChanged || bStreamingLinksChanged || bFandomImageUrlChanged || bFandomWebpageUrlChanged || bEmbeddedYTVideoUrlChanged);
+        return !bSomethingHasChanged;
     }
 
     const handleSubmit_TrackEdit = async (event) => {
@@ -455,32 +496,12 @@ const SubmitTrackEdit = () => {
         setPageLoading(true);
         
         const formValues = event.target.elements // as HTMLFormControlsCollection;
-        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs);
+        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs, false, true);
         if (inputsValid) {
-            //Format streaming platforms json
-            let jsonDataObject = {}
-            let listOfNonBasicUrls = [];
-            platformItems.forEach(platItem => {
-                if (!IsEmpty(platItem.inputString)) {
-                    if (platItem.platform !== 'non_basic') {
-                        jsonDataObject[platItem.platform] = StandardiseTrackUrl(platItem.inputString, platItem.platform);
-                    }
-                    else {
-                        let nonBasicUrlObj = {};
-                        nonBasicUrlObj['url'] = platItem.inputString;
-                        listOfNonBasicUrls.push(nonBasicUrlObj);
-                    }
-                }
-            })
-            if (listOfNonBasicUrls.length > 0) {
-                jsonDataObject.non_basic = listOfNonBasicUrls;
-            }
-            const jsonSubmission = {data: sortJsonObjectAlphabeticallyExceptLast(jsonDataObject, 'non_basic')};
-
-            // Update userSubmission
+            // Update user Submission
             const updatedSubmission = { 
                 ...userSubmission, 
-                submit_streamPlat: jsonSubmission 
+                submit_streamPlat: FormatStreamingPlatformsToJson(platformItems), 
             }; 
             for (const [key, value] of Object.entries(pageInputs)) {
                 if (key.startsWith('submit_streamPlat')) {
@@ -499,20 +520,28 @@ const SubmitTrackEdit = () => {
                     }
                 }
                 else if (key === 'submit_embeddedYtUrl') {
-                    updatedSubmission[key] = GetIdFromYoutubeUrl(value);
+                    updatedSubmission[key] = !IsEmpty(GetIdFromYoutubeUrl(value)) ?  GetIdFromYoutubeUrl(value) : '';
                 }
                 else if (key === 'submit_wikiaImgUrl') {
-                    updatedSubmission[key] = GetFandomImageUrlFromFullUrl(value);
+                    updatedSubmission[key] = !IsEmpty(GetFandomImageUrlFromFullUrl(value)) ? GetFandomImageUrlFromFullUrl(value) : '';
                 }
                 else {
                     updatedSubmission[key] = value;
                 }
             }
+            
+            // Get Form Differences 
+            let bChangesPresent = GetFormDifferences(updatedSubmission, submissionContextInfo);
             setUserSubmission(updatedSubmission);
             
-            console.debug(`Fetch data:`, updatedSubmission);  
-            await new Promise(resolve => setTimeout(resolve, 1000));  
-            // FetchPostSubmissionTrackEdit_FTO(track_id, spEpisodeNo, updatedSubmission);
+            console.log(`Fetch data:`, updatedSubmission); 
+            if (bChangesPresent) { 
+                await new Promise(resolve => setTimeout(resolve, 1000));  
+                FetchPostSubmissionTrackEdit_FTO(track_id, spOccurrenceId, updatedSubmission);
+            }
+            else {
+                alert("No changes have been made");
+            }
         }
         setPageLoading(false);
     }
@@ -523,7 +552,7 @@ const SubmitTrackEdit = () => {
                 navigateToTrack(track_id, spOccurrenceId);
             }
             else {
-                //navigateToEpisode(anime_id, spEpisodeNo);
+                navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no);
             }
         }
         else {
@@ -563,60 +592,63 @@ const SubmitTrackEdit = () => {
                     <div className='fto__page__submission-content_heading_section'>
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Edit Track
-                            {(spEpisodeNo !== -1) ? (
-                                ' in Episode ' + spEpisodeNo
+                            {(ftoEpisodeContext.episode_no !== -1) ? (
+                                ' in Episode ' + ftoEpisodeContext.episode_no
                             ) : (
                                 ' in Series'
                             )}
                         </h1>
-                        <h4 className='fto__page__submission-content_header_subtitle'><strong>{submissionContextInfo.canonical_title}</strong></h4>
+                        <h4 className='fto__page__submission-content_header_subtitle'><strong>{ftoEpisodeContext.episode_title}</strong></h4>
                         <hr className='fto__page__submission-horizontal_hr' />
                     </div>
                     
                     <div className='fto__page__submission-main_content'>
                         <form id='track_edit_form' onSubmit={ handleSubmit_TrackEdit }>
                             <div className='fto__page__submission-main_content-input_section'>
-                                <label htmlFor='submit_trackName'>Edit Track Name<span className='fto-red__asterisk'>*</span>:</label>
-                                <input id='submit_trackName' name='submit_trackName' type='text' className='fto_input' placeholder='Track Name'
-                                onChange={ handleChange_TrackEdit }/>
+                                <label htmlFor='submit_trackName'>Edit Track Name:</label>
+                                <input id='submit_trackName' name='submit_trackName' type='text' className='fto_input' value={pageInputs['submit_trackName']}
+                                    style={{ color: orginalPageInputs['submit_trackName'] === pageInputs['submit_trackName'] ? 'grey' : 'white' }}
+                                    placeholder='Track Name' onChange={ handleChange_TrackEdit }/>
                             </div>
                             <div className='fto__page__submission-main_content-even_split fto__page__submission-main_content-even_split_gap'>
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-left'>
-                                    <label htmlFor='submit_songType'>Edit Song Type<span className='fto-red__asterisk'>*</span>:</label>
-                                    <select id='submit_songType' name='submit_songType' className='fto_input' value={selectedSongType}
-                                    style={{ color: originalSongTypeOption === selectedSongType ? 'grey' : 'white' }}
-                                    onChange={ handleChange_TrackEdit }> 
-                                        <option value="" defaultValue style={{ color: originalSongTypeOption === '' ? 'grey' : 'white' }}>
+                                    <label htmlFor='submit_songType'>Edit Song Type:</label>
+                                    <select id='submit_songType' name='submit_songType' className='fto_input' value={pageInputs['submit_songType']}
+                                        style={{ color: orginalPageInputs['submit_songType'] === pageInputs['submit_songType'] ? 'grey' : 'white' }}
+                                        onChange={ handleChange_TrackEdit }> 
+
+                                        <option value="" defaultValue style={{ color: orginalPageInputs['submit_songType'] === '' ? 'grey' : 'white' }}>
                                             -- Select Song Type --
                                         </option>
-                                        <option value="songType_OP" style={{ color: originalSongTypeOption === 'songType_OP' ? 'grey' : 'white' }}>
+                                        <option value="songType_OP" style={{ color: orginalPageInputs['submit_songType'] === 'songType_OP' ? 'grey' : 'white' }}>
                                             Opening Theme Song
                                         </option>
-                                        <option value="songType_ED" style={{ color: originalSongTypeOption === 'songType_ED' ? 'grey' : 'white' }}>
+                                        <option value="songType_ED" style={{ color: orginalPageInputs['submit_songType'] === 'songType_ED' ? 'grey' : 'white' }}>
                                             Ending Theme Song
                                         </option>
-                                        <option value="songType_BGM" style={{ color: originalSongTypeOption === 'songType_BGM' ? 'grey' : 'white' }}>
+                                        <option value="songType_BGM" style={{ color: orginalPageInputs['submit_songType'] === 'songType_BGM' ? 'grey' : 'white' }}>
                                             Background Song
                                         </option>
                                     </select>
                                 </div>
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-right'>
                                     <label htmlFor='submit_releaseDate'>Edit Release Date:</label>
-                                    <input id='submit_releaseDate' name='submit_releaseDate' type='date' className='fto_input' 
-                                    max={new Date().toLocaleDateString('fr-ca')} value={enteredReleaseDate}
-                                    style={{ color: originalReleaseDate === enteredReleaseDate ? 'grey' : 'white' }}
-                                    onChange={ handleChange_TrackEdit }/>
+                                    <input id='submit_releaseDate' name='submit_releaseDate' type='date' className='fto_input' value={pageInputs['submit_releaseDate']}
+                                        style={{ color: orginalPageInputs['submit_releaseDate'] === pageInputs['submit_releaseDate'] ? 'grey' : 'white' }}
+                                        max={new Date().toLocaleDateString('fr-ca')} onChange={ handleChange_TrackEdit }/>
                                 </div>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_artistName'>Edit Artist Name:</label>
-                                <input id='submit_artistName' name='submit_artistName' type='text' className='fto_input' placeholder='Artist Name'
-                                onChange={ handleChange_TrackEdit }/>
+                                <input id='submit_artistName' name='submit_artistName' type='text' className='fto_input' value={pageInputs['submit_artistName']}
+                                    style={{ color: orginalPageInputs['submit_artistName'] === pageInputs['submit_artistName'] ? 'grey' : 'white' }}
+                                    placeholder='Artist Name' onChange={ handleChange_TrackEdit }/>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_labelName'>Edit Label Name:</label>
-                                <input id='submit_labelName' name='submit_labelName' type='text' className='fto_input' placeholder='Label Name'
-                                onChange={ handleChange_TrackEdit }/>
+                                <input id='submit_labelName' name='submit_labelName' type='text' className='fto_input' value={pageInputs['submit_labelName']}
+                                    style={{ color: orginalPageInputs['submit_labelName'] === pageInputs['submit_labelName'] ? 'grey' : 'white' }}
+                                    placeholder='Label Name' onChange={ handleChange_TrackEdit }/>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_streamPlat'>Edit Streaming Platform(s):</label>
@@ -625,13 +657,14 @@ const SubmitTrackEdit = () => {
                                         return (
                                             <div id={`streamPlat_item_section_`+ item.id} key={item.id}
                                             className='fto__page__submission-main_content-streamPlat_item'>
-                                                <div className='delete_streamPlat_item'>
+                                                <div className='delete_streamPlat_item' tabIndex='0'>
                                                     <IoTrash id={`delete_streamPlat_item_`+ item.id} onClick={() => handleRemovePlatform(item.id)}/>
                                                 </div>
                                                 <label className='fto-input-drawableIconStart_label'>
-                                                    <img src={ GetPlatformIcon( (IsEmpty(item.inputString) && !IsEmpty(item.placeholder)) ? GetUrlPlatform(item.placeholder) : item.platform ) } 
+                                                    <img src={ GetPlatformIcon( (IsEmpty(item.inputString) && !IsEmpty(item.placeholder)) ? GetUrlPlatform(item.placeholder) : item.platform_type ) } 
                                                     className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                                     <input id={`submit_streamPlat_item_${item.id}`} name={`submit_streamPlat_item_${item.id}`} type='text' className='fto_input' 
+                                                    readOnly={!IsEmpty(item.placeholder) ? true : false}
                                                     placeholder={ !IsEmpty(item.placeholder) ? item.placeholder : 'Enter Streaming Platform URL' } value={ item.inputString }
                                                     onChange={ (ev) => { handleChange_TrackEdit(ev) } }/>
                                                 </label>
@@ -639,29 +672,35 @@ const SubmitTrackEdit = () => {
                                         );
                                     })}
                                 </div>
-                                <div className='fto__page__submission-main_content-align_end fto__pointer' onClick={handleAddPlatform}>
-                                    <span>
-                                        Add platform 
-                                    </span>
-                                    <IoAdd />
+                                <div>
+                                <button className='fto__button__pink fto__button__right fto__pointer' type='button' onClick={handleAddPlatform}>
+                                    <div className='fto__page__submission-main_content-align_end'>
+                                        <span style={{margin: '0px 5px'}}>
+                                            Add platform 
+                                        </span>
+                                        <IoAdd />
+                                    </div>
+                                </button>
                                 </div>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_wikiaImgUrl'>Edit Fandom/Wikia Image URL:</label>
                                 <label className='fto-input-drawableIconStart_label'>
                                     <img src={ GetFandomWikiaIcon( 'fandom_img', (IsEmpty(pageInputs.submit_wikiaImgUrl)) ? submissionContextInfo.submit_wikiaImgUrl : pageInputs.submit_wikiaImgUrl ) } 
-                                    className='fto-input-drawableIconStart_img' alt='platform_img'/>
-                                    <input id='submit_wikiaImgUrl' name='submit_wikiaImgUrl' type='text' className='fto_input' 
-                                        placeholder='Wikia Image URL' onChange={ handleChange_TrackEdit }/>
+                                        className='fto-input-drawableIconStart_img' alt='platform_img'/>
+                                    <input id='submit_wikiaImgUrl' name='submit_wikiaImgUrl' type='text' className='fto_input' value={pageInputs['submit_wikiaImgUrl']}
+                                        style={{ color: orginalPageInputs['submit_wikiaImgUrl'] === pageInputs['submit_wikiaImgUrl'] ? 'grey' : 'white' }}
+                                        placeholder='Wikia Album Image URL' onChange={ handleChange_TrackEdit }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_wikiaWebpageUrl'>Edit Fandom/Wikia Webpage URL:</label>
                                 <label className='fto-input-drawableIconStart_label'>
                                     <img src={ GetFandomWikiaIcon( 'fandom_web', (IsEmpty(pageInputs.submit_wikiaWebpageUrl)) ? submissionContextInfo.submit_wikiaWebpageUrl : pageInputs.submit_wikiaWebpageUrl ) }
-                                    className='fto-input-drawableIconStart_img' alt='platform_img'/>
-                                    <input id='submit_wikiaWebpageUrl' name='submit_wikiaWebpageUrl' type='text' className='fto_input'
-                                        placeholder='Wikia Webpage URL' onChange={ handleChange_TrackEdit }/>
+                                        className='fto-input-drawableIconStart_img' alt='platform_img'/>
+                                    <input id='submit_wikiaWebpageUrl' name='submit_wikiaWebpageUrl' type='text' className='fto_input' value={pageInputs['submit_wikiaWebpageUrl']}
+                                        style={{ color: orginalPageInputs['submit_wikiaWebpageUrl'] === pageInputs['submit_wikiaWebpageUrl'] ? 'grey' : 'white' }}
+                                        placeholder='Wikia Album Webpage URL' onChange={ handleChange_TrackEdit }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
@@ -669,21 +708,23 @@ const SubmitTrackEdit = () => {
                                 <label className='fto-input-drawableIconStart_label'>
                                     <img src={ 
                                         GetPlatformIcon( 
-                                            GetUrlPlatform((IsEmpty(pageInputs.submit_embeddedYtUrl)) ? 
-                                            GeneratePlatformUrlFromID(submissionContextInfo.submit_embeddedYtUrl, 'youtube') : pageInputs.submit_embeddedYtUrl), 
+                                            GetUrlPlatform(
+                                                pageInputs.submit_embeddedYtUrl
+                                            ), 
                                             'youtube' 
                                         ) 
                                     } 
                                     className='fto-input-drawableIconStart_img' alt='platform_img'/>
-                                    <input id='submit_embeddedYtUrl' name='submit_embeddedYtUrl' type='text' className='fto_input'
-                                    plaeholder='Embedded YT Video URL' onChange={ handleChange_TrackEdit }/>
+                                    <input id='submit_embeddedYtUrl' name='submit_embeddedYtUrl' type='text' className='fto_input' value={pageInputs['submit_embeddedYtUrl']}
+                                        style={{ color: orginalPageInputs['submit_embeddedYtUrl'] === pageInputs['submit_embeddedYtUrl'] ? 'grey' : 'white' }}
+                                        placeholder='Embedded YT Video URL' onChange={ handleChange_TrackEdit }/>
                                 </label>
                             </div>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_sceneDesc'>Edit Scene Description:</label>
-                                <textarea id='submit_sceneDesc' name='submit_sceneDesc' type='text' className='fto_input'
-                                placeholder='Add Scene Description' onChange={ handleChange_TrackEdit }
-                                maxLength={ maxCharCountLength_SceneDesc } />
+                                <textarea id='submit_sceneDesc' name='submit_sceneDesc' type='text' className='fto_input' value={pageInputs['submit_sceneDesc']}
+                                    style={{ color: orginalPageInputs['submit_sceneDesc'] === pageInputs['submit_sceneDesc'] ? 'grey' : 'white' }}
+                                    placeholder='Add Scene Description' maxLength={ maxCharCountLength_SceneDesc } onChange={ handleChange_TrackEdit }/>
                                 <div className='fto__page__submission-main_content-align_end'>
                                     <span>
                                         {charCount_SceneDesc.length}/{maxCharCountLength_SceneDesc} characters
@@ -693,8 +734,7 @@ const SubmitTrackEdit = () => {
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_editReason'>Reason For Edits:</label>
                                 <textarea id='submit_editReason' name='submit_editReason' type='text' className='fto_input'
-                                placeholder='Short desctription of reason for edits' onChange={ handleChange_TrackEdit }
-                                maxLength={ maxCharCountLength_editReasons } />
+                                placeholder='Short desctription of reason for edits' maxLength={ maxCharCountLength_editReasons } onChange={ handleChange_TrackEdit }/>
                                 <div className='fto__page__submission-main_content-align_end'>
                                     <span>
                                         {charCount_editReasons.length}/{maxCharCountLength_editReasons} characters
@@ -720,7 +760,7 @@ const SubmitTrackEdit = () => {
                                 {(successfulSubmitQuery === true) ? (
                                     <>
                                         <h3 className='fto__page__submission-content_header_subtitle'>
-                                            <strong>Add Track to '{submissionContextInfo.canonical_title}' success!</strong>
+                                            <strong>Edit Track for episode {ftoEpisodeID} success!</strong>
                                         </h3>
                                         <button className='fto__button__pink' onClick={ handleModalOnButtonClick }>
                                             Finish

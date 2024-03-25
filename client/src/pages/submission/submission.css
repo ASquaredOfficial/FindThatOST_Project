@@ -104,4 +104,10 @@
         align-items: center;
         float: right;
     }
+
+    .fto__button__right {
+        display: flex;
+        margin-left: auto;
+        margin-right: 0;
+    }
 }
