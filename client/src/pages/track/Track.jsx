@@ -157,13 +157,11 @@ const Track = () => {
                                 </div>
                             </div>
 
-                            <div className='fto__page__track-main_content--edit_track_section'>
-                                {(spOccurrenceID !== -1 ) ? (
-                                    <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '?context_id=' + spOccurrenceID}>Edit Track</a>
-                                ) : (
-                                    <a className='fto__button__pink' href={'/submission/track_edit/' + track_id}>Edit Track</a>
-                                )}
-                            </div>
+                            {(spOccurrenceID !== -1 ) && (
+                                <div className='fto__page__track-main_content--edit_track_section'>
+                                        <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '/context_id/' + spOccurrenceID}>Edit Track</a>
+                                </div>
+                            )}
 
                             <div>
                                 {typeof (ftoTrackInfo.streaming_platform_links) == 'object' && (

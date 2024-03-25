@@ -12,11 +12,8 @@ import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
 
 const SubmitTrackEdit = () => {
     const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
-    const location = useLocation();
     const { track_id } = useParams();
-
-    const searchParams = new URLSearchParams(location.search);
-    const spOccurrenceId = parseInt(searchParams.get('context_id'), 10) || -1;
+    const { occurrence_id } = useParams();
 
     const [ ftoEpisodeID, setFtoEpisodeID ] = useState(-1);
     const [ ftoEpisodeContext, setFtoEpisodeContext ] = useState({ anime_id: -1, episode_id: -1, episode_no: -1, episode_title: -1,});
@@ -45,11 +42,11 @@ const SubmitTrackEdit = () => {
     const maxCharCountLength_editReasons = 200;
     
     useEffect(() => {
-        document.title = `Submit | Edit Track | TrackID(${track_id}) and OccurrenceID(${spOccurrenceId})`;
-        console.log(`Render-SubmitTrackEdit (onMount): ${window.location.href}\nTrackID:${track_id}\nOccurrenceID:${spOccurrenceId}`);
+        document.title = `Submit | Edit Track | TrackID(${track_id}) and OccurrenceID(${occurrence_id})`;
+        console.log(`Render-SubmitTrackEdit (onMount): ${window.location.href}\nTrackID:${track_id}\nOccurrenceID:${occurrence_id}`);
 
         // Fetch page data for anime and corresponding epsiode
-        FetchPageData(track_id, spOccurrenceId);
+        FetchPageData(track_id, occurrence_id);
     }, []);
 
     useEffect(() => {
@@ -537,7 +534,7 @@ const SubmitTrackEdit = () => {
             console.log(`Fetch data:`, updatedSubmission); 
             if (bChangesPresent) { 
                 await new Promise(resolve => setTimeout(resolve, 1000));  
-                FetchPostSubmissionTrackEdit_FTO(track_id, spOccurrenceId, updatedSubmission);
+                FetchPostSubmissionTrackEdit_FTO(track_id, occurrence_id, updatedSubmission);
             }
             else {
                 alert("No changes have been made");
@@ -549,7 +546,7 @@ const SubmitTrackEdit = () => {
     const handleModalOnButtonClick = () => {
         if (successfulSubmitQuery === true) {
             if (ftoEpisodeID !== -1) {
-                navigateToTrack(track_id, spOccurrenceId);
+                navigateToTrack(track_id, occurrence_id);
             }
             else {
                 navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no);
