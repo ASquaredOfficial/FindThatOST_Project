@@ -121,3 +121,17 @@ CREATE TABLE `fto_request_track_edit` (
     FOREIGN KEY (`fto_occurrence_id`) REFERENCES `fto_occurrence` (`occurrence_id`),
     FOREIGN KEY (`fto_track_id`) REFERENCES `fto_track` (`track_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `fto_request_track_remove_from_episode` (
+    `request_track_remove_id` int(11) NOT NULL AUTO_INCREMENT,
+    `request_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `request_state` enum('PENDING','ACCEPTED','REJECTED') NOT NULL DEFAULT 'ACCEPTED',
+    `request_rejection_reason` varchar(200) DEFAULT NULL,
+    `fto_user_id` int(11) NOT NULL,
+    `fto_track_id` int(11) NOT NULL,
+    `fto_occurrence_id` int(11) NOT NULL,
+    `track_remove_reason` varchar(200) NOT NULL,
+    PRIMARY KEY (`request_track_remove_id`),
+    FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`),
+    FOREIGN KEY (`fto_track_id`) REFERENCES `fto_track` (`track_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

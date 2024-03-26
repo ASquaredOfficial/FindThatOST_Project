@@ -345,7 +345,7 @@ const SubmitTrackAdd = () => {
      * @function FetchPostSubmissionTrackAdd_FTO
      * @param {number|string}  nAnimeID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
      * @param {number|string}  nEpisodeNo -  Episode No track is being added to. -1 if added to no specific episode.
-     * @param {object}  objUserSubmission - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
+     * @param {object}  objUserSubmission - Object containg data submitted by user.
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
@@ -488,7 +488,7 @@ const SubmitTrackAdd = () => {
                                 <label htmlFor='submit_trackName'>Enter Track Name<span className='fto-red__asterisk'>*</span>:</label>
                                 <input id='submit_trackName' name='submit_trackName' type='text' className='fto_input' 
                                     placeholder='Track Name' onChange={ handleChange_TrackAdd }/>
-                                <button className='fto__button__pink fto__button__right fto__pointer' type='button' onClick={handleAddPlatform}>
+                                <button className='fto__button__pink fto__button__right fto__pointer' type='button' onClick={() => {alert("Not implemented yet!")}}>
                                     <div className='fto__page__submission-main_content-align_end'>
                                         <IoAdd />
                                         <span style={{margin: '0px 5px'}}>

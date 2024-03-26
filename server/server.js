@@ -17,6 +17,7 @@ const {
     PostSubmission_TrackAdd,
     GetSubmissionContext_TrackEdit,
     PostSubmission_TrackEdit,
+    PostSubmission_TrackRemove,
 } = require('./sql/database');
 const { IsEmpty } = require('./utils/BackendUtils');
 
@@ -412,6 +413,39 @@ app.post("/findthatost_api/postSubmission/track_edit/:nFtoTrackID/occurrence_id/
         const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
         console.log("Details:", objUserSubmission);
         const ftoResponse = await PostSubmission_TrackEdit(nFtoTrackID, nFtoOccurrenceID, objUserSubmission);
+        if (!IsEmpty(ftoResponse)) {
+            res.status(200).json(ftoResponse);
+        }
+        else {
+            throw new Error("Expected non empty array.");
+        }
+    } 
+    catch (error) {
+        let date = new Date(); // for now
+        let objError = {};
+        objError.error = 'Internal Request Error';
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
+        {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })}`;
+        objError.details = error;
+        res.status(500).json(objError);
+        console.log(`Insert Request Error (${objError.time}):\n`, error);
+    } 
+});
+
+app.post("/findthatost_api/postSubmission/track_remove/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", async (req, res) => {
+    const { objUserSubmission } = req.body;
+    if (!objUserSubmission) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const nFtoTrackID = req.params.nFtoTrackID;
+        const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
+        console.log("Details:", objUserSubmission);
+        const ftoResponse = await PostSubmission_TrackRemove(nFtoTrackID, nFtoOccurrenceID, objUserSubmission);
         if (!IsEmpty(ftoResponse)) {
             res.status(200).json(ftoResponse);
         }

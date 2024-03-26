@@ -20,6 +20,29 @@ a.button {
     appearance: button;
 }
 
+.fto__button__gray {
+    padding: 0.5rem 1rem;
+    margin: 1rem 0rem;
+    color: #ffffff;
+    background: var(--color-gray_bright);
+    font-family: var(--font-family-manrope);
+    font-weight: 500;   
+    font-size: 1em;
+    line-height: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+.fto__button__gray:hover, 
+.fto__button__gray:focus {
+    border: 1px solid var(--color-gray_dark);
+}
+.fto__button__gray:active {
+    transition: 0.5s;
+    background: var(--color-gray_dark);
+}
+
 .fto__button__pink {
     padding: 0.5rem 1rem;
     margin: 1rem 0rem;

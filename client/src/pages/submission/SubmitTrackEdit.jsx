@@ -9,6 +9,7 @@ import { FindObjectDifferenceWithArrays, FormatStreamingPlatformsToJson, FormatS
 import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetPlatformTrackBaseUrl } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from '../../routing/navigation'
 import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
+import SubmitTrackRemoveModal from './SubmitTrackRemoveModal';
 
 const SubmitTrackEdit = () => {
     const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
@@ -18,6 +19,8 @@ const SubmitTrackEdit = () => {
     const [ ftoEpisodeID, setFtoEpisodeID ] = useState(-1);
     const [ ftoEpisodeContext, setFtoEpisodeContext ] = useState({ anime_id: -1, episode_id: -1, episode_no: -1, episode_title: -1,});
     const [ pageLoading, setPageLoading ] = useState(false);
+    const [ pageInEditMode, setPageToEditMode ] = useState(true);
+    const [ pageRemoveTrackModalVisibility, setPageRemoveTrackModalVisibility ] = useState(false);
     const [ pageInputs, setPageInputs ] = useState({
         submit_trackName: '',
         submit_songType: '',
@@ -359,8 +362,8 @@ const SubmitTrackEdit = () => {
      * Perform all fetches to set up the webpage.
      * @async
      * @function FetchPostSubmissionTrackEdit_FTO
-     * @param {number|string}  nAnimeID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
-     * @param {number|string}  nEpisodeNo -  Episode No track is being added to. -1 if added to no specific episode.
+     * @param {number|string}  nTrackID - Page/Track ID from url, corresponds to FindThatOST Track ID.
+     * @param {number|string}  nOccurrenceID -  Occurrence ID for the episode the track was in. -1 if added to no specific episode.
      * @param {object}  objUserSubmission - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
@@ -583,6 +586,18 @@ const SubmitTrackEdit = () => {
             <div className='gradient__bg'>
                 <Navbar />
 
+                {pageRemoveTrackModalVisibility && (
+                    <SubmitTrackRemoveModal 
+                        setModalVisibility={setPageRemoveTrackModalVisibility}
+                        setPageLoading={setPageLoading}
+                        setSuccessfulSubmitQuery={setSuccessfulSubmitQuery}
+                        trackID={track_id}
+                        occurrenceID={occurrence_id}
+                        setFtoEpisodeID={setFtoEpisodeID}
+                        setPageToEditMode={setPageToEditMode}
+                    />
+                )}
+
                 {(submissionContextInfo !== undefined)  && (
                 <div className='fto__page__submission-content section__padding'>
 
@@ -600,6 +615,14 @@ const SubmitTrackEdit = () => {
                     </div>
                     
                     <div className='fto__page__submission-main_content'>
+                        <button className='fto__button__pink fto__button__right fto__pointer' type='button'
+                            onClick={() => setPageRemoveTrackModalVisibility(true)}>
+                            <div className='fto__page__submission-main_content-align_end'>
+                                <span style={{margin: '0px 5px'}}>
+                                    Remove Track From Episode
+                                </span>
+                            </div>
+                        </button>
                         <form id='track_edit_form' onSubmit={ handleSubmit_TrackEdit }>
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_trackName'>Edit Track Name:</label>
@@ -661,9 +684,9 @@ const SubmitTrackEdit = () => {
                                                     <img src={ GetPlatformIcon( (IsEmpty(item.inputString) && !IsEmpty(item.placeholder)) ? GetUrlPlatform(item.placeholder) : item.platform_type ) } 
                                                     className='fto-input-drawableIconStart_img' alt='platform_img'/>
                                                     <input id={`submit_streamPlat_item_${item.id}`} name={`submit_streamPlat_item_${item.id}`} type='text' className='fto_input' 
-                                                    readOnly={!IsEmpty(item.placeholder) ? true : false}
-                                                    placeholder={ !IsEmpty(item.placeholder) ? item.placeholder : 'Enter Streaming Platform URL' } value={ item.inputString }
-                                                    onChange={ (ev) => { handleChange_TrackEdit(ev) } }/>
+                                                        readOnly={!IsEmpty(item.placeholder) ? true : false}
+                                                        placeholder={ !IsEmpty(item.placeholder) ? item.placeholder : 'Enter Streaming Platform URL' } value={ item.inputString }
+                                                        onChange={ (ev) => { handleChange_TrackEdit(ev) } }/>
                                                 </label>
                                             </div>
                                         );
@@ -757,7 +780,11 @@ const SubmitTrackEdit = () => {
                                 {(successfulSubmitQuery === true) ? (
                                     <>
                                         <h3 className='fto__page__submission-content_header_subtitle'>
-                                            <strong>Edit Track for episode {ftoEpisodeID} success!</strong>
+                                            {(pageInEditMode) ? (
+                                                <strong>Edit Track for episode {ftoEpisodeID} success!</strong>
+                                            ) : (
+                                                <strong>Removed Track for track '{ftoEpisodeContext.episode_title}' success!</strong>
+                                            )}
                                         </h3>
                                         <button className='fto__button__pink' onClick={ handleModalOnButtonClick }>
                                             Finish

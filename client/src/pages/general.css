@@ -85,6 +85,31 @@ textarea.fto_input  {
 
         font-family: var(--font-family-manrope);
         color: #fff;
+        display: flex;
+
+        .fto_modal-content-align_end {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            float: right;
+        }
+
+        input, textarea {
+            width: 100%;
+            max-width: 100%;
+            min-width: 100%;
+        }
+    }
+
+    .fto_modal-content-footer {
+        flex: 20%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        button {
+            margin: 10px;
+        }
     }
 }
 
