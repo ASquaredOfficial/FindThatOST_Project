@@ -25,10 +25,12 @@ const IsEmpty = (value) => {
  * all the extra unnecessary sql function paths fluff.
  * @function GetSqlErrorObj
  * @param {mysql.MysqlError} sqlError - The SQL error object to extract properties from.
+ * @param {String} strFileLineNumber - The SQL error object to extract properties from.
+ * @param {object} objAddToError - Object with keys to add to errorThe SQL error object to extract properties from.
  * @returns {object} An object containing relevant SQL error properties, 
  *                  including 'code', 'errno', 'sqlMessage', 'sqlState', 'index', and 'sql'.
  */
-function GetSqlErrorObj(sqlError, strFileLineNumber = '') {
+function GetSqlErrorObj(sqlError, strFileLineNumber = '', objAddToError = {}) {
     let sqlErrorObject = {}
     if (!IsEmpty(strFileLineNumber)) {
         sqlErrorObject['filename'] = strFileLineNumber;
@@ -50,6 +52,14 @@ function GetSqlErrorObj(sqlError, strFileLineNumber = '') {
     }
     if (sqlError.hasOwnProperty('sql')) {
         sqlErrorObject['sql'] = sqlError.sql;
+    }
+    if (!IsEmpty(objAddToError)) {
+        for (const [key, value] of Object.entries(objAddToError)) {
+            if (!sqlErrorObject.hasOwnProperty(key)) {
+                sqlErrorObject[key] = value;
+            }
+            
+        }
     }
     return sqlErrorObject;
 }

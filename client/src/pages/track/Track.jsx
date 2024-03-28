@@ -17,7 +17,7 @@ const Track = () => {
     const spOccurrenceID = parseInt(searchParams.get('context_id'), 10) || -1;
 
     const [ ftoTrackInfo, setFTOTrackInfo ] = useState();
-    const [ streamingPlatformsLinks, setStreamingPlatformsLInks ] = useState([]);
+    const [ streamingPlatformsLinks, setStreamingPlatformsLinks ] = useState([]);
 
     useEffect(() => {
         document.title = `TrackID(${track_id}) and OccurrenceID(${spOccurrenceID})`;
@@ -47,7 +47,7 @@ const Track = () => {
 
                 console.log("Track Info:", trackInfo.streaming_platform_links);
                 console.log("Converted to New Streaming Links:", updatedStreamingLinksArray);
-                setStreamingPlatformsLInks(updatedStreamingLinksArray);
+                setStreamingPlatformsLinks(updatedStreamingLinksArray);
             }
         }
     }, [ftoTrackInfo]);

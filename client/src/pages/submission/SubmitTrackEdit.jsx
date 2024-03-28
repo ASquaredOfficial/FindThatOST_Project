@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { AddPlatformInputToPage, ListenToPlatformInput, RemovePlatformInputFomPage, ValidateInputs } from './submission';
 import './submission.css';
 
-import { Navbar, Footer} from "../../components";
+import { Navbar, Footer, PageLoading} from "../../components";
 import { IoAdd, IoTrash } from "react-icons/io5";
 import { FindObjectDifferenceWithArrays, FormatStreamingPlatformsToJson, FormatStreamingPlatformsToList, GetShorthandDateFromString, IsEmpty } from '../../utils/RegularUtils';
 import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetPlatformTrackBaseUrl } from '../../utils/HyperlinkUtils';
@@ -496,7 +496,7 @@ const SubmitTrackEdit = () => {
         setPageLoading(true);
         
         const formValues = event.target.elements // as HTMLFormControlsCollection;
-        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs, false, true);
+        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs, false);
         if (inputsValid) {
             // Update user Submission
             const updatedSubmission = { 
@@ -564,23 +564,7 @@ const SubmitTrackEdit = () => {
     return (
         <div id='fto__page' className='fto__page__submission'>
             {pageLoading && (
-                <div className='fto_loading'>
-                    <div className='fto_modal_overlay-bg fto_loading-cursor' />
-                    <div className={'fto_loading-text_section fto_input'} style={
-                            { 
-                                position: 'fixed', 
-                                top: '50%', 
-                                left: '50%', 
-                                transform: 'translate(-50%, -50%)', 
-                                padding: '20px',
-                            }
-                        }>
-                        <p className={'fto_loading-text fto_unselectable'}>
-                            Loading...
-                        </p>
-                        <div className="fto_loading-loader" />
-                    </div>
-                </div>
+                <PageLoading />
             )}
 
             <div className='gradient__bg'>
@@ -630,7 +614,7 @@ const SubmitTrackEdit = () => {
                                     style={{ color: orginalPageInputs['submit_trackName'] === pageInputs['submit_trackName'] ? 'grey' : 'white' }}
                                     placeholder='Track Name' onChange={ handleChange_TrackEdit }/>
                             </div>
-                            <div className='fto__page__submission-main_content-even_split fto__page__submission-main_content-even_split_gap'>
+                            <div className='fto__page__submission-main_content-even_split fto_gap'>
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-left'>
                                     <label htmlFor='submit_songType'>Edit Song Type:</label>
                                     <select id='submit_songType' name='submit_songType' className='fto_input' value={pageInputs['submit_songType']}
@@ -781,9 +765,9 @@ const SubmitTrackEdit = () => {
                                     <>
                                         <h3 className='fto__page__submission-content_header_subtitle'>
                                             {(pageInEditMode) ? (
-                                                <strong>Edit Track for episode {ftoEpisodeID} success!</strong>
+                                                <strong>Successfully modified Track in episode {ftoEpisodeContext.episode_no}</strong>
                                             ) : (
-                                                <strong>Removed Track for track '{ftoEpisodeContext.episode_title}' success!</strong>
+                                                <strong>Successfully removed track '{orginalPageInputs.submit_trackName}' from episode {ftoEpisodeContext.episode_no}!</strong>
                                             )}
                                         </h3>
                                         <button className='fto__button__pink' onClick={ handleModalOnButtonClick }>

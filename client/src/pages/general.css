@@ -39,9 +39,7 @@ textarea.fto_input  {
 }
 .fto-input-drawableIconStart_label {
     position: relative;
-    display: flex;
     width: 100%;
-    margin-left: 10px;
 
     input[type=text] {
         padding-left: 40px;
@@ -54,6 +52,10 @@ textarea.fto_input  {
         transform: translateY(-50%);
         width: 22px;
     }
+}
+
+.fto_gap {
+    gap: 10px;
 }
 
 /* Popup container */
@@ -113,7 +115,6 @@ textarea.fto_input  {
     }
 }
 
-
 .fto_modal_overlay-bg {
     position: fixed;
     top: 0;
@@ -171,4 +172,10 @@ textarea.fto_input  {
     */
     -ms-user-select: none;
     user-select: none;
+}
+
+.fto_horizontal_hr {
+    margin: 0px;
+    border-top: 1px solid white;
+    width: 100%;
 }

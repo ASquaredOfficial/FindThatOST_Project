@@ -102,21 +102,6 @@
     cursor: pointer;
 }
 
-.fto__navbar-sign button,
-.fto__navbar-menu_container button {
-    padding: 0.5rem 1rem;
-    color: #ffffff;
-    background: var(--color-pink_bright);
-    font-family: var(--font-family-manrope);
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    border: none;
-    outline: none;
-}
-
 .fto__navbar-menu {
     margin-left: 1rem;
 

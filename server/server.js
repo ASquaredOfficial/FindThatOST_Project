@@ -18,6 +18,8 @@ const {
     GetSubmissionContext_TrackEdit,
     PostSubmission_TrackEdit,
     PostSubmission_TrackRemove,
+    GetTracksForAnime,
+    PostSubmission_TrackAddPreExisting,
 } = require('./sql/database');
 const { IsEmpty } = require('./utils/BackendUtils');
 
@@ -245,6 +247,24 @@ app.post("/findthatost_api/postMissingEpisodes/:nFtoAnimeID", async (req, res) =
     }
 }); 
 
+app.get("/findthatost_api/getAnimeTracks/anime_id/:nFtoAnimeID", async (req, res) => {
+    //Get List of Tracks for the anime with corresponding FTO Anime ID
+    const nFtoAnimeID = req.params.nFtoAnimeID;
+    try {
+        const ftoAnimeTracksDetails = await GetTracksForAnime(nFtoAnimeID);
+        if (IsEmpty(ftoAnimeTracksDetails)) {
+            return res.status(404).json({ error: 'Resource Not Found' }).end(); 
+        }
+        res.status(200).json(ftoAnimeTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
 app.get("/findthatost_api/getTracks/episode_id/:nEpisodeID/", async (req, res) => {
     //Get List of Tracks for the episode with corresponding FTO Episode ID
     const nEpisodeID = req.params.nEpisodeID;
@@ -362,6 +382,41 @@ app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFt
         objError.details = error;
         res.status(500).json(objError);
         console.log(`Insert Requestf Error (${objError.time}):\n`, error);
+    } 
+});
+
+app.post("/findthatost_api/postSubmission/track_add_pre_existing/:nFtoEpisodeID", async (req, res) => {
+    var date = new Date(); // for now
+    console.log(req.body)
+    const { objUserSubmission } = req.body;
+    if (!objUserSubmission) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const nFtoEpisodeID = req.params.nFtoEpisodeID;
+        const ftoResponse = await PostSubmission_TrackAddPreExisting(nFtoEpisodeID, objUserSubmission);
+        res.status(200).json(ftoResponse);
+    } 
+    catch (error) {
+        let objError = {};
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
+        {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })}`;
+        objError.details = error;
+        console.log(`Insert Request Error (${objError.time}):\n`, error);
+        if (typeof error == 'object' && !IsEmpty(error)) {
+            if ('code' in error) {
+                if (error.code === 'ER_DUP_ENTRY') {
+                    objError.error = 'Conflict';
+                    return res.status(409).json(objError);; // Status Code: Conflict
+                }
+            }
+        }
+        objError.error = 'Internal Request Error';
+        return res.status(500).json(objError);
     } 
 });
 

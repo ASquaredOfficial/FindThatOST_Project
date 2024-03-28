@@ -23,7 +23,8 @@ const Episode = () => {
     const [ episodeListOfTracks, setEpisodeListOfTracks ] = useState();
 
     useEffect(() => {
-        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${anime_id}\nEpisodeID:${episode_no}`)
+        document.title = `Episode ${episode_no} Tracks | AnimeID(${anime_id})`;
+        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${anime_id}\nEpisodeNo:${episode_no}`)
         FetchPageData(anime_id, episode_no);
     }, []);
 
@@ -381,6 +382,7 @@ const Episode = () => {
             console.log('Episode Data from backend:', episodeDataFromBackend);
             setFTOAnimeInfo(animeDataFromBackend[0]);
             setFTOEpisodeInfo(episodeDataFromBackend);
+            document.title = `Episode ${episode_no} Tracks | ${animeDataFromBackend[0].canonical_title}`;
 
             // Use data from the backend to make the second fetch to the external API
             let malID = animeDataFromBackend[0].mal_id;
@@ -533,9 +535,12 @@ const Episode = () => {
                                                             <p>{trackInfo.scene_description}</p>
                                                         </div>
                                                         <div className='fto__page__episode-main_content--track_item-scene_description_right'>
-                                                            <button className='fto__page__episode-main_content--track_item-edit_track_button' type='submit'>
-                                                                <img src={pencil_icon} alt='pencil_icon'/>&nbsp;Edit
-                                                            </button>
+                                                            <a href={'/submission/track_edit/' + trackInfo.track_id + '/context_id/' + trackInfo.occurrence_id}>
+                                                                
+                                                                <button className='fto__page__episode-main_content--track_item-edit_track_button' tabindex="-1">
+                                                                    <img src={pencil_icon} alt='pencil_icon'/>&nbsp;Edit
+                                                                </button>
+                                                            </a>
                                                         </div>
                                                     </div>
                                                     

@@ -105,6 +105,7 @@
             }
             .fto__page__track--streaming_platform_item:hover {
                 opacity: 70%;
+                transition: 0.5s;
             }
         }
     }

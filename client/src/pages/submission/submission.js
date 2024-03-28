@@ -15,13 +15,13 @@ import { IsFandomImageUrl, IsFandomCommunityWebsiteUrl, IsYoutubeVideoUrl, GetUr
  * @returns {boolean} 
  * 
  */
-const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions, pageInputs, submitPreExistingTrack = false, submitEditTrack = false) => {
+const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions, pageInputs, submitPreExistingTrack = false) => {
     const { setUserSubmission, setPlatformItems, setPageInputs } = stateSetterFunctions;
     let strElemIdFirstInvalidInput = '';
     let inputElement = HTMLElement;
 
-    // Validate Track Name
-    if (!submitEditTrack) {
+    // Validate Track Name, if adding a new track
+    if (!submitPreExistingTrack) {
         inputElement = formElements[`submit_trackName`];
         if (IsEmpty(inputElement.value)) {
             AddErrorToFtoInput(inputElement);
@@ -124,7 +124,7 @@ const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions
     }
  
     // Validate Track Name
-    if (submitEditTrack) {
+    if (formElements.hasOwnProperty('submit_editReason')) {
         inputElement = formElements[`submit_editReason`];
         if (IsEmpty(inputElement.value)) {
             AddErrorToFtoInput(inputElement);
@@ -134,13 +134,13 @@ const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions
 
     // If error occurred, update latest submitted tracks variable and scroll to error input. 
     if (!IsEmpty(strElemIdFirstInvalidInput)) {
-        // Update userSubmission
+        // Update userSubmission's track platforms data
         setUserSubmission(prevState => {
             const updatedSubmission = { 
                 ...prevState, 
             };
             
-            // Loop through key-value pairs in pageInputs, updaating/inserting updatedSubmission
+            // Loop through key-value pairs in pageInputs, updating/inserting updatedSubmission
             for (const [key, value] of Object.entries(pageInputs)) {
                 // Ignore Streaming Platform Inputs, added earlier
                 if (!key.startsWith('submit_streamPlat_item_')) {
