@@ -20,6 +20,7 @@ const {
     PostSubmission_TrackRemove,
     GetTracksForAnime,
     PostSubmission_TrackAddPreExisting,
+    GetTrackCountForMALAnimes,
 } = require('./sql/database');
 const { IsEmpty } = require('./utils/BackendUtils');
 
@@ -257,6 +258,29 @@ app.get("/findthatost_api/getAnimeTracks/anime_id/:nFtoAnimeID", async (req, res
         }
         res.status(200).json(ftoAnimeTracksDetails);
     }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.post("/findthatost_api/getAnimeTrackCount/mal_ids", async (req, res) => {
+    //Get List of Tracks for the anime with corresponding FTO Anime ID
+    const { listMalAnimeIds } = req.body;
+
+    if (IsEmpty(listMalAnimeIds) || !Array.isArray(listMalAnimeIds)) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const ftoMalAnimeTracksCount = await GetTrackCountForMALAnimes(listMalAnimeIds);
+
+        // All queries successful
+        return res.status(200).json({ message: 'Bulk select successful', data: ftoMalAnimeTracksCount });
+        
+    } 
     catch (error) {
         let objError = {};
         objError.error = 'Internal Server Error';

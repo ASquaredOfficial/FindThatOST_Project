@@ -265,6 +265,35 @@ const GetTracksForAnime = (nFtoAnimeID) => {
   });
 };
 
+const GetTrackCountForMALAnime = (nMALAnimeID) => {
+  return new Promise((resolve, reject) => {
+    let sqlQuery = [
+		"SELECT fto_anime.mal_id, COUNT(track_id) AS track_count",
+		"FROM `fto_track`",
+		"INNER JOIN `fto_anime` ON fto_anime_id = `fto_anime`.`anime_id`",
+		`WHERE fto_anime.mal_id = ${nMALAnimeID}`,
+    ];
+    const handler = new SQLArrayHandler(sqlQuery);
+    const sqlQueryString = handler.CombineStringsToQuery();
+    FtoConnection.query(sqlQueryString, (error, results) => {
+		if (error) {
+			LogError('GetTrackCountForMALAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+			reject(error);
+		} 
+		// else if (nMALAnimeID >= 40000 && nMALAnimeID <= 50000) {
+		// 	reject(`I don't want to see mal anime with ID '${nMALAnimeID}' succeed`);
+		// }
+		else {
+			resolve(results);
+		}
+    });
+  });
+};
+
+const GetTrackCountForMALAnimes = async (arrMalAnimeIDs) => {
+  	return Promise.all(arrMalAnimeIDs.map(malAnimeID => GetTrackCountForMALAnime(malAnimeID)));
+};
+
 const GetTracksForEpisode = (nEpisodeID) => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
@@ -954,6 +983,7 @@ module.exports = {
 	GetEpisodeMapping,
 	PostEpisodesIntoDB,
 	GetTracksForAnime,
+	GetTrackCountForMALAnimes,
 	GetTracksForEpisode,
 	GetTrack,
 	GetSubmissionContext_TrackAdd,

@@ -14,9 +14,13 @@ export const useCustomNavigate = () => {
         pathname: '/search',
         search: `?query=${encodeURIComponent(query)}&page=${pageNum}`,
       });
+      console.log("Current page:", curentPage);
+      console.log("Current location:", location);
+      console.log("Current location pathname:", location.pathname);
+      console.log("Current location search:", location.search);
       if (curentPage.startsWith(location.origin + '/search')) {
         //if search page 
-        navigate(0)
+        navigate(0); // refresh pahe
       }
   };
 
