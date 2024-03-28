@@ -27,9 +27,7 @@ const Navbar = () => {
   
   useEffect(() => {
     // Render (onMount)
-    console.log(`Render-Navbar (onMount): ${window.location.href}`);  
-
-    if (window.location.href.startsWith(window.location.origin + '/search')) {
+   if (window.location.href.startsWith(window.location.origin + '/search')) {
       //if search page, add search string from url to searchbar
       setFormData(new URLSearchParams(window.location.search).get('query'))
     }
@@ -63,7 +61,7 @@ const Navbar = () => {
                 (e) => setFormData(e.target.value)
               } 
             />
-            <button type='submit'><img src={search_icon}/></button>
+            <button type='submit'><img src={search_icon} alt='search'/></button>
           </form>
         </div>
       </div>
@@ -72,21 +70,21 @@ const Navbar = () => {
         //If no username passed, load non signed in navbar
         <div className='fto__navbar-sign'>
           <p><strong>Log in</strong></p>
-          <button type='button'>Sign Up</button>
+          <button type='button' className='fto__button__pink'>Sign Up</button>
         </div>
       ): (
         //If username passed, load username to navbar
         <div className='fto__navbar-sign'>
           <p><strong>{backendData.username}</strong></p>
-          <button type='button'>Sign Out</button>
+          <button type='button' className='fto__button__pink'>Sign Out</button>
         </div>
       )}
 
       <div className='fto__navbar-menu'>
         {/* Mobile View Toggle Navbar Menu*/}
         {toggleMenu
-          ? <RiCloseLine color='#fff' size={27} onClick={() => setToggleMenu(false)} />
-          : <RiMenu3Line color='#fff' size={27} onClick={() => setToggleMenu(true)} />
+          ? <RiCloseLine tabIndex='0' color='#fff' size={27} onClick={() => setToggleMenu(false)} />
+          : <RiMenu3Line tabIndex='0' color='#fff' size={27} onClick={() => setToggleMenu(true)} />
         }
         {toggleMenu && (
           <div className='fto__navbar-menu_container sclae-up-center'>
@@ -96,13 +94,13 @@ const Navbar = () => {
                 //If no username passed, load non signed in navbar
                 <div className='fto__navbar-menu_container-links-sign'>
                   <p><strong>Log in</strong></p>
-                  <button type='button'>Sign Up</button>
+                  <button type='button'className='fto__button__pink'>Sign Up</button>
                 </div>
               ): (
                 //If username passed, load username to navbar
                 <div className='fto__navbar-menu_container-links-sign'>
                   <p><strong>{backendData.username}</strong></p>
-                  <button type='button'>Sign Out</button>
+                  <button type='button' className='fto__button__pink'>Sign Out</button>
                 </div>
               )}
             </div>

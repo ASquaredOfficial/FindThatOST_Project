@@ -15,7 +15,14 @@ const {
     GetTrack, 
     GetSubmissionContext_TrackAdd, 
     PostSubmission_TrackAdd,
+    GetSubmissionContext_TrackEdit,
+    PostSubmission_TrackEdit,
+    PostSubmission_TrackRemove,
+    GetTracksForAnime,
+    PostSubmission_TrackAddPreExisting,
+    GetTrackCountForMALAnimes,
 } = require('./sql/database');
+const { IsEmpty } = require('./utils/BackendUtils');
 
 app.use(express.json());
 // app.use((req, res, next) => {
@@ -205,7 +212,6 @@ app.get("/findthatost_api/getEpisodes/anime/:nFtoAnimeID", async (req, res) => {
 });
 
 app.post("/findthatost_api/postMissingEpisodes/:nFtoAnimeID", async (req, res) => {
-    var date = new Date(); // for now
     const { data } = req.body;
 
     if (!data || !Array.isArray(data) || data.length === 0) {
@@ -237,12 +243,51 @@ app.post("/findthatost_api/postMissingEpisodes/:nFtoAnimeID", async (req, res) =
     catch (error) {
         let objError = {};
         objError.error = 'Internal Request Error';
-        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
         objError.details = error;
         res.status(500).json(objError);
-        console.log(`Insert Request Error (${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}):\n`, error);
     }
 }); 
+
+app.get("/findthatost_api/getAnimeTracks/anime_id/:nFtoAnimeID", async (req, res) => {
+    //Get List of Tracks for the anime with corresponding FTO Anime ID
+    const nFtoAnimeID = req.params.nFtoAnimeID;
+    try {
+        const ftoAnimeTracksDetails = await GetTracksForAnime(nFtoAnimeID);
+        if (IsEmpty(ftoAnimeTracksDetails)) {
+            return res.status(404).json({ error: 'Resource Not Found' }).end(); 
+        }
+        res.status(200).json(ftoAnimeTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.post("/findthatost_api/getAnimeTrackCount/mal_ids", async (req, res) => {
+    //Get List of Tracks for the anime with corresponding FTO Anime ID
+    const { listMalAnimeIds } = req.body;
+
+    if (IsEmpty(listMalAnimeIds) || !Array.isArray(listMalAnimeIds)) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const ftoMalAnimeTracksCount = await GetTrackCountForMALAnimes(listMalAnimeIds);
+
+        // All queries successful
+        return res.status(200).json({ message: 'Bulk select successful', data: ftoMalAnimeTracksCount });
+        
+    } 
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
 
 app.get("/findthatost_api/getTracks/episode_id/:nEpisodeID/", async (req, res) => {
     //Get List of Tracks for the episode with corresponding FTO Episode ID
@@ -331,10 +376,6 @@ app.get("/findthatost_api/getSubmissionContext/track_add/:nFtoAnimeID/episode_no
     catch (error) {
         let objError = {};
         objError.error = 'Internal Server Error';
-        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', {
-            minimumIntegerDigits: 2,
-            useGrouping: false
-          })}`;
         objError.details = error;
         res.status(500).json(objError);
     }
@@ -351,7 +392,7 @@ app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFt
     try {
         const nFtoAnimeID = req.params.nFtoAnimeID;
         const nFtoEpisodeID = req.params.nFtoEpisodeID;
-        const ftoResponse = await PostSubmission_TrackAdd(nFtoAnimeID, nFtoEpisodeID, objUserSubmission, objUserSubmission.user_id);
+        const ftoResponse = await PostSubmission_TrackAdd(nFtoAnimeID, nFtoEpisodeID, objUserSubmission);
         res.status(200).json(ftoResponse);
     } 
     catch (error) {
@@ -365,6 +406,144 @@ app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFt
         objError.details = error;
         res.status(500).json(objError);
         console.log(`Insert Requestf Error (${objError.time}):\n`, error);
+    } 
+});
+
+app.post("/findthatost_api/postSubmission/track_add_pre_existing/:nFtoEpisodeID", async (req, res) => {
+    var date = new Date(); // for now
+    console.log(req.body)
+    const { objUserSubmission } = req.body;
+    if (!objUserSubmission) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const nFtoEpisodeID = req.params.nFtoEpisodeID;
+        const ftoResponse = await PostSubmission_TrackAddPreExisting(nFtoEpisodeID, objUserSubmission);
+        res.status(200).json(ftoResponse);
+    } 
+    catch (error) {
+        let objError = {};
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
+        {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })}`;
+        objError.details = error;
+        console.log(`Insert Request Error (${objError.time}):\n`, error);
+        if (typeof error == 'object' && !IsEmpty(error)) {
+            if ('code' in error) {
+                if (error.code === 'ER_DUP_ENTRY') {
+                    objError.error = 'Conflict';
+                    return res.status(409).json(objError);; // Status Code: Conflict
+                }
+            }
+        }
+        objError.error = 'Internal Request Error';
+        return res.status(500).json(objError);
+    } 
+});
+
+app.get("/findthatost_api/getSubmissionContext/track_edit/:nFtoTrackID/", async (req, res) => {
+    //Get Conext information to add a track to the anime with corresponding FTO Anime ID
+    const nFtoTrackID = req.params.nFtoTrackID;
+    try {
+        const ftoTracksDetails = await GetSubmissionContext_TrackEdit(nFtoTrackID);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.get("/findthatost_api/getSubmissionContext/track_edit/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", async (req, res) => {
+    //Get Conext information to add a track to the anime with corresponding FTO Anime ID and episode number
+    const nFtoTrackID = req.params.nFtoTrackID;
+    const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
+    try {
+        const ftoTracksDetails = await GetSubmissionContext_TrackEdit(nFtoTrackID, nFtoOccurrenceID);
+        if (ftoTracksDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+app.post("/findthatost_api/postSubmission/track_edit/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", async (req, res) => {
+    const { objUserSubmission } = req.body;
+    if (!objUserSubmission) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const nFtoTrackID = req.params.nFtoTrackID;
+        const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
+        console.log("Details:", objUserSubmission);
+        const ftoResponse = await PostSubmission_TrackEdit(nFtoTrackID, nFtoOccurrenceID, objUserSubmission);
+        if (!IsEmpty(ftoResponse)) {
+            res.status(200).json(ftoResponse);
+        }
+        else {
+            throw new Error("Expected non empty array.");
+        }
+    } 
+    catch (error) {
+        let date = new Date(); // for now
+        let objError = {};
+        objError.error = 'Internal Request Error';
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
+        {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })}`;
+        objError.details = error;
+        res.status(500).json(objError);
+        console.log(`Insert Request Error (${objError.time}):\n`, error);
+    } 
+});
+
+app.post("/findthatost_api/postSubmission/track_remove/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", async (req, res) => {
+    const { objUserSubmission } = req.body;
+    if (!objUserSubmission) {
+        return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    try {
+        const nFtoTrackID = req.params.nFtoTrackID;
+        const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
+        console.log("Details:", objUserSubmission);
+        const ftoResponse = await PostSubmission_TrackRemove(nFtoTrackID, nFtoOccurrenceID, objUserSubmission);
+        if (!IsEmpty(ftoResponse)) {
+            res.status(200).json(ftoResponse);
+        }
+        else {
+            throw new Error("Expected non empty array.");
+        }
+    } 
+    catch (error) {
+        let date = new Date(); // for now
+        let objError = {};
+        objError.error = 'Internal Request Error';
+        objError.time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', 
+        {
+            minimumIntegerDigits: 2,
+            useGrouping: false
+        })}`;
+        objError.details = error;
+        res.status(500).json(objError);
+        console.log(`Insert Request Error (${objError.time}):\n`, error);
     } 
 });
 

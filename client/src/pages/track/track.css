@@ -61,9 +61,9 @@
         .fto__page__track-main_content--track_details-left {
             margin:auto;
             
-            .fto__page__track-main_content--almbum_thumbnail {
-                width: 200px;
-                height:200px;
+            .fto__page__track-main_content--album_thumbnail {
+                width: 250px;
+                height:250px;
             }
         }
     
@@ -105,6 +105,7 @@
             }
             .fto__page__track--streaming_platform_item:hover {
                 opacity: 70%;
+                transition: 0.5s;
             }
         }
     }

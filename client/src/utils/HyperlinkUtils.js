@@ -19,11 +19,7 @@ import icon_platform_fandom_wikia from '../assets/drawables/ic_fandom_wikia.svg'
  * 
  */
 const IsYoutubeVideoUrl = (youTubeURl) => {
-    const pattern = "^(http(s)?:\/\/)?" +
-            "?(?:www\.|)" +
-            "(?:youtube\.com|m\.youtube\.com|youtu\.be|youtube-nocookie\.com).*" +
-            "(?:\/|%3D|v=|vi=)([0-9A-z-_]{11})" +
-            "(?:[%#?&]|$).*";
+    const pattern = /^(http(s)?:\/\/)?(?:www\.)?(?:youtube\.com|m\.youtube\.com|youtu.be|youtube-nocookie\.com)(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
     if (!IsEmpty(youTubeURl) && youTubeURl.match(pattern)) {
         return true;
     }
@@ -41,9 +37,7 @@ const IsYoutubeVideoUrl = (youTubeURl) => {
  * 
  */
 const IsYoutubeMusicUrl = (youTubeMusicURl) => {
-    const pattern = "^(http(s)?:\/\/)?" +
-            "music\.youtube\.com+" +
-            "\/.+";
+    const pattern = /^(http(s)?:\/\/)?music\.youtube\.com+\/.+/;
     if (!IsEmpty(youTubeMusicURl) && youTubeMusicURl.match(pattern)) {
         return true;
     }
@@ -61,10 +55,7 @@ const IsYoutubeMusicUrl = (youTubeMusicURl) => {
  * 
  */
 const IsSpotifyUrl = (spotifyMuiscURl) => {
-    const pattern ="^(http(s)?:\/\/)?" +
-                    "(?:open\.|play\.)?" +
-                    "spotify\.com" +
-                    "\/.+";
+    const pattern = /^(http(s)?:\/\/)?(?:open\.|play\.)?spotify\.com\/.+/;
     const pattern2 = String('^spotify:') + String('.+');
     if (!IsEmpty(spotifyMuiscURl)) {
         if (spotifyMuiscURl.match(pattern)) {
@@ -91,10 +82,7 @@ const IsSpotifyUrl = (spotifyMuiscURl) => {
  * 
  */
 const IsSpotifyTrackUrl = (spotifyMuiscURl) => {
-    const pattern ="^(?:http:\/\/|https:\/\/)*" +
-                    "(?:open\.|play\.)" +
-                    "?spotify\.com\/" +
-                    "(?:track\/).+";
+    const pattern = /^(http(s)?:\/\/)?(?:open\.|play\.)?spotify\.com\/(?:track\/).+/;
     const pattern2 = String('^spotify:track:') + String('.+');
     if (!IsEmpty(spotifyMuiscURl)) {
         if (spotifyMuiscURl.match(pattern)) {
@@ -121,11 +109,7 @@ const IsSpotifyTrackUrl = (spotifyMuiscURl) => {
  * 
  */
 const IsShazamUrl = (shazamMuiscURl) => {
-    const pattern = "^(http(s)?:\/\/)?" +
-                    "(www\.)?" +
-                    "(?:open\.|play\.)?" +
-                    "shazam\.com" +
-                    "\/.+";
+    const pattern = /^(http(s)?:\/\/)?(www\.)?shazam\.com\/.+/;
     if (!IsEmpty(shazamMuiscURl) && shazamMuiscURl.match(pattern)) {
         return true;
     }
@@ -143,12 +127,7 @@ const IsShazamUrl = (shazamMuiscURl) => {
  * 
  */
 const IsShazamTrackUrl = (shazamMuiscURl) => {
-    const pattern = "^(?:http:\/\/|https:\/\/)*" +
-                    "(www\.)" +
-                    "?(?:open\.|play\.)" +
-                    "?shazam\.com\/" +
-                    "([A-z]{2}\/)*" +
-                    "(?:track\/).+";
+    const pattern = /^(http(s)?:\/\/)?(www\.)?shazam\.com\/([A-z]{2}\/)?(?:track\/).+/;
     if (!IsEmpty(shazamMuiscURl) && shazamMuiscURl.match(pattern)) {
         return true;
     }
@@ -166,9 +145,7 @@ const IsShazamTrackUrl = (shazamMuiscURl) => {
  * 
  */
 const IsAppleMusicUrl = (appleMuiscURl) => {
-    const pattern = "^(http(s)?:\/\/)?" +
-                    "music\.apple\.com\/" +
-                    ".+";
+    const pattern = /^(http(s)?:\/\/)?music\.apple\.com\/.+/;
     if (!IsEmpty(appleMuiscURl) && appleMuiscURl.match(pattern)) {
         return true;
     }
@@ -204,9 +181,7 @@ const IsAppleMusicTrackUrl = (appleMuiscURl) => {
  * 
  */
 const IsAmazonMusicUrl = (amazonMuiscURl) => {
-    const pattern = "^(http(s)?:\/\/)?" +
-                    "music\.amazon\.(?:com|co\.uk|de|fr|es|it|co\.jp|ca|com\.au|nl|com\.mx|com\.br|in)+" +
-                    "/.+";
+    const pattern = /^(http(s)?:\/\/)?music\.amazon\.(?:com|co\.uk|de|fr|es|it|co\.jp|ca|com\.au|nl|com\.mx|com\.br|in)+\/.+/;
     if (!IsEmpty(amazonMuiscURl) && amazonMuiscURl.match(pattern)) {
         return true;
     }
@@ -270,7 +245,7 @@ const GetIdFromYoutubeUrl = (youTubeUrl) => {
         http://www.youtube.com/watch?feature=player_embedded&v=WK0YhfKqdaI
         http://youtu.be/WK0YhfKqdaI
     */
-    const pattern = /(?:watch\?v=|\/videos\/|embed\/|youtu\.be\/|\/v\/|\/e\/|watch\?v%3D|watch\?app=desktop&v=|watch\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu\.be%2F|%2Fv%2F)([^#\&\?\n]*)/;
+    const pattern = /(?:watch\?v=|\/videos\/|embed\/|youtu\.be\/|\/v\/|\/e\/|watch\?v%3D|watch\?app=desktop&v=|watch\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu\.be%2F|%2Fv%2F)([^#&?\n]*)/;
     const match = youTubeUrl.match(pattern);
     if (match) {
         return match[1];
@@ -293,13 +268,13 @@ const GetIdFromSpotifyUrl = (spotifyUrl) => {
         spotify:track:5fNEdhH8m0OVnTUXjzLY8N
         spotify:track:4uLU6hMCjMI75M1A2tKUQC
     */
-    const pattern = /(?:spotify\.com\/?track\/)([^#\&\?\n]*)/;
+    const pattern = /(?:spotify\.com\/?track\/)([^#&?\n]*)/;
     const match = spotifyUrl.match(pattern);
     if (match) {
         return match[1];
     }
 
-    const pattern2 = /(?:spotify:track:)([^#\&\?\n:]*)/;
+    const pattern2 = /(?:spotify:track:)([^#&?\n:]*)/;
     const match2 = spotifyUrl.match(pattern2);
     if (match2) {
         return match2[1];
@@ -320,7 +295,7 @@ const GetIdFromShazamUrl = (shazamUrl) => {
         https://www.shazam.com/gb/track/323892435/you-say-run
         https://www.shazam.com/track/5933774/dont-speak
     */
-    const pattern = /(?:shazam\.com\/?(?:[A-z]{2}\/)track\/|track\/)([^#\&\?\n\/]*)/;
+    const pattern = /(?:shazam\.com\/?(?:[A-z]{2}\/)track\/|track\/)([^#&?\n/]*)/;
     const match = shazamUrl.match(pattern);
     if (match) {
         return match[1];
@@ -420,9 +395,11 @@ const GetIdFromDeezerUrl = (deezerUrl) => {
         https://www.deezer.com/track/2413426495
         https://www.deezer.com/us/track/2413426495
         https://www.deezer.com/us/track/2413426495?host=0&utm_campaign=clipboard-generic&utm_source=user_sharing&utm_content=track-2413426495&deferredFl=1d
+        https://www.deezer.com/us/track/1059340662
+        https://www.deezer.com/en/track/2413426495?host=0&utm_campaign=clipboard-generic&utm_source=user_sharing&utm_content=track-2413426495&deferredFl=1
     */
     //Get Track ASIN
-    const pattern = /\/track\/([A-Za-z0-9]+)\?/;
+    const pattern = /deezer.com\/(?:[A-Za-z]{2}\/)?track\/([0-9]+)/;
     const match = deezerUrl.match(pattern);
     if (match) {
         return match[1];
@@ -450,14 +427,14 @@ const GetUrlPlatform = (linkUrl) => {
     else if (IsShazamTrackUrl(linkUrl)) {
         return 'shazam';
     }
+    else if (IsDeezerTrackUrl(linkUrl)) {
+        return 'deezer';
+    }
     else if (IsAppleMusicTrackUrl(linkUrl)) {
         return 'apple_music';
     }
     else if (IsAmazonMusicTrackUrl(linkUrl)) {
         return 'amazon_music';
-    }
-    else if (IsDeezerTrackUrl(linkUrl)) {
-        return 'deezer';
     }
     else {
         return 'non_basic';
@@ -528,15 +505,46 @@ const GetPlatformTrackBaseUrl = (strPlatform) => {
             return "https://open.spotify.com/track/";
         case 'shazam':
             return "https://www.shazam.com/track/";
+        case 'deezer':
+            return "https://www.deezer.com/track/";
         case 'apple_music':
             return "https://music.apple.com/song/";
         case 'amazon_music':
             return "https://music.amazon.com/albums/";
-        case 'deezer':
-            return "https://www.deezer.com/track/";
         case 'non_basic':
         default:
             return "";
+    }
+}
+
+/**
+ * Get Name of platform based on platform type.
+ * @function GetPlatformNameString
+ * @param {String}  strPlatformType - Streaming Platform Type.
+ * @returns {String} Name of Platform.
+ * 
+ */
+const GetPlatformNameString = (strPlatformType) => {
+    if (strPlatformType === 'youtube') {
+        return 'Youtube';
+    } else if (strPlatformType === 'youtube_music') {
+        return 'Youtube Music';
+    } else if (strPlatformType === 'spotify') {
+        return 'Spotify';
+    } else if (strPlatformType === 'shazam') {
+        return 'Shazam';
+    } else if (strPlatformType === 'soundcloud') {
+        return 'Soundcloud';
+    } else if (strPlatformType === 'deezer') {
+        return 'Deezer';
+    } else if (strPlatformType === 'apple_music') {
+        return 'Apple Music';
+    } else if (strPlatformType === 'amazon_music') {
+        return 'Amazon Music';
+    } else if (strPlatformType === 'non_basic') {
+        return 'Unknown Platform';
+    } else {
+        return 'Unknown Platform';
     }
 }
 
@@ -573,6 +581,36 @@ const GetIdFromTrackUrl = (linkUrl, strPlatform = '') => {
     }
     else {
         return null;
+    }
+}
+
+/**
+ * Generate a url for the platform specified using track ID.
+ * @function GetIdFromTrackUrl
+ * @param {String}  trackID - Track ID for url.
+ * @param {String}  strPlatform - Streaming Platform.
+ * @returns {String|null} Track id of url or null if failed.
+ * 
+ */
+const GeneratePlatformUrlFromID = (trackID, strPlatform) => {
+    switch (strPlatform) {
+        case 'youtube':
+            return String(GetPlatformTrackBaseUrl(strPlatform) + trackID);
+        case 'youtube_music':
+            return String(GetPlatformTrackBaseUrl(strPlatform) + trackID);
+        case 'spotify':
+            return String(GetPlatformTrackBaseUrl(strPlatform) + trackID);
+        case 'shazam':
+            return String(GetPlatformTrackBaseUrl(strPlatform) + trackID);
+        case 'apple_music':
+            return String(GetPlatformTrackBaseUrl(strPlatform) + trackID);
+        case 'amazon_music':
+            return String(GetPlatformTrackBaseUrl(strPlatform) + trackID);
+        case 'deezer':
+            return String(GetPlatformTrackBaseUrl(strPlatform) + trackID);
+        case 'non_basic':
+        default:
+            return "";
     }
 }
 
@@ -616,12 +654,7 @@ const StandardiseTrackUrl = (linkUrl, strPlatform = '') => {
  * 
  */
 const IsFandomImageUrl = (fandomImageUrl) => {
-    const pattern = "^(http(s)?:\/\/)?" +
-                    "(static\.wikia\.nocookie\.net\/)+" +
-                    "([0-9A-z-_].+\/images)+" +
-                    "(\/[0-9A-z]+)" +
-                    "(\/[0-9A-z]+)" +
-                    "(\/.+)";
+    const pattern = /^(http(s)?:\/\/)?(static\.wikia\.nocookie\.net\/)+([0-9A-z_-].+\/images)+(\/[0-9A-z]+)(\/[0-9A-z]+)\/(?:[0-9A-z-_]*)\.(?:png|jpg).*/;
     if (!IsEmpty(fandomImageUrl) && fandomImageUrl.match(pattern)) {
         return true;
     }
@@ -641,15 +674,33 @@ const IsFandomImageUrl = (fandomImageUrl) => {
  * 
  */
 const IsFandomCommunityWebsiteUrl = (fandomWebpageUrl) => {
-    const pattern = "^(http(s)?:\/\/)?" +
-                    "([0-9A-z-_].+\.fandom\.com\/wiki)+" +
-                    "(\/.+)";
+    const pattern = /^(http(s)?:\/\/)?([0-9A-z-_].+\.fandom\.com\/wiki)+(\/.+)/;
     if (!IsEmpty(fandomWebpageUrl) && fandomWebpageUrl.match(pattern)) {
         return true;
     }
     else { 
         // Not Valid amazon music URL
         return false;
+    }
+}
+
+/**
+ * Get Fandom Wikia Icon for the appropriate icon for a given Fandom Wikia link type and URL.c
+ * @function GetFandomWikiaIcon
+ * @param {String}  wikiaLinkType - the appropriate icon for a given Fandom Wikia link type and URL.
+ * @param {String} [linkUrl=null] - The URL to be evaluated. Optional, defaults to null.
+ * @returns {String} The icon corresponding to the provided Fandom Wikia link type and URL.
+ * 
+ */
+const GetFandomWikiaIcon = (wikiaLinkType, linkUrl = null) => {
+    if (wikiaLinkType === 'fandom_img' && IsFandomImageUrl(linkUrl)) {
+        return icon_platform_fandom_wikia;
+    } 
+    else if (wikiaLinkType === 'fandom_web' && IsFandomCommunityWebsiteUrl(linkUrl)) {
+        return icon_platform_fandom_wikia;
+    } 
+    else {
+        return icon_platform_non_basic;
     }
 }
 
@@ -666,7 +717,6 @@ const GetFandomImageUrlFromFullUrl = (fandomImageUrl) => {
         https://static.wikia.nocookie.net/jujutsu-kaisen/images/2/29/SPECIAL_Cover.png/revision/latest/scale-to-width-down/1000?cb=20230806050444
         https://static.wikia.nocookie.net/bokunoheroacademia/images/e/e4/Season_4_Poster_3.png/revision/latest?cb=20191230035840
         https://static.wikia.nocookie.net/zombie-100/images/9/9e/Anime_Key_Visual_1.jpg
-        http://www.youtube.com/v/WK0YhfKqdaI
         https://static.wikia.nocookie.net/zombie-100/images/9/9e/Anime_Key_Visual_1.jpg/revision/latest/scale-to-width-down/1000?cb=20230624103603
         https://static.wikia.nocookie.net/psychopass/images/6/61/Psycho-Pass_Providence.png/revision/latest?cb=20220814101204
     */
@@ -682,19 +732,6 @@ const GetFandomImageUrlFromFullUrl = (fandomImageUrl) => {
     return null;
 }
 
-const GetFandomWikiaIcon = (wikiaLinkType, linkUrl = null) => {
-    if (wikiaLinkType === 'fandom_img' && IsFandomImageUrl(linkUrl)) {
-        return icon_platform_fandom_wikia;
-    } 
-    else if (wikiaLinkType === 'fandom_web' && IsFandomCommunityWebsiteUrl(linkUrl)) {
-        return icon_platform_fandom_wikia;
-    } 
-    else {
-        return icon_platform_non_basic;
-    }
-}
-
-
 export { 
     IsYoutubeVideoUrl, 
     IsYoutubeMusicUrl,
@@ -702,6 +739,7 @@ export {
     IsSpotifyTrackUrl,
     IsShazamUrl,
     IsShazamTrackUrl, 
+    IsDeezerTrackUrl,
     IsAppleMusicUrl,
     IsAppleMusicTrackUrl,
     IsAmazonMusicUrl, 
@@ -709,10 +747,14 @@ export {
 
     GetIdFromYoutubeUrl,
     GetIdFromSpotifyUrl,
+    GetIdFromTrackUrl,
 
     GetUrlPlatform,
     GetPlatformIcon,
+    GetPlatformNameString,
     StandardiseTrackUrl,
+    GetPlatformTrackBaseUrl,
+    GeneratePlatformUrlFromID,
 
     IsFandomImageUrl,
     IsFandomCommunityWebsiteUrl,

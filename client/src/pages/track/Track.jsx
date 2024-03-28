@@ -5,17 +5,9 @@ import './track.css';
 import { Navbar, Footer, } from "../../components";
 
 import default_img_square from '../../assets/default_image_square.svg'
-import { IsEmpty } from '../../utils/RegularUtils'
+import { FormatStreamingPlatformsToList, IsEmpty } from '../../utils/RegularUtils'
 import { MapTrackType } from '../../utils/FTOApiUtils'
-
-import icon_platform_amazon_music from '../../assets/drawables/ic_platform_amazon_music.svg'
-import icon_platform_apple from '../../assets/drawables/ic_platform_apple.svg'
-import icon_platform_shazam from '../../assets/drawables/ic_platform_shazam.svg'
-import icon_platform_soundcloud from '../../assets/drawables/ic_platform_soundcloud.svg'
-import icon_platform_spotify from '../../assets/drawables/ic_platform_spotify.svg'
-import icon_platform_youtube from '../../assets/drawables/ic_platform_youtube.svg'
-import icon_platform_youtube_music from '../../assets/drawables/ic_platform_youtube_music.svg'
-import icon_platform_non_basic from '../../assets/drawables/ic_platform_non_basic.svg'
+import { GetPlatformIcon, GetPlatformNameString, IsFandomImageUrl } from '../../utils/HyperlinkUtils';
 
 const Track = () => {
     const { track_id } = useParams();
@@ -25,15 +17,18 @@ const Track = () => {
     const spOccurrenceID = parseInt(searchParams.get('context_id'), 10) || -1;
 
     const [ ftoTrackInfo, setFTOTrackInfo ] = useState();
-    const [ streamingPlatformsLInks, setStreamingPlatformsLInks ] = useState([]);
+    const [ streamingPlatformsLinks, setStreamingPlatformsLinks ] = useState([]);
 
     useEffect(() => {
+        document.title = `TrackID(${track_id}) and OccurrenceID(${spOccurrenceID})`;
         console.log(`Render-Episode (onMount): ${window.location.href}\nTrackID:${track_id}\nOccurrenceID:${spOccurrenceID}`)
         FetchPageData(track_id, spOccurrenceID);
     }, []);
     
     useEffect(() => {
         if (ftoTrackInfo !== undefined) {
+            document.title = `Track '${ftoTrackInfo.track_name}' from series '${ftoTrackInfo.canonical_title}'`;
+            
             // Convert the escaped string of streaming_platform_links to a JSON Object
             if (typeof (ftoTrackInfo.streaming_platform_links) == 'string' && !IsEmpty(ftoTrackInfo.streaming_platform_links)) {
                 let trackInfo = ftoTrackInfo;
@@ -41,48 +36,18 @@ const Track = () => {
                 setFTOTrackInfo(trackInfo);
 
                 // Set streaming platforms page variable
-                let streamingPlatformsLInks = [];
-                if (trackInfo.streaming_platform_links.data.hasOwnProperty('youtube') && !IsEmpty(trackInfo.streaming_platform_links.data.youtube)) {
-                    let plaftormLink = {};
-                    plaftormLink.platform_type = 'youtube';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.youtube;
-                    streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('youtube_music') && !IsEmpty(trackInfo.streaming_platform_links.data.youtube_music)) {
-                    let plaftormLink = {};
-                    plaftormLink.platform_type = 'youtube_music';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.youtube_music;
-                    streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('spotify') && !IsEmpty(trackInfo.streaming_platform_links.data.spotify)) {
-                    let plaftormLink = {};
-                    plaftormLink.platform_type = 'spotify';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.spotify;
-                    streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('shazam') && !IsEmpty(trackInfo.streaming_platform_links.data.shazam)) {
-                    let plaftormLink = {};
-                    plaftormLink.platform_type = 'shazam';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.shazam;
-                    streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('apple_music') && !IsEmpty(trackInfo.streaming_platform_links.data.apple_music)) {
-                    let plaftormLink = {};
-                    plaftormLink.platform_type = 'apple_music';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.apple_music;
-                    streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('amazon_music') && !IsEmpty(trackInfo.streaming_platform_links.data.amazon_music)) {
-                    let plaftormLink = {};
-                    plaftormLink.platform_type = 'amazon_music';
-                    plaftormLink.link_url = trackInfo.streaming_platform_links.data.amazon_music;
-                    streamingPlatformsLInks.push(plaftormLink);
-                } if (trackInfo.streaming_platform_links.data.hasOwnProperty('non_basic') && !IsEmpty(trackInfo.streaming_platform_links.data.non_basic)) {
-                    for (let i = 0; i < trackInfo.streaming_platform_links.data.non_basic.length; i++) {
-                        let plaftormLink = {};
-                        plaftormLink.platform_type = 'non_basic';
-                        plaftormLink.link_url = trackInfo.streaming_platform_links.data.non_basic[i].url;
-                        streamingPlatformsLInks.push(plaftormLink);
-                    }
-                }
+                let streamingPlatformsLinks = FormatStreamingPlatformsToList(trackInfo.streaming_platform_links.data);
+                const updatedStreamingLinksArray = streamingPlatformsLinks.map(obj => {
+                    // Destructure the object to keep existing keys and rename 'abc' to 'xyz'
+                    const { inputString: link_url, ...rest } = obj;
+                    
+                    // Create a new object with updated key name and other existing keys
+                    return { link_url, ...rest };
+                });
+
                 console.log("Track Info:", trackInfo.streaming_platform_links);
-                console.log("New Streaming Links:", streamingPlatformsLInks);
-                setStreamingPlatformsLInks(streamingPlatformsLInks);
+                console.log("Converted to New Streaming Links:", updatedStreamingLinksArray);
+                setStreamingPlatformsLinks(updatedStreamingLinksArray);
             }
         }
     }, [ftoTrackInfo]);
@@ -138,55 +103,12 @@ const Track = () => {
     }
     
     const ParsePosterImage_Square = (passedImageUrl) => {
-        if (!IsEmpty(passedImageUrl)) {
+        console.log("Value for poster Image:", passedImageUrl)
+        if (!IsEmpty(passedImageUrl) && IsFandomImageUrl(passedImageUrl)) {
             return `${passedImageUrl}`;
         }
         else {
             return `${default_img_square}`;
-        }
-    }
-
-    const GetPlatformIcon = (strPlatformType) => {
-        if (strPlatformType === 'youtube') {
-            return icon_platform_youtube;
-        } else if (strPlatformType === 'youtube_music') {
-            return icon_platform_youtube_music;
-        } else if (strPlatformType === 'spotify') {
-            return icon_platform_spotify;
-        } else if (strPlatformType === 'shazam') {
-            return icon_platform_shazam;
-        } else if (strPlatformType === 'soundcloud') {
-            return icon_platform_soundcloud;
-        } else if (strPlatformType === 'apple_music') {
-            return icon_platform_apple;
-        } else if (strPlatformType === 'amazon_music') {
-            return icon_platform_amazon_music;
-        } else if (strPlatformType === 'non_basic') {
-            return icon_platform_non_basic;
-        } else {
-            return icon_platform_non_basic;  
-        }
-    }
-
-    const GetPlatformString = (strPlatformType) => {
-        if (strPlatformType === 'youtube') {
-            return 'Youtube';
-        } else if (strPlatformType === 'youtube_music') {
-            return 'Youtube Music';
-        } else if (strPlatformType === 'spotify') {
-            return 'Spotify';
-        } else if (strPlatformType === 'shazam') {
-            return 'Shazam';
-        } else if (strPlatformType === 'soundcloud') {
-            return 'Soundcloud';
-        } else if (strPlatformType === 'apple_music') {
-            return 'Apple Music';
-        } else if (strPlatformType === 'amazon_music') {
-            return 'Amazon Music';
-        } else if (strPlatformType === 'non_basic') {
-            return 'Unsupported Platform';
-        } else {
-            return icon_platform_non_basic;
         }
     }
 
@@ -213,7 +135,7 @@ const Track = () => {
                         <div className='fto__page__track-main_content'>
                             <div className='fto__page__track-main_content--track_details'>
                                 <div className='fto__page__track-main_content--track_details-left'>
-                                    <img alt='Album Thumbnail' className='fto__page__track-main_content--almbum_thumbnail' src={ParsePosterImage_Square(ftoTrackInfo.fandom_image_link)}/>
+                                    <img alt='Album Thumbnail' className='fto__page__track-main_content--album_thumbnail' src={ParsePosterImage_Square(ftoTrackInfo.fandom_image_link)}/>
                                 </div>
                                 <div className='fto__page__track-main_content--track_details-right'>
                                     <h3>Track Information</h3>
@@ -235,9 +157,11 @@ const Track = () => {
                                 </div>
                             </div>
 
-                            <div className='fto__page__track-main_content--edit_track_section'>
-                                <a className='fto__button__pink' href={'/submission/track_edit/'}>Edit Track</a>
-                            </div>
+                            {(spOccurrenceID !== -1 ) && (
+                                <div className='fto__page__track-main_content--edit_track_section'>
+                                        <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '/context_id/' + spOccurrenceID}>Edit Track</a>
+                                </div>
+                            )}
 
                             <div>
                                 {typeof (ftoTrackInfo.streaming_platform_links) == 'object' && (
@@ -246,12 +170,12 @@ const Track = () => {
                                     <hr className='fto__page__track-horizontal_hr' />
 
                                     <div className='fto__page__track--streaming_platform_items'>
-                                        {streamingPlatformsLInks.map((streamPlatformInfo, it) => {
+                                        {streamingPlatformsLinks.map((streamPlatformInfo, it) => {
                                             return (
                                                 <a className='fto__page__track--streaming_platform_item' target="_blank" rel="noopener noreferrer" key={it} href={streamPlatformInfo.link_url}>
-                                                    <img src={GetPlatformIcon(streamPlatformInfo.platform_type)} alt='platform_icon'/>
+                                                    <img src={ GetPlatformIcon(streamPlatformInfo.platform_type) } alt='platform_icon'/>
                                                     <div className='fto__page__track--streaming_platform_item_right'> 
-                                                        <p>{GetPlatformString(streamPlatformInfo.platform_type)}</p>
+                                                        <p>{ GetPlatformNameString(streamPlatformInfo.platform_type) }</p>
                                                         <h5 className='fto__page__track--streaming_platform_item-subheader subheader_color'>
                                                             {streamPlatformInfo.link_url}
                                                         </h5>

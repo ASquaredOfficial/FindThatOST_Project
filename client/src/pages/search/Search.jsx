@@ -5,6 +5,7 @@ import './search.css';
 import { Navbar, Footer, } from "../../components";
 import { useCustomNavigate } from './../../routing/navigation'
 import { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount} from "../../utils/MalApiUtils"
+import { IsEmpty } from '../../utils/RegularUtils';
 
 const Search = () => {
     const location = useLocation();
@@ -28,10 +29,12 @@ const Search = () => {
             alert("Enter search longer than 3 characters")
             setViewStyle({ height: '100vh', justifyContent: 'flex-start'});
         } else {
-            if (spPage == null) {
+            if (spPage == null || spPage < 1) {
                 FetchAnimeList_MAL(spQuery);
+                document.title = `Search | '${spQuery}'`;
             } else {
                 FetchAnimeList_MAL(spQuery, spPage);
+                document.title = `Search | '${spQuery}' | Page ${spPage}`;
             }
         }
 
@@ -56,12 +59,21 @@ const Search = () => {
 
     }, []);
 
-    // Render (on-pageSearchData-change)
     useEffect(() => {
         // Render (on-pageSearchData-change) 
-        if (pageSearchData != null) {
-            for (let i = 0; i < pageSearchData.length; i++ ) {
-                //console.debug(`PageData[${i}]: (${pageSearchData[i].mal_id}-${pageSearchData[i].title})`);  
+        if (!IsEmpty(pageSearchData) && pageSearchData.length > 0) {
+            // If track_count hasn't added been already
+            if (IsEmpty(pageSearchData[0].track_count)) {
+                // Get song count and append to pageSearchData
+                let listMalAnimeIDs = []
+                for (let i = 0; i < pageSearchData.length; i++ ) { // At most 25, set by pagination limit
+                    //console.debug(`PageData[${i}]: (${pageSearchData[i].mal_id}-${pageSearchData[i].title})`);  
+                    listMalAnimeIDs.push(pageSearchData[i].mal_id);
+                }
+                FetchAnimeSongCount_FTO(listMalAnimeIDs);
+            }
+            else {
+                console.log("New PageData:", pageSearchData)
             }
         }
         //console.debug(pageSearchData);
@@ -148,7 +160,7 @@ const Search = () => {
     };
 
     // Show pagination data from fetch
-    const ShowResultCount = ( spQuery, paginationDetails ) => {
+    const ShowResultCount = ( paginationDetails ) => {
         if (Object.keys(paginationDetails).length === 0 && paginationDetails.constructor === Object) {
             // If no results, hide pagination
             return createElement('span', {className: 'fto__page__search-result_count'}, createElement('p', null, 'No results'));
@@ -304,6 +316,41 @@ const Search = () => {
             });
     }
 
+    const FetchAnimeSongCount_FTO = async (listMalAnimeIds) => {
+        let apiUrl_fto = `/findthatost_api/getAnimeTrackCount/mal_ids`;
+        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+        const response = await fetch(apiUrl_fto, 
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ listMalAnimeIds }),
+        });
+
+        const responseStatus = response.status;
+        console.log("Response status:", responseStatus);
+        // setQueryStatusCode(responseStatus);
+
+        const responseData = await response.json();
+        console.debug("Response Data:", responseData);
+        if (responseStatus == 200) {
+            const listOftrackCounts = responseData.data.map(arr => {
+                return arr[0];
+            })
+            
+            setPageSearchData(originalArray => originalArray.map(item => {
+                const trackCountObject = listOftrackCounts.find(obj => obj.mal_id === item.mal_id);
+                if (trackCountObject) {
+                  return { ...item, track_count: trackCountObject.track_count };
+                }
+                else {
+                    return { ...item, track_count: 0 };
+                }
+            }))
+        }
+    }
+
     return (
         <div className='fto__page__search'>
             <div className='gradient__bg'>
@@ -315,7 +362,7 @@ const Search = () => {
                     </h1>
 
                     <div className='fto__page__search-content_page_details'>
-                        {ShowResultCount(spQuery, paginationData)}
+                        {ShowResultCount(paginationData)}
                         {ShowPagination(paginationData)}
                     </div>
 
@@ -350,7 +397,7 @@ const Search = () => {
                                         <td>{FormatDateToMidDateString(animeInfo.aired.from)}</td>
                                         <td>{animeInfo.type}</td>
                                         <td>{GetEpisodeCount(animeInfo.status, animeInfo.episodes, animeInfo.mal_id)}</td>
-                                        <td>Count</td>
+                                        <td>{IsEmpty(animeInfo.track_count) ? '-' : animeInfo.track_count}</td>
                                     </tr>
                                 )
                             })}

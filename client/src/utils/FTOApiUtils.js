@@ -22,9 +22,26 @@ const MapTrackType = (strShorthandTrackType) => {
             return 'Original SoundTrack';
         default:
             return '';
-    }
+    };
 }
 
+const ConvertTrackTypeToValue = (strShorthandTrackType) => {
+    switch (strShorthandTrackType) {
+        case ('OP'):
+            return 'songType_OP';
+        case ('ED'):
+            return 'songType_ED';
+        case ('IM'):
+            return 'songType_IM';
+        case ('BGM'):
+            return 'songType_BGM';
+        case ('OST'):
+            return 'songType_OST';
+        default:
+            return '';
+    };
+}
 export { 
     MapTrackType, 
+    ConvertTrackTypeToValue,
 };
