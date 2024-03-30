@@ -17,9 +17,9 @@ CREATE TABLE `fto_users` (
 CREATE TABLE `fto_anime` (
     `anime_id` int(11) NOT NULL AUTO_INCREMENT,
     `parent_anime_id` int(11) DEFAULT NULL,
-    `mal_id` int(11) NOT NULL,
+    `mal_id` int(11) NOT NULL,  /*MyAnimeList Anime ID*/
     `kitsu_id` int(11) DEFAULT NULL,
-    `canonical_title` varchar(128) NOT NULL,
+    `canonical_title` varchar(128) NOT NULL, /*MyAnimeList Canonical Title*/
     PRIMARY KEY (`anime_id`),
     UNIQUE KEY (`mal_id`),
     FOREIGN KEY (`parent_anime_id`) REFERENCES `fto_anime` (`anime_id`)
