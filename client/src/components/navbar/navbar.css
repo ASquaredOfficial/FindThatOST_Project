@@ -4,6 +4,7 @@
     align-items: center;
 
     padding: 1rem 6rem;
+    flex: 0 0 auto;
 }
 
 .fto__navbar-links { 

@@ -9,35 +9,25 @@ export const useCustomNavigate = () => {
   };
 
   const navigateToSearch = (query, pageNum = 1) => {
-    let curentPage = window.location.href;
     navigate({
         pathname: '/search',
         search: `?query=${encodeURIComponent(query)}&page=${pageNum}`,
       });
-      console.log("Current page:", curentPage);
-      console.log("Current location:", location);
-      console.log("Current location pathname:", location.pathname);
-      console.log("Current location search:", location.search);
-      if (curentPage.startsWith(location.origin + '/search')) {
-        //if search page 
-        navigate(0); // refresh pahe
+      
+      // if current page is search page, reload after changing search parameters
+      if (location.pathname === '/search') { 
+        window.location.reload();
       }
   };
 
-  const navigateToAnime = (nFtoID = -1, objAnimeData = {}) => {
+  const navigateToAnime = (nFtoID = -1, pageNum = 1) => {
     if (!process.env.REACT_APP_DEBUG_MODE && nFtoID  === -1) {
       alert('Operation failed');
       console.error(`Unable to navigate to page (Anime) because variable 'nFtoID' is an invalid value '${nFtoID}'`);
       return;
     }
     
-    navigate(`/anime/${nFtoID}`,
-    {
-      state: {
-        anime_data: objAnimeData,
-        fto_id: nFtoID
-      }
-    });
+    navigate(`/anime/${nFtoID}`);
   };
 
   const navigateToEpisode = (nFtoAnimeID = -1, nEpisodeNo = -1, objAnimeEpisodeData = {}) => {
@@ -67,6 +57,15 @@ export const useCustomNavigate = () => {
     navigate(`/track/${nFtoAnimeID}?context_id=${nFtoEpisodeID}`);
   };
 
+  const navigateToChatBot = (strChatbotQuery = '') => {
+      navigate(`/chatbot/`,
+      {
+        state: {
+          chatbot_query: strChatbotQuery,
+        }
+      });
+  }
+
 
   return {
     navigateToHome,
@@ -74,5 +73,6 @@ export const useCustomNavigate = () => {
     navigateToAnime,
     navigateToEpisode,
     navigateToTrack,
+    navigateToChatBot,
   };
 };

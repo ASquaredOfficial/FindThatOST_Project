@@ -89,23 +89,36 @@ const LogError = (strFunctionName, strErrorMessage, strLineNumber = '') => {
   console.log(errorString +`\n`, '-'.repeat(50));
 };
 
+const PerformSelectQuery = (sqlCommand) => {
+	return new Promise((resolve, reject) => {
+		FtoConnection.query(sqlCommand, (error, results) => {
+			if (error) {
+				LogError('PerformSelectQuery', `SQL Query:\n"${error.sql}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+};
+
 const GetAllAnime = () => {
-  return new Promise((resolve, reject) => {
-    let sqlQuery = [
-		"SELECT *,",
-		`FROM ${tblName_anime}`,
-    ];
-    const handler = new SQLArrayHandler(sqlQuery);
-    const sqlQueryString = handler.CombineStringsToQuery();
-    FtoConnection.query(sqlQueryString, (error, results) => {
-		if (error) {
-			LogError('GetAllAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
-			reject(error);
-		} else {
-			resolve(results);
-		}
-    });
-  });
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT *,",
+			`FROM ${tblName_anime}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetAllAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
 };
 
 /**
@@ -975,6 +988,7 @@ const PostSubmission_TrackRemove = (nFtoTrackID, nFtoOccurrenceID, objUserSubmis
 }
 
 module.exports = {
+	PerformSelectQuery,
 	GetAllAnime,
 	GetAnime,
 	PatchAnime,

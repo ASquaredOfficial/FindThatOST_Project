@@ -22,7 +22,7 @@ const Anime = () => {
 
     const [ malAnimeTitles, setAnimeTitles ] = useState();
     const [ malAnimeRelations, setAnimeRelations ] = useState();
-    const [ pageEpisodeInfo, setPageEpisodesInfo ] = useState();
+    const [ pageEpisodesInfo, setPageEpisodesInfo ] = useState();
 
     useEffect(() => {
         console.debug(`Render-Anime (onMount): ${location.href}`);    
@@ -87,7 +87,7 @@ const Anime = () => {
     }, [malAnimeInfo]);
     
     useEffect(() => {
-        if (pageEpisodeInfo !== undefined) {
+        if (pageEpisodesInfo !== undefined) {
             // Get episode number to see the
             let animeStatus = malAnimeInfo.status;
             let nLatestEpisode = Number(malAnimeInfo.episodes);
@@ -97,10 +97,10 @@ const Anime = () => {
                     nLatestEpisode = Number(aniListEpisodeCountInfo.data.Media.nextAiringEpisode.episode - 1);
                 }
                 
-                UpdateEpisodesInFtoDB(pageEpisodeInfo, nLatestEpisode);
+                UpdateEpisodesInFtoDB(pageEpisodesInfo, nLatestEpisode);
             }
         }
-    }, [pageEpisodeInfo]);
+    }, [pageEpisodesInfo]);
 
     /**
      * Updates the FTO DB with episode details.
@@ -775,12 +775,12 @@ const Anime = () => {
                                 )}
 
                                 {// Show Anime Episode List
-                                pageEpisodeInfo !== undefined && (
+                                pageEpisodesInfo !== undefined && (
                                     <div className='fto__page__anime-main_content_episode_list'>
                                         <h4 className='fto__page__anime-main_content-header'>Episode List</h4>
                                         <hr />
 
-                                        {pageEpisodeInfo.map((episodeInfo, it) => {
+                                        {pageEpisodesInfo.map((episodeInfo, it) => {
                                             return (
                                                 <div className='fto__page__anime-main_content_episode_list-row' key={it}>
                                                     <h3 className='fto__page__anime-main_content_episode_heading' onClick={() => {HandleEpisodeRowOnClick(episodeInfo)}}>
@@ -790,7 +790,7 @@ const Anime = () => {
                                             )
                                         })}
                                         
-                                        {ShowPagination(malAnimeInfo, aniListEpisodeCountInfo, pageEpisodeInfo, spEpisodePageNum)}
+                                        {ShowPagination(malAnimeInfo, aniListEpisodeCountInfo, pageEpisodesInfo, spEpisodePageNum)}
                                     </div>
                                 )}
 

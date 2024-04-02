@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
-import { Home, Search, Anime, Episode, Track, SubmitTrackAdd, SubmitTrackEdit } from './pages'
+import { Home, Search, Anime, Episode, Track, SubmitTrackAdd, SubmitTrackEdit, ChatGPTBot } from './pages'
 import './App.css'
 import './pages/general.css'
 
@@ -10,23 +10,24 @@ import './pages/general.css'
 
 const App = () => {
 
-  return (
-    <div className="App">
-		<BrowserRouter>
-			<Routes>
-				<Route element={<Home />} path="/home" index/>
-				<Route element={<Navigate to='/home' replace/>} path="/" />
-				<Route element={<Search />} path="/search" />
-				<Route element={<Anime />} path="/anime/:id" />
-				<Route element={<Episode />} path="/anime/:anime_id/episode/:episode_no" />
-				<Route element={<Track />} path="/track/:track_id/" />
-				<Route element={<SubmitTrackAdd />} path="/submission/track_add/:anime_id/" />+
-				<Route element={<SubmitTrackEdit />} path="/submission/track_edit/:track_id/context_id/:occurrence_id" />+
-				{/*<Route element={ErrorPage} path="*" /> */}
-			</Routes>
-		</BrowserRouter>
-    </div>
-  )
+	return (
+		<div className="App">
+			<BrowserRouter>
+				<Routes>
+					<Route element={<Home />} path="/home" index/>
+					<Route element={<Navigate to='/home' replace/>} path="/" />
+					<Route element={<Search />} path="/search" />
+					<Route element={<Anime />} path="/anime/:id" />
+					<Route element={<Episode />} path="/anime/:anime_id/episode/:episode_no" />
+					<Route element={<Track />} path="/track/:track_id/" />
+					<Route element={<ChatGPTBot />} path="/chatbot/" />
+					<Route element={<SubmitTrackAdd />} path="/submission/track_add/:anime_id/" />+
+					<Route element={<SubmitTrackEdit />} path="/submission/track_edit/:track_id/context_id/:occurrence_id" />+
+					{/*<Route element={ErrorPage} path="*" /> */}
+				</Routes>
+			</BrowserRouter>
+		</div>
+	)
 }
 
 export default App

@@ -79,11 +79,11 @@
         display: flex;
         justify-content: flex-end;
     }
-
     
     .fto__page__track--streaming_platform_section {
         flex-direction: row;
         align-items: center;
+        margin-bottom: 15px;
 
         .fto__page__track--streaming_platform_items {
             display: flex;
@@ -101,6 +101,17 @@
                 img {
                     padding: 5px;
                 }
+
+                .fto__page__track--streaming_platform_item_right {
+                    overflow: hidden;
+
+                    h5 {
+                        max-width: 100%; /* Ensures the h6 doesn't exceed the width of its container */
+                        overflow: hidden; /* Hide any overflowed text */
+                        white-space: nowrap; /* Prevent text from wrapping */
+                        text-overflow: ellipsis; /* Display an ellipsis (...) when text overflows */
+                    }
+                }
             
             }
             .fto__page__track--streaming_platform_item:hover {
@@ -108,6 +119,16 @@
                 transition: 0.5s;
             }
         }
+    }
+
+    .fto__page__track--embedded_yt_video {
+        width: 400px;
+        height: 225px;
+
+        position: relative;
+        left: 50%;
+        -ms-transform: translateX(-50%);
+        transform: translateX(-50%);
     }
 }
 
@@ -123,6 +144,26 @@
         
         .fto__page__track-main_content--track_details-left {
             padding: 1rem 0rem
+        }
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .fto__page__track-main_content {
+
+        .fto__page__track--embedded_yt_video {
+            width: 80%;
+            aspect-ratio: 16 / 9;
+        }
+    }
+}
+
+@media screen and (max-width: 550px) {
+    .fto__page__track-main_content {
+
+        .fto__page__track--embedded_yt_video {
+            width: 265px;
+            aspect-ratio: 16 / 9;
         }
     }
 }

@@ -187,6 +187,14 @@ const Track = () => {
                                 </div>
                                 )}
                             </div>
+                            
+                            {(!IsEmpty(ftoTrackInfo.embedded_yt_video_id)) && (
+                                <iframe  className='fto__page__track--embedded_yt_video'
+                                    src={`https://www.youtube.com/embed/${ftoTrackInfo.embedded_yt_video_id}`}
+                                    title="YouTube video player" frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen />
+                            )}
                         </div>
                     </div>
                 )}

@@ -279,7 +279,7 @@ const Search = () => {
                     let kitsuAnimeID = kitsuMappedAnimeObj.id;
 
                     // Insert Anime into DB and return new fto anime id
-                    let apiUrl_fto = `//findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
+                    let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
                     console.debug(`Fetch url:, '${apiUrl_fto}'`);
                     fetch(apiUrl_fto)
                         .then(response => response.json())
@@ -297,7 +297,7 @@ const Search = () => {
                 }
                 else {
                     // Insert Anime into DB (without kitsu) and return new fto anime id
-                    let apiUrl_fto = `//findthatost_api/postAnimeIntoDB/${malAnimeID}`;
+                    let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}`;
                     console.debug(`Fetch url:, '${apiUrl_fto}'`);
                     fetch(apiUrl_fto)
                         .then(response => response.json())

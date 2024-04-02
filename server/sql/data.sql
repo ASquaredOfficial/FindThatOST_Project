@@ -20,7 +20,7 @@ ALTER TABLE `fto_anime`
 -- Dumping data for table `fto_episode`
 --
 INSERT INTO `fto_episode` (`episode_id`, `fto_anime_id`, `episode_no`, `mal_episode_id`, `kitsu_episode_id`, `episode_title`) VALUES
-    (1, 1, 12, 12, 18453, 'All Might'),
+    (1, 1, 12, 12, 184533, 'All Might'),
     (2, 1, 13, 13, 184534, 'In Each of Our Hearts');
 
 ALTER TABLE `fto_episode`
