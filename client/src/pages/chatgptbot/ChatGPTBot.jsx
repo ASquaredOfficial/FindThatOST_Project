@@ -121,7 +121,7 @@ const ChatGPTBot = () => {
         // console.log("Response status:", responseStatus);
         // console.log("Response Data:", responseData);
         console.log("ChatGPT Response:", chatGptReponse)
-        if (chatGptReponse.status == 200) {
+        if (chatGptReponse.status === 200) {
             const responseJson = await chatGptReponse.json()
             const chatGptReponseMessage = {
                 message: responseJson.message,

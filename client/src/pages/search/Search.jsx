@@ -334,7 +334,7 @@ const Search = () => {
 
         const responseData = await response.json();
         console.debug("Response Data:", responseData);
-        if (responseStatus == 200) {
+        if (responseStatus === 200) {
             const listOftrackCounts = responseData.data.map(arr => {
                 return arr[0];
             })
