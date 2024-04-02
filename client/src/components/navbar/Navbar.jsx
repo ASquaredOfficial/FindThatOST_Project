@@ -10,10 +10,10 @@ import search_icon from '../../assets/Search_Icon.svg'
 const Navbar = () => {
   const { navigateToSearch } = useCustomNavigate();
 
-  //username info rom backend
+  //username info from backend
   const [backendData, setBackendData] = useState ([{}])
 	useEffect(() => {
-		fetch("/findthatost_api/username").then(
+		fetch("/findthatost_api/user_details").then(
 			response => response.json()
 		).then(
 			data => {

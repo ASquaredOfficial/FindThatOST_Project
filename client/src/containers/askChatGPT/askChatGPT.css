@@ -42,46 +42,48 @@
     height: 100%;
 }
 
+.fto__askChatGPT-content__input-section {
+    width: 100%;
+}
+
 .fto__askChatGPT-content__input {
-    width: 100%;
     margin: 2rem 0 1rem;
-
     display: flex;
-}
 
-.fto__askChatGPT-content__input input {
-    flex: 2;
-    width: 100%;
-    font-family: var(--font-family-manrope);
-    font-size: 20px;
-    line-height: 27px;
-    background: var(--color-footer);
-    border: 2px solid var(--color-footer);
-    padding: 0 1rem;
-    outline: none;
-    color: #fff;  
-
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-}
-
-.fto__askChatGPT-content__input button {
-    flex: 0.6;
-    width: 100%;
-    min-height: 50px;
-    font-family: var(--font-family-manrope);
-    font-weight: bold;
-    font-size: 16px;
-    line-height: 27px;
-    background: var(--color-pink_bright);
-    color: #FFF;
-    cursor: pointer;
-    outline: none;
-    padding: 0 1rem;
-    border: none;
+    input {
+        flex: 2;
+        width: 100%;
+        font-family: var(--font-family-manrope);
+        font-size: 20px;
+        line-height: 27px;
+        background: var(--color-footer);
+        border: 2px solid var(--color-footer);
+        padding: 0 1rem;
+        outline: none;
+        color: #fff;  
     
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    button {
+        flex: 0.6;
+        width: 100%;
+        min-height: 50px;
+        font-family: var(--font-family-manrope);
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 27px;
+        background: var(--color-pink_bright);
+        color: #FFF;
+        cursor: pointer;
+        outline: none;
+        padding: 0 1rem;
+        border: none;
+        
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
 }
 
 @media screen and (max-width: 1050px) {

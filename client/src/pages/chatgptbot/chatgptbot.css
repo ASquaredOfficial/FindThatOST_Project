@@ -1,0 +1,41 @@
+.fto__page__chatgptbot {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100vh;
+}
+
+.fto__page__chatgptbot-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+
+    margin: auto;
+    padding-bottom: 0;
+    width: 100%;
+}
+
+.fto__page__chatgptbot-horizontal_hr {
+    margin: 0px;
+    border-top: 1px solid white;
+    width: 100%;
+}
+
+.fto__page__chatgptbot-main_content {
+  display: flex;
+  flex-direction: row;
+
+  font-family: var(--font-family-manrope);
+  color: #fff;
+
+}
+
+.fto__page__chatgptbot-main_content > div {
+    flex-direction: column;
+}
+
+.fto__page__chatgptbot-content-main_container {
+    width: 100%;
+}
