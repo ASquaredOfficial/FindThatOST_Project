@@ -715,23 +715,25 @@ const Anime = () => {
                             <div className='fto__page__anime-main_content_left'>
                                 <img alt='Anime Thumbnail' className='fto__page__anime-main_content_left-anime_image' src={ParseAnimePosterImage(malAnimeInfo)}/>
                                 
-                                {malAnimeTitles !== undefined && (
-                                    <div className='fto__page__anime-main_content_left-alt_titles'>
-                                        <h3 className='fto__page__anime-main_content-header'>Alternative Titles</h3>
-                                        {malAnimeInfo.titles.map((animeTitleDetails, it) => {
-                                            return (
-                                                <p className='fto__page__anime-main_content-text' key={it}>
-                                                    <strong>{animeTitleDetails.type}:</strong> {animeTitleDetails.title}
-                                                </p>
-                                            )
-                                        })}
-                                    </div>
-                                )}
+                                <div className='fto__page__anime-main_content-main_info'>
+                                    {malAnimeTitles !== undefined && (
+                                        <div className='fto__page__anime-main_content_left-alt_titles'>
+                                            <h3 className='fto__page__anime-main_content-header'>Alternative Titles</h3>
+                                            {malAnimeInfo.titles.map((animeTitleDetails, it) => {
+                                                return (
+                                                    <p className='fto__page__anime-main_content-text' key={it}>
+                                                        <strong>{animeTitleDetails.type}:</strong> {animeTitleDetails.title}
+                                                    </p>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
 
-                                <div className='fto__page__anime-main_content_left-more_info'>
-                                    <h3 className='fto__page__anime-main_content-header'>Information</h3>
-                                    <p className='fto__page__anime-main_content-text'><strong>Air Date: </strong>{malAnimeInfo.aired.string}</p>
-                                    <p className='fto__page__anime-main_content-text'><strong>Status: </strong>{malAnimeInfo.status}</p>
+                                    <div className='fto__page__anime-main_content_left-more_info'>
+                                        <h3 className='fto__page__anime-main_content-header'>Information</h3>
+                                        <p className='fto__page__anime-main_content-text'><strong>Air Date: </strong>{malAnimeInfo.aired.string}</p>
+                                        <p className='fto__page__anime-main_content-text'><strong>Status: </strong>{malAnimeInfo.status}</p>
+                                    </div>
                                 </div>
                             </div>
 

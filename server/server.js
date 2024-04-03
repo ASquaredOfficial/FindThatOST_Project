@@ -521,6 +521,30 @@ app.get("/findthatost_api/getTracks/episode_id/:nEpisodeID/", async (req, res) =
     }
 });
 
+app.get("/findthatost_api/getTracks/episode_id/:nEpisodeID/sort_by/:sortByColumn", async (req, res) => {
+    //Get List of Tracks for the episode with corresponding FTO Episode ID
+    const nEpisodeID = req.params.nEpisodeID;
+    const sortByColumn = req.params.sortByColumn;
+    if (!IsEmpty(sortByColumn) && sortByColumn !== 'track_type') {
+        //  Invalid column name provided
+        return res.status(400).json({ error: "Invalid Parameter for sort"}).end;
+    }
+
+    try {
+        const ftoEpisodeTracksDetails = await GetTracksForEpisode(nEpisodeID, sortByColumn);
+        if (!ftoEpisodeTracksDetails) {
+            return res.status(404).json({ error: 'Resource Not Found' }).end(); 
+        }
+        res.status(200).json(ftoEpisodeTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
 app.get("/findthatost_api/getTrack/:nTrackID/", async (req, res) => {
     //Get List of Tracks for the episode with corresponding FTO Episode ID
     const nTrackID = req.params.nTrackID;

@@ -307,7 +307,7 @@ const GetTrackCountForMALAnimes = async (arrMalAnimeIDs) => {
   	return Promise.all(arrMalAnimeIDs.map(malAnimeID => GetTrackCountForMALAnime(malAnimeID)));
 };
 
-const GetTracksForEpisode = (nEpisodeID) => {
+const GetTracksForEpisode = (nEpisodeID, sortBy = '') => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
 		"SELECT occurrence_id, track_id, track_name, fto_occurrence.track_type, fto_occurrence.scene_description",
@@ -317,6 +317,9 @@ const GetTracksForEpisode = (nEpisodeID) => {
 		"INNER JOIN fto_anime ON fto_episode.fto_anime_id = fto_anime.anime_id", 
 		`WHERE fto_episode.episode_id = ${nEpisodeID}`,
     ];
+    if (sortBy === 'track_type') {
+		sqlQuery.push(`ORDER BY CASE track_type WHEN 'OP' THEN 1 WHEN 'ED' THEN 2 ELSE 5 END`);
+	}
     const handler = new SQLArrayHandler(sqlQuery);
     const sqlQueryString = handler.CombineStringsToQuery();
     FtoConnection.query(sqlQueryString, (error, results) => {
