@@ -39,7 +39,7 @@ const Navbar = () => {
     }
 
     const FocusOnSearchBar = () => {
-        if (window.innerWidth <= '700'/*px*/) {
+        if (window.innerWidth <= '700'/*px*/) {   // Keep constant with class css 'fto__navbar-search'
             // Open Mobile View Searchbar
             setToggleMenu(false);
             setMobileSearchbarVisiblity(true);
@@ -53,7 +53,7 @@ const Navbar = () => {
     }
 
     return (
-        <div className='fto__navbar' style={(bMobileSearchbarVisible) ? {padding: '0'} : {}}>
+        <div className='fto__navbar' style={(bMobileSearchbarVisible) ? {marginBottom: '4rem', paddingBottom: '0rem', paddingTop: '0.7691rem'} : {}}>
             {(!bMobileSearchbarVisible) ? (
                 <>
                     <div className='fto__navbar-links'>

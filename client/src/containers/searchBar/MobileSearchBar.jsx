@@ -12,13 +12,14 @@ const MobileSearchBar = (
     }) => {
 
     useEffect(() => {
-        
+        let formElements = document.getElementById('navbar_search_form');
+        let inputElement = formElements['submit_animeSearch'];
+        inputElement.focus()
     }, []);
 
     const OnFocusOutMobileSearchBar = () => {
         // console.log("Window Width:", window.innerWidth)
         setMobileSearchbarVisiblity(false);
-        setInputFormData('');
     }
 
     return (
@@ -30,6 +31,7 @@ const MobileSearchBar = (
                 /> 
                 <input 
                     type='search' 
+                    name='submit_animeSearch'
                     placeholder='Enter Anime Title' 
                     value={formInputData} 
                     onBlur={OnFocusOutMobileSearchBar}
