@@ -20,7 +20,7 @@ const AskChatGPT = () => {
     }
 
     return (
-        <div className='fto__askChatGPT' id='home'>
+        <div className='fto__askChatGPT' id='askchatgpt'>
             <div className='fto__askChatGPT-image'>
                 <img src={ai_img} alt='ai' /> 
             </div>

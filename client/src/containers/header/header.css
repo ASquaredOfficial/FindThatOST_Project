@@ -88,6 +88,7 @@
 @media screen and (max-width: 1050px) {
     .fto__header {
         flex-direction: column;
+        padding: 3rem 3rem 1rem;
     }
 
     .fto__header-content {
