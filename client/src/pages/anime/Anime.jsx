@@ -6,6 +6,7 @@ import { Navbar, Footer} from "../../components";
 import { useCustomNavigate } from './../../routing/navigation'
 import { AreDefaultAndEnglishTitlesDifferent, ParseAnimePosterImage } from "../../utils/MalApiUtils"
 import { ParseClassName } from "../../utils/RegularUtils"
+import { toast } from 'react-toastify';
 
 const Anime = () => {
     const location = useLocation();
@@ -153,21 +154,20 @@ const Anime = () => {
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing episode details.
      */
     const FetchEpisodeMapping = async (ftoAnimeID) => {
-        let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${ftoAnimeID}`;
-        console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-        try {
-            const response = await fetch(apiUrl_fto);
-            if (response.status === 200) {
-                const data = await response.json();
+            let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${ftoAnimeID}`;
+            console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+            try {
+                const response = await fetch(apiUrl_fto);
+                if (response.status === 200) {
+                    const data = await response.json();
                 return data;
-            } else if (response.status === 500) {
-                alert("The FindThatOST Server is down at the moment. Please try again later.")
-                return;
-            } 
-        }
-        catch (error) {
-            throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
-        }
+                } else if (response.status === 500) {
+                    toast('The FindThatOST Server is down at the moment. Please try again later.');
+                }
+            }
+            catch (error) {
+                toast('The FindThatOST Server is down at the moment. Please try again later.');
+            }
     }
     
     /**
@@ -270,6 +270,7 @@ const Anime = () => {
                     return responseStatus;
             }
             catch (error) {
+                toast('An internal error has occurred in FindThatOST Server. Please try again later.');
                 throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
             }
         }
@@ -293,6 +294,7 @@ const Anime = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred in FindThatOST Server. Please try again later.');
             throw new Error('Error fetching data from backend');
         }
     }
@@ -557,6 +559,7 @@ const Anime = () => {
                     await response.json();
                 }
                 catch (error) {
+                    toast('An internal error has occurred in FindThatOST Server. Please try again later.');
                     throw new Error('Error:', error);
                 }
             }

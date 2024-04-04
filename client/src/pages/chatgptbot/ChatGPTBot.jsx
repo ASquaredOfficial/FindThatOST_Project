@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { MainContainer, ChatContainer, MessageList, MessageInput, TypingIndicator, Message} from '@chatscope/chat-ui-kit-react';
 import { IsEmpty } from '../../utils/RegularUtils';
+import { toast } from 'react-toastify';
 
 const ChatGPTBot = () => {
     // Get the location object
@@ -121,8 +122,8 @@ const ChatGPTBot = () => {
         // console.log("Response status:", responseStatus);
         // console.log("Response Data:", responseData);
         console.log("ChatGPT Response:", chatGptReponse)
+        const responseJson = await chatGptReponse.json()
         if (chatGptReponse.status === 200) {
-            const responseJson = await chatGptReponse.json()
             const chatGptReponseMessage = {
                 message: responseJson.message,
                 sender: "ChatGPT",
@@ -131,7 +132,10 @@ const ChatGPTBot = () => {
             chatMessages.push(chatGptReponseMessage)
             setMessages(chatMessages);
         } else {
-            console.log("We have failed")
+            console.error('Error response:', responseJson)
+            toast("An internal error has occurred with the FindThatOST server. Please try again later.",{
+                theme: 'dark'
+            })
         }
     }
 

@@ -8,6 +8,7 @@ import { IsEmpty } from "../../utils/RegularUtils"
 
 import arrow_icon from '../../assets/Arrow_Icon.svg'
 import pencil_icon from '../../assets/Pencil_Icon.svg'
+import { toast } from 'react-toastify';
 
 const Episode = () => {
     const location = useLocation();
@@ -96,6 +97,7 @@ const Episode = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend');
         }
     }
@@ -118,6 +120,7 @@ const Episode = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend');
         }
     }
@@ -218,6 +221,7 @@ const Episode = () => {
             }
         } 
         catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error updating data in backend');
         }
     }
@@ -363,6 +367,7 @@ const Episode = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend');
         }
     }

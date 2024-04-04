@@ -131,23 +131,23 @@ const GetAllAnime = () => {
  *                              If an error occurs during the database query, the promise rejects with the error.
  */
 const GetAnime = (nFtoAnimeID) => {
-  return new Promise((resolve, reject) => {
-    let sqlQuery = [
-      "SELECT *",
-      `FROM ${tblName_anime}`,
-      `WHERE anime_id = ${nFtoAnimeID}`,
-    ];
-    const handler = new SQLArrayHandler(sqlQuery);
-    const sqlQueryString = handler.CombineStringsToQuery();
-    FtoConnection.query(sqlQueryString, (error, results) => {
-		if (error) {
-			LogError('GetAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
-			reject(error);
-		} else {
-			resolve(results);
-		}
-    });
-  });
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+		"SELECT *",
+		`FROM ${tblName_anime}`,
+		`WHERE anime_id = ${nFtoAnimeID}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
 }
 
 const PatchAnime = (nAnimeID, strAnimeTitle, nAnimePrequel) => {

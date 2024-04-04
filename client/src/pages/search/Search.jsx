@@ -6,6 +6,7 @@ import { Navbar, Footer, } from "../../components";
 import { useCustomNavigate } from './../../routing/navigation'
 import { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount} from "../../utils/MalApiUtils"
 import { IsEmpty } from '../../utils/RegularUtils';
+import { ToastContainer, toast } from 'react-toastify';
 
 const Search = () => {
     const location = useLocation();
@@ -256,11 +257,11 @@ const Search = () => {
 
     const HandleSearchRowOnclick = (malID, malAnimeInfo) => {
         if (malAnimeInfo.status === 'Not yet aired') {
-            alert('We do not support shows that have not aired yet.');
+            toast('We do not support shows that have not aired yet.');
             return;
         }
         else if (!supportedAnimeTypesMAL.includes(String(malAnimeInfo.type).toLowerCase())){
-            alert('This not a supported anime type.');
+            toast('This not a supported anime type.');
             return
         }
 
@@ -295,6 +296,7 @@ const Search = () => {
             }
         }
         catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
         }
     }
@@ -334,6 +336,10 @@ const Search = () => {
                                 console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}`);
                                 console.error(response)
                             }
+                        })
+                        .catch(err => {
+                            console.error("Error:", err)
+                            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
                         });
                 }
                 else {
@@ -349,9 +355,14 @@ const Search = () => {
                                 navigateToAnime(insertedAnimeId);
                             }
                             else {
+                                toast('An internal error has occurred with the FindThatOST server. Please try again later.');
                                 console.error(`An error occurred inserting new anime with mal_id(${malAnimeID})`);
                                 console.error(response)
                             }
+                        })
+                        .catch(err => {
+                            console.error("Error:", err)
+                            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
                         });
                 }
             });
@@ -389,6 +400,10 @@ const Search = () => {
                     return { ...item, track_count: 0 };
                 }
             }))
+        }
+        else {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
+            throw new Error('Error fetching data in backend. Error:', responseData);
         }
     }
 

@@ -9,6 +9,7 @@ import { FormatStreamingPlatformsToJson, IsEmpty } from '../../utils/RegularUtil
 import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from '../../routing/navigation'
 import SubmitTrackAddPreExistingModal from './SubmitTrackAddPreExistingModal';
+import { toast } from 'react-toastify';
 
 const SubmitTrackAdd = () => {
     const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
@@ -80,7 +81,7 @@ const SubmitTrackAdd = () => {
                 setPageFormValues(preExistingTrackInfo);
             }
             else {
-                alert("An error occurred")
+                toast('An error occured. Please refresh page and start again.')
                 console.error(`An error occurred. Variable 'submitPreExistingTrack' is true, so expected value 'preExistingTrackInfo' to be non-empty. Value is:`, preExistingTrackInfo)
             }
         }
@@ -131,6 +132,7 @@ const SubmitTrackAdd = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend.');
         }
     }

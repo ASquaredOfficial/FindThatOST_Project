@@ -5,6 +5,7 @@ import { IsEmpty } from '../../utils/RegularUtils';
 import { GetPlatformNameString, IsFandomImageUrl } from '../../utils/HyperlinkUtils';
 import default_img_square from '../../assets/default_image_square.svg'
 import { PageLoading } from '../../components';
+import { toast } from 'react-toastify';
 
 const SubmitTrackAddPreExistingModal = (
     {
@@ -53,6 +54,7 @@ const SubmitTrackAddPreExistingModal = (
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend.');
         }
     }

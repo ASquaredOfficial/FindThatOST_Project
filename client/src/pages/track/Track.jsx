@@ -8,6 +8,7 @@ import default_img_square from '../../assets/default_image_square.svg'
 import { FormatStreamingPlatformsToList, IsEmpty } from '../../utils/RegularUtils'
 import { MapTrackType } from '../../utils/FTOApiUtils'
 import { GetPlatformIcon, GetPlatformNameString, IsFandomImageUrl } from '../../utils/HyperlinkUtils';
+import { toast } from 'react-toastify';
 
 const Track = () => {
     const { track_id } = useParams();
@@ -98,6 +99,7 @@ const Track = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend.');
         }
     }

@@ -10,6 +10,7 @@ import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWeb
 import { useCustomNavigate } from '../../routing/navigation'
 import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
 import SubmitTrackRemoveModal from './SubmitTrackRemoveModal';
+import { toast } from 'react-toastify';
 
 const SubmitTrackEdit = () => {
     const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
@@ -146,6 +147,7 @@ const SubmitTrackEdit = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend.\nError:', error.message);
         }
     }
