@@ -6,7 +6,7 @@ import { Navbar, Footer, } from "../../components";
 import { useCustomNavigate } from './../../routing/navigation'
 import { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount} from "../../utils/MalApiUtils"
 import { IsEmpty } from '../../utils/RegularUtils';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 const Search = () => {
     const location = useLocation();

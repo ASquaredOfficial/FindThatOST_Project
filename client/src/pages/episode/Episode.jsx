@@ -547,7 +547,7 @@ const Episode = () => {
                                                             <div className='fto__page__episode-main_content--track_item-scene_description_right'>
                                                                 <a href={'/submission/track_edit/' + trackInfo.track_id + '/context_id/' + trackInfo.occurrence_id}>
                                                                     
-                                                                    <button className='fto__page__episode-main_content--track_item-edit_track_button' tabindex="-1">
+                                                                    <button className='fto__page__episode-main_content--track_item-edit_track_button' tabIndex="-1">
                                                                         <img src={pencil_icon} alt='pencil_icon'/>&nbsp;Edit
                                                                     </button>
                                                                 </a>

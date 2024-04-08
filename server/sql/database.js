@@ -14,10 +14,10 @@ const {
 const { IsEmpty, GetSqlErrorObj, MyXNOR, LineNumber } = require('../utils/BackendUtils');
 
 const FtoConnection = mysql.createConnection({
-  host: process.env.FTO_APP_DB_MYSQL_HOST || '127.0.0.1',
-  user: process.env.FTO_APP_DB_MYSQL_USER || 'root',
-  password: process.env.FTO_APP_DB_MYSQL_PSWD || '',
-  database: process.env.FTO_APP_DB_MYSQL_NAME || 'findthatost_db',
+  host: !IsEmpty(process.env.FTO_APP_DB_MYSQL_HOST) ? process.env.FTO_APP_DB_MYSQL_HOST : '127.0.0.1',
+  user: !IsEmpty(process.env.FTO_APP_DB_MYSQL_USER) ? process.env.FTO_APP_DB_MYSQL_USER : 'root',
+  password: !IsEmpty(process.env.FTO_APP_DB_MYSQL_PSWD) ? process.env.FTO_APP_DB_MYSQL_PSWD : '',
+  database: !IsEmpty(process.env.FTO_APP_DB_MYSQL_NAME) ? process.env.FTO_APP_DB_MYSQL_NAME : 'findthatost_db',
 });
 
 // Create a MySQL connection pool

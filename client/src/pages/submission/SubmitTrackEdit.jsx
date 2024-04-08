@@ -106,7 +106,6 @@ const SubmitTrackEdit = () => {
             submissionContext['submit_sceneDesc'] = (!IsEmpty(contextDataFromBackend[0].scene_description)) ? String(contextDataFromBackend[0].scene_description) : '';
             submissionContext['submit_streamPlat'] = (!IsEmpty(contextDataFromBackend[0].streaming_platform_links)) ? JSON.parse(contextDataFromBackend[0].streaming_platform_links) : {};
             setSubmissionContextInfo(submissionContext);
-            // TODO - investigate why no image url translates to showing nothing instead of the default image
 
             if (contextDataFromBackend[0].hasOwnProperty('fto_episode_id')) {
                 setFtoEpisodeID(contextDataFromBackend[0].fto_episode_id);

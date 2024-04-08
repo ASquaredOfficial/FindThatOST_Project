@@ -5,7 +5,7 @@ import './anime.css';
 import { Navbar, Footer} from "../../components";
 import { useCustomNavigate } from './../../routing/navigation'
 import { AreDefaultAndEnglishTitlesDifferent, ParseAnimePosterImage } from "../../utils/MalApiUtils"
-import { ParseClassName } from "../../utils/RegularUtils"
+import { IsEmpty, ParseClassName } from "../../utils/RegularUtils"
 import { toast } from 'react-toastify';
 
 const Anime = () => {
@@ -26,8 +26,8 @@ const Anime = () => {
     const [ pageEpisodesInfo, setPageEpisodesInfo ] = useState();
 
     useEffect(() => {
-        console.debug(`Render-Anime (onMount): ${location.href}`);    
-        
+        console.debug(`Render-Anime (onMount): ${location.href}`);
+        document.title = `FindThatOST Anime`;
         FetchPageData(id);
 
         // Listen and hanlde for the popstate event (back button or forward press)
@@ -428,7 +428,7 @@ const Anime = () => {
                 if (kitsuPageEpisodes.length > (episodeNumber-1)%100 ) {
                     let kitsuEpisodeinfo = kitsuPageEpisodes[it];
                     epInfo.kitsu_episode_id = Number(kitsuEpisodeinfo.id);
-                    if (kitsuEpisodeinfo.attributes.titles.en_us !== '') {
+                    if (!IsEmpty(kitsuEpisodeinfo.attributes.titles.en_us)) {
                         episodeTitleEn = (episodeTitleEn === '') ? kitsuEpisodeinfo.attributes.titles.en_us : episodeTitleEn;
                     }
                 }
@@ -588,6 +588,7 @@ const Anime = () => {
             console.log('Data from backend:', dataFromBackend);
             console.log('Data from external MAL API:', dataFromExternalAPI_MAL);
             setFTOAnimeInfo(dataFromBackend[0]);
+            document.title = `${dataFromBackend[0].canonical_title} | FindThatOST Anime`;
             setMALAnimeInfo(dataFromExternalAPI_MAL.data);
         } catch (error) {
             console.error('Error:', error.message);
