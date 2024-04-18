@@ -65,6 +65,10 @@ a.button {
     transition: 0.5s;
     background: var(--color-pink_dark);
 }
+.fto__button__pink:disabled {
+    background: gray;
+    border: 0;
+}
 
 .fto__pointer {
     cursor: pointer;

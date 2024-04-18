@@ -136,8 +136,7 @@
 
             .fto__page__episode-main_content--track_item-scene_description {
                 display: flex;
-                justify-content: space-between;
-                align-items: center;
+                flex-direction: column;
                 margin-top: 0.5rem;
                 padding: 0.5rem;
 
@@ -146,17 +145,12 @@
                 color: #000;
                 font-size: 0.8rem;
 
-                .fto__page__episode-main_content--track_item-scene_description_left {
-                    flex-grow: 1;
-                    margin-right: 5px;
-
-                    .fto__page__episode-main_content--track_item-scene_description_text {
-                        overflow: hidden;
-                        display: -webkit-box;
-                        -webkit-line-clamp: 2; /* number of lines to show */
-                                line-clamp: 2; 
-                        -webkit-box-orient: vertical;
-                    }
+                .fto__page__episode-main_content--track_item-scene_description_text {
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2; /* number of lines to show */
+                            line-clamp: 2; 
+                    -webkit-box-orient: vertical;
                 }
             }
         }

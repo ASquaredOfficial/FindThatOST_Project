@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { useLocation, useParams } from "react-router-dom";
 import './episode.css';
 
-import { Navbar, Footer} from "../../components";
+import { Navbar, Footer, Comments} from "../../components";
 import { ParsePosterImage_Horzontal } from "../../utils/MalApiUtils"
 import { IsEmpty } from "../../utils/RegularUtils"
 
@@ -11,7 +11,6 @@ import pencil_icon from '../../assets/Pencil_Icon.svg'
 import { toast } from 'react-toastify';
 
 const Episode = () => {
-    const location = useLocation();
     const { anime_id, episode_no } = useParams();
     
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
@@ -25,7 +24,7 @@ const Episode = () => {
 
     useEffect(() => {
         document.title = `Episode ${episode_no} Tracks | AnimeID(${anime_id})`;
-        console.log(`Render-Episode (onMount): ${location.href}\nAnimeID:${anime_id}\nEpisodeNo:${episode_no}`)
+        console.log(`Render-Episode (onMount): ${window.location.href}\nAnimeID:${anime_id}\nEpisodeNo:${episode_no}`)
         FetchPageData(anime_id, episode_no);
     }, []);
 
@@ -386,8 +385,8 @@ const Episode = () => {
             // Fetch data from the backend
             const animeDataFromBackend = await FetchAnimeData_FTO(pageId);
             const episodeDataFromBackend = await FetchEpisodeData_FTO(pageId, episodeNum);
-            console.log('Anime Data from backend:', animeDataFromBackend);
-            console.log('Episode Data from backend:', episodeDataFromBackend);
+            console.debug('Anime Data from backend:', animeDataFromBackend);
+            console.debug('Episode Data from backend:', episodeDataFromBackend);
             setFTOAnimeInfo(animeDataFromBackend[0]);
             document.title = `Episode ${episode_no} Tracks | ${animeDataFromBackend[0].canonical_title}`;
 
@@ -397,10 +396,10 @@ const Episode = () => {
             const episodeData_malAPI = await FetchEpisodeData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);
             const episodeImageData_malAPI = await FetchEpisodeImageData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);
             const episodeData_kitsuAPI = await FetchEpisodeData_KITSU( episodeDataFromBackend[0].kitsu_episode_id);
-            console.log('Anime Data from external MAL API:', dataFromExternalAPI_MAL);
-            console.log('Episode Data from MAL API:', episodeData_malAPI);
-            console.log('Episode Image Data from MAL API:', episodeImageData_malAPI);
-            console.log('Episode Data from external KITSU API:', episodeData_kitsuAPI);
+            console.debug('Anime Data from external MAL API:', dataFromExternalAPI_MAL);
+            console.debug('Episode Data from MAL API:', episodeData_malAPI);
+            console.debug('Episode Image Data from MAL API:', episodeImageData_malAPI);
+            console.debug('Episode Data from external KITSU API:', episodeData_kitsuAPI);
             setMALAnimeInfo(dataFromExternalAPI_MAL.data);
             setMALEpisodeInfo(episodeData_malAPI.data);
             setMALEpisodeImageInfo(episodeImageData_malAPI);
@@ -408,7 +407,7 @@ const Episode = () => {
 
             //Get all tracks for this anime
             const episodeListOfTracksFromBackend = await FetchEpisodeListOfTracks_FTO(episodeDataFromBackend[0].episode_id, 'track_type');
-            console.log('List of tracks for episode:', episodeListOfTracksFromBackend);
+            console.debug('List of tracks for episode:', episodeListOfTracksFromBackend);
             setEpisodeListOfTracks(episodeListOfTracksFromBackend);
         } catch (error) {
             console.error('Error:', error.message);
@@ -522,7 +521,8 @@ const Episode = () => {
                                     ) : ( 
                                         episodeListOfTracks.map((trackInfo, it) => {
                                             return (
-                                                <a href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}>
+                                                <a href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}
+                                                    key={it}>
                                                     <div className='fto__page__episode-main_content--track_item' key={it}>
                                                         <div className='fto__page__episode-main_content--track_item-header'>
                                                             <div className='fto__page__episode-main_content--track_item-header_left'>
@@ -530,28 +530,15 @@ const Episode = () => {
                                                                 <h5 className='fto__page__episode-subheader_color'>{MapTrackType(trackInfo.track_type)}</h5>
                                                             </div>
                                                             <div className='fto__page__episode-main_content--track_item-header_right'>
-                                                                <a className='fto__page__episode-main_content--track_item-goto_track_button button' 
-                                                                href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}>
-                                                                    <img src={arrow_icon} alt='arrow_icon'/>
-                                                                </a>
+                                                                <img src={arrow_icon} alt='arrow_icon'/>
                                                             </div>
                                                         </div>
                                                         
                                                         <div className='fto__page__episode-main_content--track_item-scene_description'>
-                                                            <div className='fto__page__episode-main_content--track_item-scene_description_left'>
-                                                                <p><b>Scene Description:</b></p>
-                                                                <p className='fto__page__episode-main_content--track_item-scene_description_text' >
-                                                                    {trackInfo.scene_description}
-                                                                </p>
-                                                            </div>
-                                                            <div className='fto__page__episode-main_content--track_item-scene_description_right'>
-                                                                <a href={'/submission/track_edit/' + trackInfo.track_id + '/context_id/' + trackInfo.occurrence_id}>
-                                                                    
-                                                                    <button className='fto__page__episode-main_content--track_item-edit_track_button' tabIndex="-1">
-                                                                        <img src={pencil_icon} alt='pencil_icon'/>&nbsp;Edit
-                                                                    </button>
-                                                                </a>
-                                                            </div>
+                                                            <p><b>Scene Description:</b></p>
+                                                            <p className='fto__page__episode-main_content--track_item-scene_description_text' >
+                                                                {trackInfo.scene_description}
+                                                            </p>
                                                         </div>
                                                         
                                                     </div>
@@ -564,6 +551,8 @@ const Episode = () => {
                                 </div>
                             )}
                         </div>
+
+                        <Comments />
                     </div>
                 )}
             </div>
