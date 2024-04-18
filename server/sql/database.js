@@ -14,10 +14,10 @@ const {
 const { IsEmpty, GetSqlErrorObj, MyXNOR, LineNumber } = require('../utils/BackendUtils');
 
 const FtoConnection = mysql.createConnection({
-  host: process.env.FTO_APP_DB_MYSQL_HOST,
-  user: process.env.FTO_APP_DB_MYSQL_USER,
-  password: process.env.FTO_APP_DB_MYSQL_PSWD,
-  database: process.env.FTO_APP_DB_MYSQL_NAME,
+  host: !IsEmpty(process.env.FTO_APP_DB_MYSQL_HOST) ? process.env.FTO_APP_DB_MYSQL_HOST : '127.0.0.1',
+  user: !IsEmpty(process.env.FTO_APP_DB_MYSQL_USER) ? process.env.FTO_APP_DB_MYSQL_USER : 'root',
+  password: !IsEmpty(process.env.FTO_APP_DB_MYSQL_PSWD) ? process.env.FTO_APP_DB_MYSQL_PSWD : '',
+  database: !IsEmpty(process.env.FTO_APP_DB_MYSQL_NAME) ? process.env.FTO_APP_DB_MYSQL_NAME : 'findthatost_db',
 });
 
 // Create a MySQL connection pool
@@ -131,23 +131,23 @@ const GetAllAnime = () => {
  *                              If an error occurs during the database query, the promise rejects with the error.
  */
 const GetAnime = (nFtoAnimeID) => {
-  return new Promise((resolve, reject) => {
-    let sqlQuery = [
-      "SELECT *",
-      `FROM ${tblName_anime}`,
-      `WHERE anime_id = ${nFtoAnimeID}`,
-    ];
-    const handler = new SQLArrayHandler(sqlQuery);
-    const sqlQueryString = handler.CombineStringsToQuery();
-    FtoConnection.query(sqlQueryString, (error, results) => {
-		if (error) {
-			LogError('GetAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
-			reject(error);
-		} else {
-			resolve(results);
-		}
-    });
-  });
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+		"SELECT *",
+		`FROM ${tblName_anime}`,
+		`WHERE anime_id = ${nFtoAnimeID}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
 }
 
 const PatchAnime = (nAnimeID, strAnimeTitle, nAnimePrequel) => {
@@ -307,7 +307,7 @@ const GetTrackCountForMALAnimes = async (arrMalAnimeIDs) => {
   	return Promise.all(arrMalAnimeIDs.map(malAnimeID => GetTrackCountForMALAnime(malAnimeID)));
 };
 
-const GetTracksForEpisode = (nEpisodeID) => {
+const GetTracksForEpisode = (nEpisodeID, sortBy = '') => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
 		"SELECT occurrence_id, track_id, track_name, fto_occurrence.track_type, fto_occurrence.scene_description",
@@ -317,6 +317,9 @@ const GetTracksForEpisode = (nEpisodeID) => {
 		"INNER JOIN fto_anime ON fto_episode.fto_anime_id = fto_anime.anime_id", 
 		`WHERE fto_episode.episode_id = ${nEpisodeID}`,
     ];
+    if (sortBy === 'track_type') {
+		sqlQuery.push(`ORDER BY CASE track_type WHEN 'OP' THEN 1 WHEN 'ED' THEN 2 ELSE 5 END`);
+	}
     const handler = new SQLArrayHandler(sqlQuery);
     const sqlQueryString = handler.CombineStringsToQuery();
     FtoConnection.query(sqlQueryString, (error, results) => {

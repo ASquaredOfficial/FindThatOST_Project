@@ -21,9 +21,9 @@ const App = () => {
 					<Route element={<Episode />} path="/anime/:anime_id/episode/:episode_no" />
 					<Route element={<Track />} path="/track/:track_id/" />
 					<Route element={<ChatGPTBot />} path="/chatbot/" />
-					<Route element={<SubmitTrackAdd />} path="/submission/track_add/:anime_id/" />+
-					<Route element={<SubmitTrackEdit />} path="/submission/track_edit/:track_id/context_id/:occurrence_id" />+
-					{/*<Route element={ErrorPage} path="*" /> */}
+					<Route element={<SubmitTrackAdd />} path="/submission/track_add/:anime_id/" />
+					<Route element={<SubmitTrackEdit />} path="/submission/track_edit/:track_id/context_id/:occurrence_id" />
+					<Route element={<Home />} path="*" />
 				</Routes>
 			</BrowserRouter>
 		</div>

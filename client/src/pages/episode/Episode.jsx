@@ -8,6 +8,7 @@ import { IsEmpty } from "../../utils/RegularUtils"
 
 import arrow_icon from '../../assets/Arrow_Icon.svg'
 import pencil_icon from '../../assets/Pencil_Icon.svg'
+import { toast } from 'react-toastify';
 
 const Episode = () => {
     const location = useLocation();
@@ -96,6 +97,7 @@ const Episode = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend');
         }
     }
@@ -118,6 +120,7 @@ const Episode = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend');
         }
     }
@@ -218,6 +221,7 @@ const Episode = () => {
             }
         } 
         catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error updating data in backend');
         }
     }
@@ -352,14 +356,18 @@ const Episode = () => {
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing track details.
      * 
      */
-    const FetchEpisodeListOfTracks_FTO = async (nEpisodeID) => {
+    const FetchEpisodeListOfTracks_FTO = async (nEpisodeID, sortQuery = '') => {
         try {
             let apiUrl_fto = `/findthatost_api/getTracks/episode_id/${Number(nEpisodeID)}`
+            if (!IsEmpty(sortQuery)) {
+                apiUrl_fto += `/sort_by/${sortQuery}`;
+            }
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend');
         }
     }
@@ -381,7 +389,6 @@ const Episode = () => {
             console.log('Anime Data from backend:', animeDataFromBackend);
             console.log('Episode Data from backend:', episodeDataFromBackend);
             setFTOAnimeInfo(animeDataFromBackend[0]);
-            setFTOEpisodeInfo(episodeDataFromBackend);
             document.title = `Episode ${episode_no} Tracks | ${animeDataFromBackend[0].canonical_title}`;
 
             // Use data from the backend to make the second fetch to the external API
@@ -400,7 +407,7 @@ const Episode = () => {
             setKitsuEpisodeInfo(episodeData_kitsuAPI.data.attributes);
 
             //Get all tracks for this anime
-            const episodeListOfTracksFromBackend = await FetchEpisodeListOfTracks_FTO(episodeDataFromBackend[0].episode_id);
+            const episodeListOfTracksFromBackend = await FetchEpisodeListOfTracks_FTO(episodeDataFromBackend[0].episode_id, 'track_type');
             console.log('List of tracks for episode:', episodeListOfTracksFromBackend);
             setEpisodeListOfTracks(episodeListOfTracksFromBackend);
         } catch (error) {
@@ -515,36 +522,41 @@ const Episode = () => {
                                     ) : ( 
                                         episodeListOfTracks.map((trackInfo, it) => {
                                             return (
-                                                <div className='fto__page__episode-main_content--track_item' key={it}>
-                                                    <div className='fto__page__episode-main_content--track_item-header'>
-                                                        <div className='fto__page__episode-main_content--track_item-header_left'>
-                                                            <h4>{trackInfo.track_name}</h4>
-                                                            <h5 className='fto__page__episode-subheader_color'>{MapTrackType(trackInfo.track_type)}</h5>
+                                                <a href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}>
+                                                    <div className='fto__page__episode-main_content--track_item' key={it}>
+                                                        <div className='fto__page__episode-main_content--track_item-header'>
+                                                            <div className='fto__page__episode-main_content--track_item-header_left'>
+                                                                <h4>{trackInfo.track_name}</h4>
+                                                                <h5 className='fto__page__episode-subheader_color'>{MapTrackType(trackInfo.track_type)}</h5>
+                                                            </div>
+                                                            <div className='fto__page__episode-main_content--track_item-header_right'>
+                                                                <a className='fto__page__episode-main_content--track_item-goto_track_button button' 
+                                                                href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}>
+                                                                    <img src={arrow_icon} alt='arrow_icon'/>
+                                                                </a>
+                                                            </div>
                                                         </div>
-                                                        <div className='fto__page__episode-main_content--track_item-header_right'>
-                                                            <a className='fto__page__episode-main_content--track_item-goto_track_button button' 
-                                                            href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}>
-                                                                <img src={arrow_icon} alt='arrow_icon'/>
-                                                            </a>
+                                                        
+                                                        <div className='fto__page__episode-main_content--track_item-scene_description'>
+                                                            <div className='fto__page__episode-main_content--track_item-scene_description_left'>
+                                                                <p><b>Scene Description:</b></p>
+                                                                <p className='fto__page__episode-main_content--track_item-scene_description_text' >
+                                                                    {trackInfo.scene_description}
+                                                                </p>
+                                                            </div>
+                                                            <div className='fto__page__episode-main_content--track_item-scene_description_right'>
+                                                                <a href={'/submission/track_edit/' + trackInfo.track_id + '/context_id/' + trackInfo.occurrence_id}>
+                                                                    
+                                                                    <button className='fto__page__episode-main_content--track_item-edit_track_button' tabIndex="-1">
+                                                                        <img src={pencil_icon} alt='pencil_icon'/>&nbsp;Edit
+                                                                    </button>
+                                                                </a>
+                                                            </div>
                                                         </div>
+                                                        
                                                     </div>
-                                                    
-                                                    <div className='fto__page__episode-main_content--track_item-scene_description'>
-                                                        <div className='fto__page__episode-main_content--track_item-scene_description_left'>
-                                                            <p><b>Scene Description:</b></p>
-                                                            <p>{trackInfo.scene_description}</p>
-                                                        </div>
-                                                        <div className='fto__page__episode-main_content--track_item-scene_description_right'>
-                                                            <a href={'/submission/track_edit/' + trackInfo.track_id + '/context_id/' + trackInfo.occurrence_id}>
-                                                                
-                                                                <button className='fto__page__episode-main_content--track_item-edit_track_button' tabindex="-1">
-                                                                    <img src={pencil_icon} alt='pencil_icon'/>&nbsp;Edit
-                                                                </button>
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                </div>
+                                                </a>
+                                                
                                             );
                                         })
                                     )}   

@@ -98,14 +98,14 @@ const ParsePosterImage_Horzontal = (passedImageUrl) => {
  * @param {string} airStatus - The air status of the anime.
  * @param {number|null} malEpCount - The episode count from MyAnimeList (null if unknown).
  * @param {number} malAnimeID - The MyAnimeList anime ID (null if unknown).
- * @returns {string} - The episode count or a dash ('-') based on air status and availability of data.
+ * @returns {number|undefined} - The episode count or a dash ('-') based on air status and availability of data.
  */
 const GetEpisodeCount = ( airStatus, malEpCount, malAnimeID) => {
     if (airStatus  === "Currently Airing") { 
-        return '-';
+        return ;
     }
     else if (airStatus  === "Not yet aired") {
-        return '-';
+        return ;
     }
     else {
         return malEpCount;

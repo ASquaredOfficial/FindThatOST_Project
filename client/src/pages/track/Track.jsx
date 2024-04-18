@@ -8,6 +8,7 @@ import default_img_square from '../../assets/default_image_square.svg'
 import { FormatStreamingPlatformsToList, IsEmpty } from '../../utils/RegularUtils'
 import { MapTrackType } from '../../utils/FTOApiUtils'
 import { GetPlatformIcon, GetPlatformNameString, IsFandomImageUrl } from '../../utils/HyperlinkUtils';
+import { toast } from 'react-toastify';
 
 const Track = () => {
     const { track_id } = useParams();
@@ -98,12 +99,12 @@ const Track = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend.');
         }
     }
     
     const ParsePosterImage_Square = (passedImageUrl) => {
-        console.log("Value for poster Image:", passedImageUrl)
         if (!IsEmpty(passedImageUrl) && IsFandomImageUrl(passedImageUrl)) {
             return `${passedImageUrl}`;
         }
@@ -191,9 +192,9 @@ const Track = () => {
                             {(!IsEmpty(ftoTrackInfo.embedded_yt_video_id)) && (
                                 <iframe  className='fto__page__track--embedded_yt_video'
                                     src={`https://www.youtube.com/embed/${ftoTrackInfo.embedded_yt_video_id}`}
-                                    title="YouTube video player" frameborder="0" 
+                                    title="YouTube video player" frameBorder="0" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                                    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen />
+                                    referrerPolicy="origin-when-cross-origin" allowFullScreen />
                             )}
                         </div>
                     </div>

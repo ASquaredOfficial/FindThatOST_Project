@@ -6,6 +6,7 @@ import { Navbar, Footer, } from "../../components";
 import { useCustomNavigate } from './../../routing/navigation'
 import { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount} from "../../utils/MalApiUtils"
 import { IsEmpty } from '../../utils/RegularUtils';
+import { toast } from 'react-toastify';
 
 const Search = () => {
     const location = useLocation();
@@ -18,6 +19,15 @@ const Search = () => {
     const [pageSearchData, setPageSearchData] = useState([]);
     const [paginationData, setPagignationData] = useState({});
     const [mainViewStyle, setViewStyle] = useState({});
+    const [mobileView, setMobileView] = useState(false);
+    const supportedAnimeTypesMAL = [
+        'tv', // Refers to television series anime, which are episodic and typically broadcast on television.
+        'movie', // Refers to anime movies, which are standalone films with a longer runtime compared to TV episodes.
+        'ova',  // Stands for Original Video Animation, which are anime released directly to video without prior broadcast.
+        'special', // Refers to special episodes or one-off releases that may accompany a TV series or OVA.
+        'ona', // Stands for Original Net Animation, which are anime distributed over the internet.
+        'tv_special', // Refers to special episodes or one-off releases specifically related to television series.
+    ];
 
     // Render (onMount)
     useEffect(() => {
@@ -30,14 +40,23 @@ const Search = () => {
             setViewStyle({ height: '100vh', justifyContent: 'flex-start'});
         } else {
             if (spPage == null || spPage < 1) {
-                FetchAnimeList_MAL(spQuery);
+                FetchAnimeList_MAL(spQuery, supportedAnimeTypesMAL);
                 document.title = `Search | '${spQuery}'`;
             } else {
-                FetchAnimeList_MAL(spQuery, spPage);
+                FetchAnimeList_MAL(spQuery, supportedAnimeTypesMAL, spPage);
                 document.title = `Search | '${spQuery}' | Page ${spPage}`;
             }
         }
 
+        const handleResize = () => {
+            const width = window.innerWidth;
+            // Update media size based on the window width
+            if (width < 700 /*px*/) {
+                setMobileView(true);
+            } else {
+                setMobileView(false);
+            }
+        };
         // Listen and hanlde for the popstate event (back button or forward press)
         const handlePopstate = () => {
             // When the browser history changes, manually update the component based on the current URL
@@ -49,12 +68,19 @@ const Search = () => {
             setPage(newPage);
       
             // Perform search or fetch data based on newQuery and newPage
-            FetchAnimeList_MAL(newQuery, newPage);
+            FetchAnimeList_MAL(newQuery, supportedAnimeTypesMAL, newPage);
         };
+
+        // Initial call and event listener setup
+        handleResize();
         window.addEventListener('popstate', handlePopstate);
+        window.addEventListener('resize', handleResize);
+        
+        // Cleanup the event listener on component unmount
         return () => {
             // Remove the event listener when the component unmounts
             window.removeEventListener('popstate', handlePopstate);
+            window.removeEventListener('resize', handleResize);
         };
 
     }, []);
@@ -80,7 +106,7 @@ const Search = () => {
     }, [pageSearchData]);
 
     // Show pagination data from fetch
-    const ShowPagination = ( paginationDetails ) => {
+    const ShowPagination = ( paginationDetails, bIsMobileView = false) => {
         if (Object.keys(paginationDetails).length === 0 && paginationDetails.constructor === Object) {
             // If no results, hide pagination
             return;
@@ -105,7 +131,7 @@ const Search = () => {
                 nPageNo = nPageNo + 1;
             }
         }
-        pageList.push(`[${nCurrentPage}]`);
+        pageList.push(`${nCurrentPage}`);
         if (nCurrentPage + 3  < nLastPage) {
             // Show next 2 pages nos
             // Show ellipsize and last page no
@@ -125,9 +151,9 @@ const Search = () => {
         }
         
         let pagesElem = createElement(
-            'span', 
+            (!bIsMobileView) ? 'span' : 'div', 
             {
-                className: 'fto__page__search-page_links',
+                className: (!bIsMobileView) ? 'fto__page__search-page_links': 'fto__page__search-mobile_page_links',
             },
             pageList.map((pageNum, it) => {
                 if (typeof pageNum == "number") {
@@ -140,7 +166,20 @@ const Search = () => {
                         pageNum,
                     );
                 } else {
-                    return createElement('p', {key: `pg_${it}`,}, pageNum);
+                    if (!bIsMobileView) {
+                        return createElement('p', {key: `pg_${it}`,}, pageNum);
+                    }
+                    else {
+                        return createElement(
+                            'a', 
+                            {
+                                key: `pg_${it}`, 
+                                className: 'active',
+                            }, 
+                            pageNum,
+                        );
+                    }
+                    
                 }
             })
         );
@@ -148,15 +187,13 @@ const Search = () => {
     }
 
     // Hanle search page page number change
-    const HandleSearchPageChange = (newPage) => {
+    const HandleSearchPageChange = (newPageNum) => {
 
         // Get the search string and new page number, and change url
-        searchParams.set('page', newPage);
-        searchParams.set('query', searchParams.get('query'));
-        navigateToSearch(`?${searchParams.toString()}`);
+        navigateToSearch(spQuery, newPageNum);
 
         // Fetch data for the new page
-        FetchAnimeList_MAL(spQuery, newPage);
+        FetchAnimeList_MAL(spQuery, newPageNum);
     };
 
     // Show pagination data from fetch
@@ -169,13 +206,14 @@ const Search = () => {
     }
 
     // Fetch anime asyncronously via MAL Api
-    const FetchAnimeList_MAL = async (query, pgNum = 1) => {
+    const FetchAnimeList_MAL = async (query, animeTypesToSearch, pgNum = 1) => {
         let apiUrl_mal = `https://api.jikan.moe/v4/anime?${createSearchParams({
             q: (query),
             unnaproved: false,
             sfw: true,
             limit: 25,
             page: pgNum,
+            // type: (animeTypesToSearch.join(',')),
         }).toString()}`;
         console.debug(`Fetch url:, '${apiUrl_mal}'`);
         
@@ -219,12 +257,16 @@ const Search = () => {
 
     const HandleSearchRowOnclick = (malID, malAnimeInfo) => {
         if (malAnimeInfo.status === 'Not yet aired') {
-            alert('We do not support shows that have not aired yet.');
+            toast('We do not support shows that have not aired yet.');
             return;
         }
-        console.log("Go to anime with mal id:", malID)
+        else if (!supportedAnimeTypesMAL.includes(String(malAnimeInfo.type).toLowerCase())){
+            toast('This not a supported anime type.');
+            return
+        }
 
         // Get FTO Anime ID from FTO DB, then navigate to anime page
+        console.log("Go to anime with mal id:", malID)
         FetchAnimeMapping_FTO(malID);
     }
       
@@ -254,6 +296,7 @@ const Search = () => {
             }
         }
         catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error(`Error fetching data mapping in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
         }
     }
@@ -293,6 +336,10 @@ const Search = () => {
                                 console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}`);
                                 console.error(response)
                             }
+                        })
+                        .catch(err => {
+                            console.error("Error:", err)
+                            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
                         });
                 }
                 else {
@@ -308,9 +355,14 @@ const Search = () => {
                                 navigateToAnime(insertedAnimeId);
                             }
                             else {
+                                toast('An internal error has occurred with the FindThatOST server. Please try again later.');
                                 console.error(`An error occurred inserting new anime with mal_id(${malAnimeID})`);
                                 console.error(response)
                             }
+                        })
+                        .catch(err => {
+                            console.error("Error:", err)
+                            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
                         });
                 }
             });
@@ -334,7 +386,7 @@ const Search = () => {
 
         const responseData = await response.json();
         console.debug("Response Data:", responseData);
-        if (responseStatus == 200) {
+        if (responseStatus === 200) {
             const listOftrackCounts = responseData.data.map(arr => {
                 return arr[0];
             })
@@ -349,6 +401,10 @@ const Search = () => {
                 }
             }))
         }
+        else {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
+            throw new Error('Error fetching data in backend. Error:', responseData);
+        }
     }
 
     return (
@@ -361,48 +417,98 @@ const Search = () => {
                         Searched for '{spQuery}'
                     </h1>
 
-                    <div className='fto__page__search-content_page_details'>
+                    <div className='fto__page__search-content-share_line'>
                         {ShowResultCount(paginationData)}
-                        {ShowPagination(paginationData)}
+                        {(!mobileView) && 
+                            ShowPagination(paginationData) 
+                        }
                     </div>
 
-                    <table className='fto__page__search-content_search_table' >
-                        <thead>
-                            <tr><td colSpan='100%'><hr /></td></tr>
-                            <tr>
-                                <th colSpan={2}>Title</th>
-                                <th>Air Status</th>
-                                <th>Air Date</th>
-                                <th>Show Type</th>
-                                <th>Episode Count</th>
-                                <th>Song Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colSpan='100%'><hr /></td></tr>
-                            {pageSearchData.map((animeInfo, it) => {
-                                return (
-                                    <tr key={it}>
-                                        <td onClick={() => HandleSearchRowOnclick(animeInfo.mal_id, animeInfo)}>
-                                            <img width={66} height={100} src={animeInfo.images.jpg.image_url} alt="Anime Thumbnail" />
-                                        </td>
-                                        <td>
-                                            <p className='fto__page__search-content_default_title' onClick={() => HandleSearchRowOnclick(animeInfo.mal_id, animeInfo)}>
+                    {(!mobileView) ? ( 
+                        <table className='fto__page__search-content_search_table' >
+                            <thead>
+                                <tr><td colSpan='100%'><hr /></td></tr>
+                                <tr>
+                                    <th colSpan={2}>Title</th>
+                                    <th>Air Status</th>
+                                    <th>Air Date</th>
+                                    <th>Show Type</th>
+                                    <th>Episode Count</th>
+                                    <th>Song Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colSpan='100%'><hr /></td></tr>
+                                {pageSearchData.map((animeInfo, it) => {
+                                    return (
+                                        <tr key={it}>
+                                            <td onClick={() => HandleSearchRowOnclick(animeInfo.mal_id, animeInfo)}>
+                                                <img width={100} height={150} src={animeInfo.images.jpg.image_url} alt="Anime Thumbnail" />
+                                            </td>
+                                            <td>
+                                                <p className='fto__page__search-content_default_title' onClick={() => HandleSearchRowOnclick(animeInfo.mal_id, animeInfo)}>
+                                                    {animeInfo.title}
+                                                </p>
+                                                {AddSubtitle(animeInfo.titles)}
+                                                <p className='fto__page__search-content_synopsis'>{animeInfo.synopsis}</p>
+                                            </td>
+                                            <td>{animeInfo.status}</td>
+                                            <td>{FormatDateToMidDateString(animeInfo.aired.from)}</td>
+                                            <td>{animeInfo.type}</td>
+                                            <td>
+                                                {
+                                                    IsEmpty(GetEpisodeCount(animeInfo.status, animeInfo.episodes, animeInfo.mal_id)) ? '-' : 
+                                                    GetEpisodeCount(animeInfo.status, animeInfo.episodes, animeInfo.mal_id)
+                                                }
+                                            </td>
+                                            <td>{IsEmpty(animeInfo.track_count) ? '-' : animeInfo.track_count}</td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <>
+                        <hr className='fto_horizontal_hr' />
+                        {pageSearchData.map((animeInfo, it) => {
+                            return (
+                                <div key={it} className='fto__page__search-content_mobile_view_item'>
+                                    <div key={it}  className='fto__page__search-content_mobile_view-row'
+                                        onClick={() => HandleSearchRowOnclick(animeInfo.mal_id, animeInfo)}>
+                                        <div className="fto__page__search-content_mobile_view-overlay"></div>
+                                        <img width={100} height={150} src={animeInfo.images.jpg.image_url} alt="Anime Thumbnail" />
+                                        <div className='fto__page__search-content_mobile_view-details_column'>
+                                            <p className='fto__page__search-content_default_title'>
                                                 {animeInfo.title}
                                             </p>
-                                            {AddSubtitle(animeInfo.titles)}
-                                            <p className='fto__page__search-content_synopsis'>{animeInfo.synopsis}</p>
-                                        </td>
-                                        <td>{animeInfo.status}</td>
-                                        <td>{FormatDateToMidDateString(animeInfo.aired.from)}</td>
-                                        <td>{animeInfo.type}</td>
-                                        <td>{GetEpisodeCount(animeInfo.status, animeInfo.episodes, animeInfo.mal_id)}</td>
-                                        <td>{IsEmpty(animeInfo.track_count) ? '-' : animeInfo.track_count}</td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                                            <p>{IsEmpty(animeInfo.track_count) ? '-' : animeInfo.track_count + ' track(s)'}</p>
+
+                                            <div className='fto__page__search-content_mobile_view-align_bottom'>                                                
+                                                <div className='fto__page__search-content-share_line'>
+                                                    <p><i>{animeInfo.status}</i></p>
+                                                    <p><i>{animeInfo.type}</i></p>
+                                                </div>
+                                                <div className='fto__page__search-content-share_line'>
+                                                    <p>{FormatDateToMidDateString(animeInfo.aired.from)}</p>
+                                                    <p>
+                                                        {
+                                                            IsEmpty(GetEpisodeCount(animeInfo.status, animeInfo.episodes, animeInfo.mal_id)) ? '-' : 
+                                                            GetEpisodeCount(animeInfo.status, animeInfo.episodes, animeInfo.mal_id) + ' Episode(s)'
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr className='fto_horizontal_hr' />
+                                </div>
+                            )
+                        })}
+                        </>
+                    )}
+                    <div className='fto__page__search-content-pagination'>
+                        {ShowPagination(paginationData, true)}
+                    </div>
 
                 </div>
             </div>

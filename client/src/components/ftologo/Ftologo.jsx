@@ -12,7 +12,7 @@ const Ftologo = () => {
     const handleResize = () => {
       const width = window.innerWidth;
       // Update media size based on the window width
-      if (width < 550) {
+      if (width < 1440) { // Keep constant with class css 'fto__navbar-links_logo img'
         setMediaSize('small');
       } else {
         setMediaSize('large');

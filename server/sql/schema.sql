@@ -4,7 +4,7 @@ DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `findthatost_db`;
 
 CREATE TABLE `fto_users` (
-    `user_id` int(11) NOT NULL,
+    `user_id` int(11) NOT NULL AUTO_INCREMENT,
     `user_username` varchar(30) NOT NULL,
     `user_email` varchar(320) DEFAULT NULL,
     `user_join_date` datetime NOT NULL DEFAULT current_timestamp(),

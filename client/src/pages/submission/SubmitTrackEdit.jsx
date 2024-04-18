@@ -10,6 +10,7 @@ import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWeb
 import { useCustomNavigate } from '../../routing/navigation'
 import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
 import SubmitTrackRemoveModal from './SubmitTrackRemoveModal';
+import { toast } from 'react-toastify';
 
 const SubmitTrackEdit = () => {
     const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
@@ -105,7 +106,6 @@ const SubmitTrackEdit = () => {
             submissionContext['submit_sceneDesc'] = (!IsEmpty(contextDataFromBackend[0].scene_description)) ? String(contextDataFromBackend[0].scene_description) : '';
             submissionContext['submit_streamPlat'] = (!IsEmpty(contextDataFromBackend[0].streaming_platform_links)) ? JSON.parse(contextDataFromBackend[0].streaming_platform_links) : {};
             setSubmissionContextInfo(submissionContext);
-            // TODO - investigate why no image url translates to showing nothing instead of the default image
 
             if (contextDataFromBackend[0].hasOwnProperty('fto_episode_id')) {
                 setFtoEpisodeID(contextDataFromBackend[0].fto_episode_id);
@@ -146,6 +146,7 @@ const SubmitTrackEdit = () => {
             const data = await response.json();
             return data;
         } catch (error) {
+            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend.\nError:', error.message);
         }
     }
