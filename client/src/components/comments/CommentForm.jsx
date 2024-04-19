@@ -12,14 +12,28 @@ const CommentForm = ({
     const isTextareaDiabled = (text.length === 0);
 
     const onSubmit = (event) => {
-        event.preventDefault()
+        event.preventDefault();
         handleSubmit(text);
         setText("");
     }
 
     const onCancel = (event) => {
-        event.preventDefault()
+        event.preventDefault();
         handleSubmit(null);
+    }
+
+    /**
+     * Handles keydown events in a textarea, triggering a specific action on Enter key press.
+     * Prevents default behavior to avoid submitting the form unintentionally.
+     * @param {Event} event - The keydown event object.
+     * @returns {void}
+     */
+    const textareaOnKeyDown = (event) => {
+        if (event.keyCode === 13 && !event.shiftKey) {
+            // Enter Key pressed
+            event.preventDefault();
+            onSubmit(event);
+        }
     }
 
 	return (
@@ -30,6 +44,7 @@ const CommentForm = ({
                     placeholder={placeholderLabel}
                     value={text}
                     onChange={(e) => setText(e.target.value)} 
+                    onKeyDown={(e) => textareaOnKeyDown(e)}
                     autoFocus
                 />
                 <div className='fto__comments-form-submit_button_section'>

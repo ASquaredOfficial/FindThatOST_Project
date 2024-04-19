@@ -36,6 +36,9 @@ const {
 // });
 app.use(express.json());
 
+const episodeCommentsRouter = require("./routes/episode_comments")
+app.use("/findthatost_api/episode_comments", episodeCommentsRouter);
+
 // Read the file containing the database schema
 const sqlSchema = fs.readFileSync('./sql/schema.sql', 'utf8', (err, data) => {
     let sqlSchemas = '';

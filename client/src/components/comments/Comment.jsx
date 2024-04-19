@@ -1,3 +1,4 @@
+import { GetTimeAgoBetweenDates } from "../../utils/RegularUtils";
 import userIcon from "./../../assets/user-icon.png"
 import CommentForm from "./CommentForm";
 
@@ -40,7 +41,7 @@ const Comment = ({
                 <div className="comment-header">
                     <div className="comment-author">{comment.username}</div>
                     <div>•</div>
-                    <div>{new Date(comment.createdAt).toLocaleDateString()}</div>
+                    <div>{GetTimeAgoBetweenDates(new Date(comment.createdAt), new Date())}</div>
                 </div>
                 {!isEditing && <div className="comment-text">{comment.body}</div>}
                 {isEditing && (

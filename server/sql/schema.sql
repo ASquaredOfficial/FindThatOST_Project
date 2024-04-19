@@ -36,6 +36,19 @@ CREATE TABLE `fto_episode` (
     FOREIGN KEY (`fto_anime_id`) REFERENCES `fto_anime` (`anime_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `fto_episode_comments` (
+    `comment_id` int(11) NOT NULL AUTO_INCREMENT,
+    `fto_user_id` int(11) NOT NULL,
+    `fto_episode_id` int(11) NOT NULL,
+    `comment_parent_id` int(11) DEFAULT NULL,
+    `comment_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `comment_content` text NOT NULL,
+    PRIMARY KEY (`comment_id`),
+    FOREIGN KEY (`comment_parent_id`) REFERENCES `fto_episode_comments` (`comment_id`),
+    FOREIGN KEY (`fto_episode_id`) REFERENCES `fto_episode` (`episode_id`),
+    FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `fto_track` (
     `track_id` int(11) NOT NULL AUTO_INCREMENT,
     `fto_anime_id` int(11) NOT NULL,

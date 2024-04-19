@@ -388,6 +388,7 @@ const Episode = () => {
             console.debug('Anime Data from backend:', animeDataFromBackend);
             console.debug('Episode Data from backend:', episodeDataFromBackend);
             setFTOAnimeInfo(animeDataFromBackend[0]);
+            setFTOEpisodeInfo(episodeDataFromBackend[0]);
             document.title = `Episode ${episode_no} Tracks | ${animeDataFromBackend[0].canonical_title}`;
 
             // Use data from the backend to make the second fetch to the external API
@@ -552,7 +553,11 @@ const Episode = () => {
                             )}
                         </div>
 
-                        <Comments />
+                        {ftoEpisodeInfo && (
+                            <Comments 
+                                currentUserId={1}
+                                ftoEpisodeId={ftoEpisodeInfo.episode_id}/>
+                        )}  
                     </div>
                 )}
             </div>

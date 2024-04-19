@@ -31,6 +31,19 @@ ALTER TABLE `fto_episode`
     MODIFY `episode_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- Dumping data for table `fto_episode_comments`
+--
+INSERT INTO `fto_episode_comments` (`comment_id`, `fto_user_id`, `fto_episode_id`, `comment_parent_id`, `comment_date`, `comment_content`, `comment_likes`) 
+VALUES
+    (1, 1, 2, NULL, '2024-04-18 21:52:50', 'I\'m pretty sure the song by the names [Anguish Of The Quirkless (無個性の苦悩 Mukosei no kunō?)] plays when Cementos hides All Might\'s weakened state from the rest of the students.', '[{\"user_id\":3,\"is_like\":true},{\"user_id\":1,\"is_like\":true}]'),
+    (2, 1, 2, NULL, '2024-04-18 22:43:34', 'I myself am pretty sure the song by the names [I Will Become a Hero! (ヒーローになるんだっ! Hīrō ni narunda!?)] while the students discuss standing outside the USJ what just happened in the USJ.', '[{\"user_id\":1,\"is_like\":true}]'),
+    (3, 1, 2, 1, '2024-04-18 22:43:34', 'I agree', NULL),
+    (4, 1, 2, NULL, '2024-04-18 22:43:34', 'I think this application will benefit greatly from having multiple languages for track type.', NULL)
+;
+ALTER TABLE `fto_episode_comments`
+    MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- Dumping data for table `fto_track`
 --
 INSERT INTO `fto_track` (`track_id`, `fto_anime_id`, `track_name`, `artist_name`, `label_name`, `release_date`, `streaming_platform_links`, `fandom_webpage_link`, `fandom_image_link`, `embedded_yt_video_id`) 

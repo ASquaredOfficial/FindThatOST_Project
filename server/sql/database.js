@@ -29,7 +29,6 @@ const FtoConnectionPool = mysql.createPool({
   database: process.env.FTO_APP_DB_MYSQL_NAME,
 });
 
-
 FtoConnection.connect((err) => {
 	if (err) {
 		console.error(err)
@@ -105,7 +104,7 @@ const PerformSelectQuery = (sqlCommand) => {
 const GetAllAnime = () => {
 	return new Promise((resolve, reject) => {
 		let sqlQuery = [
-			"SELECT *,",
+			"SELECT *",
 			`FROM ${tblName_anime}`,
 		];
 		const handler = new SQLArrayHandler(sqlQuery);
@@ -257,6 +256,156 @@ const PostEpisodesIntoDB = async (nFtoAnimeID, arrMissingEpisodesDetails) => {
   
   return Promise.all(sqlQueries.map(query => PostEpisodeIntoDB(query)));
 };
+
+/**
+ * Updates a track in the FTO database.
+ * @function GetEpisodeComments
+ * @param {number} nFtoEpisodeID -  The ID of the episode comments are for.
+ * @returns {Promise<object[]>} A promise that resolves to an array of anime objects matching the provided ID.
+ *                              Each object represents an episode comment from the database.
+ *                              If no matching records are found, the promise resolves to an empty array.
+ *                              If an error occurs during the database query, the promise rejects with the error.
+ */
+const GetEpisodeComments = (nFtoEpisodeID) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT `fto_episode_comments`.*, user_username",
+			"FROM `fto_episode_comments`",
+			"INNER JOIN `fto_users` ON fto_user_id = `fto_users`.`user_id`",
+			`WHERE fto_episode_id = ${nFtoEpisodeID}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetEpisodeComments', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const PostCommentOnEpisode = (nFtoEpisodeID, strCommentText, nUserId, nParentID = null) => {
+	return new Promise((resolve, reject) => {
+		let post_data = {
+			fto_user_id: nUserId,
+			fto_episode_id: nFtoEpisodeID,
+			comment_parent_id: nParentID,
+			comment_content: strCommentText,
+		}
+		let sqlQuery = `INSERT INTO fto_episode_comments SET ?`;
+		FtoConnection.query(sqlQuery, post_data, (error, results) => {
+			if (error) {
+				LogError('PostCommentOnEpisode', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const PatchCommentOnEpisode = (nFtoCommentID, strCommentText, nUserId) => {
+	return new Promise((resolve, reject) => {
+		let post_data = {
+			comment_content: strCommentText,
+		}
+		let sqlQuery = [
+			"UPDATE `fto_episode_comments`",
+			"SET ?",
+			`WHERE comment_id = ${nFtoCommentID}`,
+			`AND fto_user_id = ${nUserId}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, post_data, (error, results) => {
+			if (error) {
+				LogError('PatchCommentOnEpisode', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const DeleteCommentFromEpisode = (nFtoCommentID, nUserId) => {
+	return new Promise((resolve, reject) => {
+		FtoConnectionPool.getConnection((err, ftoConnectionPool) => {
+			if (err) {
+				LogError('DeleteCommentFromEpisode', `Failed to connect to the database.\nError Message: ${err.sqlMessage}`, LineNumber());
+				reject(GetSqlErrorObj(err));
+				return;
+			}
+			
+			ftoConnectionPool.beginTransaction(async (err0) => {
+				if (err0) {
+					LogError('DeleteCommentFromEpisode', `Failed to start transaction.\nError Message: ${err0.sqlMessage}`, LineNumber());
+					reject(GetSqlErrorObj(err0));
+					return;
+				}
+
+				let sqlQueryDisableFKC = 'SET FOREIGN_KEY_CHECKS = 0;'
+				ftoConnectionPool.query(sqlQueryDisableFKC, (err1) => {
+					if (err1) {
+						ftoConnectionPool.rollback(() => {
+							// Failed to disable foreign key checks
+							reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
+							LogError('DeleteCommentFromEpisode', `Failed to disable foreign key checks.\nSQL Query:"${sqlQueryDisableFKC}".\nError Message: ${err1.sqlMessage}`);
+						});
+						return;
+					}
+
+					let sqlQuery = [
+						"DELETE FROM `fto_episode_comments`",
+						`WHERE (comment_id = ${nFtoCommentID} AND fto_user_id = ${nUserId})`,
+						`OR comment_parent_id = ${nFtoCommentID}`,
+					];
+					const handler = new SQLArrayHandler(sqlQuery);
+					const sqlQueryString = handler.CombineStringsToQuery();
+					ftoConnectionPool.query(sqlQueryString, (err2, results) => {
+						if (err2) {
+							ftoConnectionPool.rollback(() => {
+								// Failed to delete data into table
+								reject(GetSqlErrorObj(err2, `${filename}:${LineNumber()}`));
+								LogError('DeleteCommentFromEpisode', `SQL Query:"${sqlQueryString}".\nError Message: ${err2.sqlMessage}`);
+							});
+							return;
+						}
+
+						let sqlQueryEnableFKC = 'SET FOREIGN_KEY_CHECKS = 1;'
+						ftoConnectionPool.query(sqlQueryEnableFKC, (err3) => {
+							if (err3) {
+								ftoConnectionPool.rollback(() => {
+									// Failed to enable foreign key checks
+									reject(GetSqlErrorObj(err3, `${filename}:${LineNumber()}`));
+									LogError('DeleteCommentFromEpisode', `Failed to enable foreign key checks.\nSQL Query:"${sqlQueryEnableFKC}".\nError Message: ${err3.sqlMessage}`);
+								});
+								return;
+							}
+
+							ftoConnectionPool.commit((err4) => {
+								if (err4) {
+									ftoConnectionPool.rollback(() => {
+										LogError('DeleteCommentFromEpisode', `Failed to commit transaction.\nError Message: ${err4.sqlMessage}`);
+										reject(GetSqlErrorObj(err4, `${filename}:${LineNumber()}`));
+									});
+									return;
+								}
+								resolve(results);
+							});
+						});
+					}); 
+
+				});
+			});
+			ftoConnectionPool.release();
+		});
+
+	});
+}
 
 const GetTracksForAnime = (nFtoAnimeID) => {
   return new Promise((resolve, reject) => {
@@ -701,7 +850,6 @@ const GetSubmissionContext_TrackEdit = (nFtoTrackID, nFtoOccurrenceID = -1) => {
  */
 const PostSubmission_TrackEdit = (nFtoTrackID, nFtoOccurrenceID, objUserSubmission) => {
 	return new Promise((resolve, reject) => {
-    	
 		FtoConnectionPool.getConnection((err, ftoConnectionPool) => {
 			if (err) {
 				LogError('PostSubmission_TrackEdit', `Failed to connect to the database.\nError Message: ${err.sqlMessage}`, LineNumber());
@@ -999,6 +1147,10 @@ module.exports = {
 	PostAnimeIntoDB,
 	GetEpisodeMapping,
 	PostEpisodesIntoDB,
+	GetEpisodeComments,
+	PostCommentOnEpisode,
+	PatchCommentOnEpisode,
+	DeleteCommentFromEpisode,
 	GetTracksForAnime,
 	GetTrackCountForMALAnimes,
 	GetTracksForEpisode,
