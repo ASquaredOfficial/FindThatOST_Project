@@ -43,6 +43,7 @@ CREATE TABLE `fto_episode_comments` (
     `comment_parent_id` int(11) DEFAULT NULL,
     `comment_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `comment_content` text NOT NULL,
+    `comment_likes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
     PRIMARY KEY (`comment_id`),
     FOREIGN KEY (`comment_parent_id`) REFERENCES `fto_episode_comments` (`comment_id`),
     FOREIGN KEY (`fto_episode_id`) REFERENCES `fto_episode` (`episode_id`),

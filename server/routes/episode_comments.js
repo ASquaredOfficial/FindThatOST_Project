@@ -5,6 +5,7 @@ const {
     PostCommentOnEpisode, 
     PatchCommentOnEpisode, 
     DeleteCommentFromEpisode,
+    PatchCommentLikesOnEpisode,
 } = require('./../sql/database');
 const { IsEmpty } = require("../utils/BackendUtils");
 
@@ -90,6 +91,27 @@ router.post("/deleteEpisodeComment/comment_id/:nFtoCommentID", async (req, res) 
                 return res.status(500).json({ error: 'Internal Server Error', responseBody: ftoDeleteEpisodeCommentResult}).end();
             }
         }
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+        console.log("Update response:", objError);
+    }
+});
+
+router.post("/patchEpisodeCommentLikes/comment_id/:nFtoCommentID", async (req, res) => {
+    const nFtoCommentID = req.params.nFtoCommentID;
+    const { objUserSubmission } = req.body;
+    const nFtoUserId = objUserSubmission.userId;
+    const objLikesDislikes = objUserSubmission.likesDislikes;
+    try {
+        const ftoUpdateCommentLikesResult = await PatchCommentLikesOnEpisode(nFtoCommentID, objLikesDislikes, nFtoUserId);
+        if (!IsEmpty(ftoUpdateCommentLikesResult) && typeof(ftoUpdateCommentLikesResult) === 'object' && ftoUpdateCommentLikesResult['affectedRows'] === 0) {
+            return res.status(400).json({ error: 'Resource Not Updated', responseBody: ftoUpdateCommentLikesResult}).end(); 
+        }
+        res.status(200).json(ftoUpdateCommentLikesResult);
     }
     catch (error) {
         let objError = {};

@@ -407,6 +407,30 @@ const DeleteCommentFromEpisode = (nFtoCommentID, nUserId) => {
 	});
 }
 
+const PatchCommentLikesOnEpisode = (nFtoCommentID, objLikesDislikes, nUserId) => {
+	return new Promise((resolve, reject) => {
+		let post_data = {
+			comment_likes: JSON.stringify(objLikesDislikes),
+		}
+		let sqlQuery = [
+			"UPDATE `fto_episode_comments`",
+			"SET ?",
+			`WHERE comment_id = ${nFtoCommentID}`,
+			`AND fto_user_id = ${nUserId}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, post_data, (error, results) => {
+			if (error) {
+				LogError('PatchCommentLikesOnEpisode', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
 const GetTracksForAnime = (nFtoAnimeID) => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
@@ -1151,6 +1175,7 @@ module.exports = {
 	PostCommentOnEpisode,
 	PatchCommentOnEpisode,
 	DeleteCommentFromEpisode,
+	PatchCommentLikesOnEpisode,
 	GetTracksForAnime,
 	GetTrackCountForMALAnimes,
 	GetTracksForEpisode,

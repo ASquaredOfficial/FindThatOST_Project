@@ -1,6 +1,9 @@
-import { GetTimeAgoBetweenDates } from "../../utils/RegularUtils";
+import { useEffect, useState } from "react";
+import { GetTimeAgoBetweenDates, IsEmpty } from "../../utils/RegularUtils";
 import userIcon from "./../../assets/user-icon.png"
 import CommentForm from "./CommentForm";
+
+import { BiLike, BiDislike, BiSolidLike, BiSolidDislike } from "react-icons/bi";
 
 const Comment = ({ 
     comment, 
@@ -9,8 +12,9 @@ const Comment = ({
     deleteComment, 
     addComment,
     updateComment,
+    likeComment,
     activeComment, 
-    setActiveComment, 
+    setActiveComment,
     parentId = null,
  }) => {
 
@@ -19,6 +23,39 @@ const Comment = ({
     const canRely = Boolean(currentUserId);
     const canEdit = (currentUserId === Number(comment.userId) && validTimePassed);
     const canDelete = (currentUserId === Number(comment.userId) && validTimePassed);
+    const [ isCommentLiked, setCommentLiked ] = useState();
+    const [ likeDislikeCount, setLikeDislikeCount ] = useState({ like_count: 0, dislike_count: 0});
+    
+    useEffect(()=>{
+        if (typeof (comment.likesDislikes) == 'string') {
+            const objCommentLikesDislikes = JSON.parse(comment.likesDislikes);
+            if (Array.isArray(objCommentLikesDislikes) && Object.keys(objCommentLikesDislikes).length >= 0) {
+                let nNoOfLikes = 0;
+                let nNoOfDislikes = 0;
+                let bIsCommentLiked = undefined;
+                for (let it = 0; it < Object.keys(objCommentLikesDislikes).length; it++ ) {
+                    if (objCommentLikesDislikes[it]['is_like'] === true) {
+                        nNoOfLikes++;
+
+                        // Check if Comment is liked
+                        if (objCommentLikesDislikes[it]['user_id'] === currentUserId) {
+                            bIsCommentLiked = true;
+                        }
+                    }
+                    else if (objCommentLikesDislikes[it]['is_like'] === false) {
+                        nNoOfDislikes++;
+
+                        // Check if Comment is disliked
+                        if (objCommentLikesDislikes[it]['user_id'] === currentUserId) {
+                            bIsCommentLiked = false;
+                        }
+                    }
+                }
+                setCommentLiked(bIsCommentLiked);
+                setLikeDislikeCount({like_count: nNoOfLikes, dislike_count: nNoOfDislikes})
+            }
+        }
+    }, [comment]);
 
     const isReplying = (
         activeComment && 
@@ -54,6 +91,56 @@ const Comment = ({
                 />
                 )}
                 <div className="comment-actions">
+                    {(isCommentLiked === undefined) ? (
+                        <>
+                            <div className="comment-action-icon_section">
+                                <BiLike className="comment-action-icon" onClick={() => likeComment(comment.id, true)}/>
+                                {(likeDislikeCount.like_count !== 0) && 
+                                    <span className="comment-action-icon_text">{likeDislikeCount.like_count}</span>
+                                }
+                            </div>
+                            <div className="comment-action-icon_section">
+                                <BiDislike className="comment-action-icon" onClick={() => likeComment(comment.id, false)}/>
+                                {(likeDislikeCount.dislike_count !== 0) && 
+                                    <span className="comment-action-icon_text">{likeDislikeCount.dislike_count}</span>
+                                }
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            {(isCommentLiked === true) ? (
+                                <div style={ {display: 'flex', flexDirection: 'row'}}>
+                                    <div className="comment-action-icon_section">
+                                        <BiSolidLike className="comment-action-icon" onClick={() => likeComment(comment.id)}/>
+                                        {(likeDislikeCount.like_count !== 0) && 
+                                            <span className="comment-action-icon_text">{likeDislikeCount.like_count}</span>
+                                        }
+                                    </div>
+                                    <div className="comment-action-icon_section">
+                                        <BiDislike className="comment-action-icon" onClick={() => likeComment(comment.id, false)}/>
+                                        {(likeDislikeCount.dislike_count !== 0) && 
+                                            <span className="comment-action-icon_text">{likeDislikeCount.dislike_count}</span>
+                                        }
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={ {display: 'flex', flexDirection: 'row'}}>
+                                    <div className="comment-action-icon_section">
+                                        <BiLike className="comment-action-icon" onClick={() => likeComment(comment.id, true)}/>
+                                        {(likeDislikeCount.like_count !== 0) && 
+                                            <span className="comment-action-icon_text">{likeDislikeCount.like_count}</span>
+                                        }
+                                    </div>
+                                    <div className="comment-action-icon_section">
+                                        <BiSolidDislike className="comment-action-icon" onClick={() => likeComment(comment.id)}/>
+                                        {(likeDislikeCount.dislike_count !== 0) && 
+                                            <span className="comment-action-icon_text">{likeDislikeCount.dislike_count}</span>
+                                        }
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                     {canRely && (
                         <div className="comment-action"
                             onClick={() => 
@@ -102,6 +189,7 @@ const Comment = ({
                                         currentUserId={currentUserId}    
                                         deleteComment={deleteComment}
                                         addComment={addComment}
+                                        likeComment={likeComment}
                                         activeComment={activeComment}
                                         setActiveComment={setActiveComment}
                                         parentId={comment.id}

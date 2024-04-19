@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './comments.css';
 
-import { RenameObjectKey } from '../../utils/RegularUtils';
+import { IsEmpty, RenameObjectKey } from '../../utils/RegularUtils';
 import CommentForm from './CommentForm';
 import Comment from './Comment';
 import { toast } from 'react-toastify';
@@ -34,6 +34,7 @@ const Comments = ({ currentUserId, ftoEpisodeId}) => {
 		episodeComments.forEach( episodeComment => RenameObjectKey( episodeComment, 'fto_user_id', 'userId' ) );
 		episodeComments.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_parent_id', 'parentId' ) );
 		episodeComments.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_date', 'createdAt' ) );
+		episodeComments.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_likes', 'likesDislikes' ) );
 		console.debug("Episode Comments:", episodeComments)
 		setBackendComments(episodeComments)
 	}
@@ -66,7 +67,6 @@ const Comments = ({ currentUserId, ftoEpisodeId}) => {
 				return Number(backendComment.parentId) === Number(commentId)
 			})
 			.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-		// console.log("Getting replies for comment ID:", commentId, "\nReplies are:", commentReplies)
 		return commentReplies;
 	}
 
@@ -97,7 +97,7 @@ const Comments = ({ currentUserId, ftoEpisodeId}) => {
 			body: strCommentBody,
 			parentId: nCommentParentId,
 		};
-		let apiUrl_fto = `/findthatost_api/episode_comments/postEpisodeComment/episode/${Number(nFtoEpisodeId)}`
+		let apiUrl_fto = `/findthatost_api/episode_comments/postEpisodeComment/episode/${Number(nFtoEpisodeId)}`;
 		console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
 		const response = await fetch(apiUrl_fto, {
 			method: 'POST',
@@ -149,7 +149,7 @@ const Comments = ({ currentUserId, ftoEpisodeId}) => {
 		const objUserSubmission = {
 			userId: nUserId,
 		};
-		let apiUrl_fto = `/findthatost_api/episode_comments/deleteEpisodeComment/comment_id/${Number(nFtoCommentId)}`
+		let apiUrl_fto = `/findthatost_api/episode_comments/deleteEpisodeComment/comment_id/${Number(nFtoCommentId)}`;
 		console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
 		const response = await fetch(apiUrl_fto, {
 			method: 'POST',
@@ -205,7 +205,7 @@ const Comments = ({ currentUserId, ftoEpisodeId}) => {
 			userId: nUserId,
 			body: strCommentBody,
 		};
-		let apiUrl_fto = `/findthatost_api/episode_comments/patchEpisodeComment/comment_id/${Number(nFtoCommentId)}`
+		let apiUrl_fto = `/findthatost_api/episode_comments/patchEpisodeComment/comment_id/${Number(nFtoCommentId)}`;
 		console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
 		const response = await fetch(apiUrl_fto, {
 			method: 'POST',
@@ -239,6 +239,155 @@ const Comments = ({ currentUserId, ftoEpisodeId}) => {
 			setActiveComment(null);
 		}
 	}
+	
+	/**
+	 * Updates the like status of a comment and sends a PATCH request to the backend.
+	 * @function likeComment
+	 * @param {number} nFtoCommentId - The ID of the comment to update.
+	 * @param {boolean|undefined} bLikeComment - The like status of the comment. 
+	 *                                           If true, sets the comment as liked. 
+	 *                                           If false, sets the comment as disliked. 
+	 *                                           If undefined, removes the like/dislike of the user.
+	 * @returns {undefined}
+	 */
+	const likeComment = (nFtoCommentId, bLikeComment) => {
+		let backendComment = backendComments.find(comment => comment.id === nFtoCommentId);
+		if (backendComment.hasOwnProperty('likesDislikes')) {
+            let arrCommentLikesDislikes = JSON.parse(backendComment['likesDislikes']);
+			if (bLikeComment === undefined) {
+				// Remove user's like entry from state, if the user state exists
+				if (Array.isArray(arrCommentLikesDislikes)) {
+					let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === props.userId);
+					if (objExistingLikesDislikeEntry !== undefined) {
+						// User entry exists
+						const filteredArray = arrCommentLikesDislikes.filter(likeEntry => likeEntry['user_id'] !== props.userId);
+						arrCommentLikesDislikes = filteredArray;
+					}
+					else { return }
+				}
+			} 
+			else if (bLikeComment === true) {
+				// Set user's entry to like or add like entry to state
+				if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
+					// Create new array object, then add new user
+					arrCommentLikesDislikes = [{user_id: props.userId, is_like: true}]
+				}
+				else {
+					if (Array.isArray(arrCommentLikesDislikes)) {
+						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === props.userId);
+						if (objExistingLikesDislikeEntry === undefined) {
+							// User entry does not exist
+							objExistingLikesDislikeEntry = { user_id: props.userId, is_like: true };
+							arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
+						}
+						else {
+							// User entry exists
+							if (objExistingLikesDislikeEntry['is_like'] !== true) {
+								objExistingLikesDislikeEntry['is_like'] = true;	// Change existing dislike to a like
+							}
+							else {
+								console.debug("Value already set to true");
+							}
+						}
+						// Update the array with the modified entry
+						arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
+							if (entry.user_id === props.userId) {
+								return objExistingLikesDislikeEntry;
+							}
+							return entry;
+						});
+					}
+					else { return }
+				}
+			} 
+			else if (bLikeComment === false) {
+				// Set user's entry to dislike or add dislike entry to state
+				if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
+					// Create new array object, then add new user
+					arrCommentLikesDislikes = [{user_id: props.userId, is_like: false}]
+				}
+				else {
+					if (Array.isArray(arrCommentLikesDislikes)) {
+						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === props.userId);
+						if (objExistingLikesDislikeEntry === undefined) {
+							// User entry does not exist
+							objExistingLikesDislikeEntry = { user_id: props.userId, is_like: false };
+							arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
+						}
+						else {
+							// User entry exists
+							if (objExistingLikesDislikeEntry['is_like'] !== false) {
+								objExistingLikesDislikeEntry['is_like'] = false; // Change existing dislike to a like
+							}
+							else {
+								console.debug("Value already set to false");
+							}
+						}
+						// Update the array with the modified entry
+						arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
+							if (entry.user_id === props.userId) {
+								return objExistingLikesDislikeEntry;
+							}
+							return entry;
+						});
+					}
+					else { return }
+				}
+			} 
+
+			// Update Comment Likes
+			Fetch_FTO_PatchEpisodeCommentLikes(nFtoCommentId, arrCommentLikesDislikes, props.userId);
+		}
+	}
+
+	/**
+	* Perform post request to update episode comment.
+	* @async
+	* @function Fetch_FTO_PatchEpisodeComment
+	* @param {number|string}  nFtoCommentId - Comment ID corresponds to FindThatOST comment ID.
+	* @param {Object}  likesDislikesObject - Updated Comment.
+	* @param {number|string}  nUserId - UserId of logged in user.
+     * @returns {undefined}
+	* 
+	*/
+	const Fetch_FTO_PatchEpisodeCommentLikes = async (nFtoCommentId, objLikesDislikes, nUserId) => {
+		const objUserSubmission = {
+			userId: nUserId,
+			likesDislikes: objLikesDislikes,
+		};
+		let apiUrl_fto = `/findthatost_api/episode_comments/patchEpisodeCommentLikes/comment_id/${Number(nFtoCommentId)}`;
+		console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+		const response = await fetch(apiUrl_fto, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ objUserSubmission }),
+		});
+
+		const responseStatus = response.status;
+		const responseData = await response.json();
+		if (responseStatus === 500) {
+			console.error("Response status:", responseStatus);
+			toast('An internal error has occurred with the FindThatOST server. Please try again later.');
+            throw new Error('Error fetching data from backend:', responseData);
+		}
+		else if (responseStatus === 400) {
+			toast('Failed to update message.\nInvalid parameters detected.');
+			console.warn("Response status:", responseStatus);
+			console.warn("Error fetching data from backend:", responseData);
+		}
+		else {
+			console.debug("Response Data:", responseData);
+			const updatedComments = backendComments.map(backendComment => {
+				if (backendComment.id === nFtoCommentId) {
+					return { ...backendComment, likesDislikes: objLikesDislikes}
+				}
+				return backendComment;
+			});
+			FetchCommentsData();
+		}
+	}
 
 	return (
 		<div className='fto__comments' style={ { color: 'white'}}>
@@ -260,6 +409,7 @@ const Comments = ({ currentUserId, ftoEpisodeId}) => {
 								deleteComment = {deleteComment}
 								addComment={addComment}
 								updateComment={updateComment}
+								likeComment={likeComment}
 								activeComment={activeComment}
 								setActiveComment={setActiveComment}
 							/>
