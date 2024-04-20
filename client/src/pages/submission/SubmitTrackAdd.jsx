@@ -593,6 +593,7 @@ const SubmitTrackAdd = () => {
                 {addPreExistingTrackModalVisibility && (
                     <SubmitTrackAddPreExistingModal 
                         anime_id={anime_id}
+                        episode_id={ftoEpisodeID}
                         setModalVisibility={setAddPreExistingTrackModalVisibility}
                         setPageToAddPreExistingMode={setSubmitPreExistingTrack}
                         setPreExistingTrackInfo={setPreExistingTrackInfo}

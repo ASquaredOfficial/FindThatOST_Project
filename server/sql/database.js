@@ -431,13 +431,17 @@ const PatchCommentLikesOnEpisode = (nFtoCommentID, objLikesDislikes, nUserId) =>
 	});
 }
 
-const GetTracksForAnime = (nFtoAnimeID) => {
+const GetTracksForAnime = (nFtoAnimeID, nExcludedFtoEpisodeId = -1) => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
 		"SELECT *",
 		"FROM `fto_track`",
 		`WHERE fto_anime_id = ${nFtoAnimeID}`,
     ];
+    if (nExcludedFtoEpisodeId !== -1) {
+		sqlQuery.splice(2, 0, `LEFT JOIN fto_occurrence ON fto_occurrence.fto_track_id = fto_track.track_id AND fto_occurrence.fto_episode_id = ${nExcludedFtoEpisodeId}`);
+		sqlQuery.push(`AND fto_occurrence.occurrence_id IS NULL`);
+	}
     const handler = new SQLArrayHandler(sqlQuery);
     const sqlQueryString = handler.CombineStringsToQuery();
     FtoConnection.query(sqlQueryString, (error, results) => {

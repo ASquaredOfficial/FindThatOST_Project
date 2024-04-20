@@ -512,6 +512,25 @@ app.get("/findthatost_api/getAnimeTracks/anime_id/:nFtoAnimeID", async (req, res
     }
 });
 
+app.post("/findthatost_api/getAnimeTracks/anime_id/:nFtoAnimeID", async (req, res) => {
+    //Get List of Tracks for the anime with corresponding FTO Anime ID
+    const nFtoAnimeID = req.params.nFtoAnimeID;
+    const { nExcludedFtoEpisodeId } = req.body;
+    try {
+        const ftoAnimeTracksDetails = await GetTracksForAnime(nFtoAnimeID, nExcludedFtoEpisodeId);
+        if (IsEmpty(ftoAnimeTracksDetails)) {
+            return res.status(404).json({ error: 'Resource Not Found' }).end(); 
+        }
+        res.status(200).json(ftoAnimeTracksDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
 app.post("/findthatost_api/getAnimeTrackCount/mal_ids", async (req, res) => {
     //Get List of Tracks for the anime with corresponding FTO Anime ID
     const { listMalAnimeIds } = req.body;
@@ -653,7 +672,6 @@ app.get("/findthatost_api/getSubmissionContext/track_add/:nFtoAnimeID/episode_no
 
 app.post("/findthatost_api/postSubmission/track_add/:nFtoAnimeID/episode_id/:nFtoEpisodeID", async (req, res) => {
     var date = new Date(); // for now
-    console.log(req.body)
     const { objUserSubmission } = req.body;
     if (!objUserSubmission) {
         return res.status(400).json({ error: 'Invalid data format' });
