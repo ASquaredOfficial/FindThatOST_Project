@@ -24,6 +24,7 @@ const Anime = () => {
     const [ malAnimeTitles, setAnimeTitles ] = useState();
     const [ malAnimeRelations, setAnimeRelations ] = useState();
     const [ pageEpisodesInfo, setPageEpisodesInfo ] = useState();
+    const [ pageListViewFocus, setPageListView ] = useState({episode_list: null, track_list: null});
 
     useEffect(() => {
         console.debug(`Render-Anime (onMount): ${location.href}`);
@@ -89,6 +90,13 @@ const Anime = () => {
     
     useEffect(() => {
         if (pageEpisodesInfo !== undefined) {
+            setPageListView(() => {
+                return {
+                    episode_list: true, 
+                    track_list: (pageListViewFocus.track_list === true ) ? false : pageListViewFocus.track_list,
+                };
+            });
+
             // Get episode number to see the
             let animeStatus = malAnimeInfo.status;
             let nLatestEpisode = Number(malAnimeInfo.episodes);
@@ -287,7 +295,7 @@ const Anime = () => {
      * 
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
-        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}`
+        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}/full`
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
             const response = await fetch(apiUrl_fto);
@@ -308,9 +316,8 @@ const Anime = () => {
      * @returns {Promise<Array<JSON>|undefined} - JSON Object containing anime info from MAL API.
      * 
      */
-    const FetchFullAnimeData_MAL = async (dataFromBackend) => {
-        let malID = dataFromBackend[0].mal_id;
-        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malID}/full`;
+    const FetchFullAnimeData_MAL = async (nMalId) => {
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${nMalId}/full`;
         console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
         try {
             const response = await fetch(apiUrl_mal);
@@ -583,13 +590,19 @@ const Anime = () => {
             const dataFromBackend = await FetchAnimeData_FTO(pageId);
         
             // Use data from the backend to make the second fetch to the external API
-            const dataFromExternalAPI_MAL = await FetchFullAnimeData_MAL(dataFromBackend);
+            const dataFromExternalAPI_MAL = await FetchFullAnimeData_MAL(dataFromBackend.mal_id);
         
             console.log('Data from backend:', dataFromBackend);
             console.log('Data from external MAL API:', dataFromExternalAPI_MAL);
-            setFTOAnimeInfo(dataFromBackend[0]);
-            document.title = `${dataFromBackend[0].canonical_title} | FindThatOST Anime`;
+            setFTOAnimeInfo(dataFromBackend);
+            document.title = `${dataFromBackend.canonical_title} | FindThatOST Anime`;
             setMALAnimeInfo(dataFromExternalAPI_MAL.data);
+            setPageListView(() => {
+                return {
+                    episode_list: pageListViewFocus.episode_list, 
+                    track_list: (pageListViewFocus.episode_list !== true) ? true : false,
+                };
+            });
         } catch (error) {
             console.error('Error:', error.message);
         }
@@ -680,7 +693,7 @@ const Anime = () => {
         );
     }
 
-    // Hanle episode list page number change
+    // Handle episode list page number change
     const HandleEpiosdeListPageChange = (newPageNum) => {
         // Get the search string and new page number, and change url
         searchParams.set('episode_page_no', newPageNum);
@@ -690,11 +703,6 @@ const Anime = () => {
         // Fetch episode info for the new page
         FetchEpisodeData(malAnimeInfo, newPageNum);
         window.scrollTo(0, 0)
-    };
-
-    const HandleEpisodeRowOnClick = (episodeDetails) => {
-        // Navigate to the episode
-        navigateToEpisode(id, episodeDetails.episode_no, ftoAnimeEpisodesInfo[episodeDetails.episode_no]);
     }
 
     return (
@@ -780,23 +788,83 @@ const Anime = () => {
                                     </div>
                                 )}
 
-                                {// Show Anime Episode List
-                                pageEpisodesInfo !== undefined && (
-                                    <div className='fto__page__anime-main_content_episode_list'>
-                                        <h4 className='fto__page__anime-main_content-header'>Episode List</h4>
+                                {// Show Anime Episode and/or Track List List
+                                (!IsEmpty(pageEpisodesInfo !== undefined) || !IsEmpty(ftoAnimeInfo['track_list'])) && (
+                                    <div className='fto__page__anime-main_content_info_list'>
+                                        <div className='fto__page__anime-main_content_info_list-header_section'>
+                                            {!IsEmpty(pageEpisodesInfo !== undefined) && (
+                                                <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.episode_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
+                                                    onClick={() => {setPageListView(() => {
+                                                        if (pageListViewFocus.episode_list === false) {
+                                                            return {
+                                                                episode_list: true, 
+                                                                track_list: (pageListViewFocus.track_list === true) ? false : null,
+                                                            };
+                                                        }
+                                                    })}}>
+
+                                                    Episode List
+                                                </h4>
+                                            )}
+                                            {!IsEmpty(ftoAnimeInfo['track_list'] !== undefined) && (
+                                                <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.track_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
+                                                    onClick={() => {setPageListView(() => {
+                                                        if (pageListViewFocus.track_list === false) {
+                                                            return {
+                                                                episode_list: (pageListViewFocus.episode_list === true) ? false : null, 
+                                                                track_list: true,
+                                                            };
+                                                        }
+                                                    })}}>
+                                                    Track List
+                                                </h4>
+                                            )}
+                                        </div>
                                         <hr />
 
-                                        {pageEpisodesInfo.map((episodeInfo, it) => {
-                                            return (
-                                                <div className='fto__page__anime-main_content_episode_list-row' key={it}>
-                                                    <h3 className='fto__page__anime-main_content_episode_heading' onClick={() => {HandleEpisodeRowOnClick(episodeInfo)}}>
-                                                        Episode {episodeInfo.episode_no}
-                                                    </h3>
-                                                </div>
-                                            )
-                                        })}
-                                        
-                                        {ShowPagination(malAnimeInfo, aniListEpisodeCountInfo, pageEpisodesInfo, spEpisodePageNum)}
+                                        {// Show Anime Episode List
+                                        pageListViewFocus.episode_list && (
+                                            <>
+                                                {pageEpisodesInfo.map((episodeInfo, it) => {
+                                                    return (
+                                                        <div className='fto__page__anime-main_content_info_list-row' key={it}>
+                                                            <a href={`/anime/${id}/episode/${episodeInfo.episode_no}`}>
+                                                                <h3 className='fto__page__anime-main_content_episode_heading'>
+                                                                    Episode {episodeInfo.episode_no}
+                                                                </h3>
+                                                            </a>
+                                                        </div>
+                                                    )
+                                                })}
+                                                
+                                                {ShowPagination(malAnimeInfo, aniListEpisodeCountInfo, pageEpisodesInfo, spEpisodePageNum)}
+                                            </>
+                                        )}
+                                        {// Show Anime Track List
+                                        pageListViewFocus.track_list && (
+                                            <>
+                                                {(Object.keys(ftoAnimeInfo.track_list).length > 0) ? (
+                                                    <>
+                                                        {ftoAnimeInfo.track_list.map((trackInfo, it) => {
+                                                            return (
+                                                                <div className='fto__page__anime-main_content_info_list-row' key={it}>
+                                                                    <a href={`/track/${trackInfo.track_id}`}>
+                                                                        <h3 className='fto__page__anime-main_content_episode_heading'>
+                                                                            {trackInfo.track_name}
+                                                                        </h3>
+                                                                    </a>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                        <br />
+                                                    </>
+                                                ) : (
+                                                    <p className='fto__page__anime-main_content-no_soundtracks'>
+                                                        No Soundtracks Added yet.
+                                                    </p>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                 )}
 

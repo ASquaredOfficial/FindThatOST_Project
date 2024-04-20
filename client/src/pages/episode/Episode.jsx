@@ -537,48 +537,50 @@ const Episode = () => {
                                         <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + episode_no}>Add New Track</a>
                                     </div>
 
-                                    <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>
-                                    <hr />
+                                    <div className='fto__page__episode-main_content--soundtrack_list_section'>
+                                        <h3 className='fto__page__episode-main_content-header'>List of Soundtracks</h3>
+                                        <hr />
                                     
-                                    {(episodeListOfTracks === undefined || episodeListOfTracks.length === 0) ? (
-                                        /* If no tracks show this messahe*/
-                                        <p className='fto__page__episode-main_content-no_soundtracks'>
-                                            No Soundtracks Added yet.
-                                        </p>
-                                    ) : ( 
-                                        episodeListOfTracks.map((trackInfo, it) => {
-                                            return (
-                                                <div className='fto__page__episode-main_content--track_item' key={it}>
-                                                    <div className='fto__page__episode-main_content--track_item-header'>
-                                                        <a href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}
-                                                            key={it} style={{flex: '1'}}>
-                                                        <div className='fto__page__episode-main_content--track_item-header_left'>
-                                                            <h4>{trackInfo.track_name}</h4>
-                                                            <h5 className='fto__page__episode-subheader_color'>{MapTrackType(trackInfo.track_type)}</h5>
+                                        {(episodeListOfTracks === undefined || episodeListOfTracks.length === 0) ? (
+                                            /* If no tracks show this message*/
+                                            <p className='fto__page__episode-main_content-no_soundtracks'>
+                                                No Soundtracks Added yet.
+                                            </p>
+                                        ) : ( 
+                                            episodeListOfTracks.map((trackInfo, it) => {
+                                                return (
+                                                    <div className='fto__page__episode-main_content--track_item' key={it}>
+                                                        <div className='fto__page__episode-main_content--track_item-header'>
+                                                            <a href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}
+                                                                key={it} style={{flex: '1'}}>
+                                                                <div className='fto__page__episode-main_content--track_item-header_left'>
+                                                                    <h4>{trackInfo.track_name}</h4>
+                                                                    <h5 className='fto__page__episode-subheader_color'>{MapTrackType(trackInfo.track_type)}</h5>
+                                                                </div>
+                                                            </a>
+                                                            <div className='fto__page__episode-main_content--track_item-header_right'>
+                                                                {(!IsEmpty(trackInfo.streaming_platform_links) && typeof(JSON.parse(trackInfo.streaming_platform_links)) === 'object') && 
+                                                                    !IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify']) && (      
+                                                                    <FaPlayCircle 
+                                                                        className='fto__page__episode-main_content--track_item-play_icon' 
+                                                                        onClick={() => {setViewSpotifyPlayModal(true); setCurrentSpotifyId(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify'])}}
+                                                                    />
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        </a>
-                                                        <div className='fto__page__episode-main_content--track_item-header_right'>
-                                                            {(!IsEmpty(trackInfo.streaming_platform_links) && typeof(JSON.parse(trackInfo.streaming_platform_links)) === 'object') && 
-                                                                !IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify']) && (      
-                                                                <FaPlayCircle 
-                                                                    className='fto__page__episode-main_content--track_item-play_icon' 
-                                                                    onClick={() => {setViewSpotifyPlayModal(true); setCurrentSpotifyId(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify'])}}
-                                                                />
-                                                            )}
+                                                        
+                                                        <div className='fto__page__episode-main_content--track_item-scene_description'>
+                                                            <p><b>Scene Description:</b></p>
+                                                            <p className='fto__page__episode-main_content--track_item-scene_description_text' >
+                                                                {trackInfo.scene_description}
+                                                            </p>
                                                         </div>
+                                                        
                                                     </div>
-                                                    
-                                                    <div className='fto__page__episode-main_content--track_item-scene_description'>
-                                                        <p><b>Scene Description:</b></p>
-                                                        <p className='fto__page__episode-main_content--track_item-scene_description_text' >
-                                                            {trackInfo.scene_description}
-                                                        </p>
-                                                    </div>
-                                                    
-                                                </div>
-                                            );
-                                        })
-                                    )}   
+                                                );
+                                            })
+                                        )}   
+                                    </div>
                                     
                                 </div>
                             )}

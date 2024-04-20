@@ -317,6 +317,30 @@ app.get("/findthatost_api/getAnime/:nFtoAnimeID", async (req, res) => {
     }
 });
 
+app.get("/findthatost_api/getAnime/:nFtoAnimeID/full", async (req, res) => {
+    //Get full details for anime for anime with id AnimeID (including track info)
+    const nFtoAnimeID = req.params.nFtoAnimeID;
+    try {
+        const ftoAnimeDetails = await GetAnime(nFtoAnimeID);
+        if (!ftoAnimeDetails || ftoAnimeDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+
+        const ftoAnimeTracks = await GetTracksForAnime(nFtoAnimeID);
+        const ftoFullAnimeDetails = { 
+            ...ftoAnimeDetails[0], 
+            track_list: ftoAnimeTracks,
+        };
+        res.status(200).json(ftoFullAnimeDetails);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
 app.get("/findthatost_api/postAnimeIntoDB/:nMalID", async (req, res) => {    
     // Insert Anime into DB and return new fto anime id
     try {
