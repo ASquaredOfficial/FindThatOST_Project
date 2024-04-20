@@ -44,6 +44,9 @@
         font-weight: 400;
         align-self: flex-start;
     }
+    .fto__page__episode-content_header_subtitle:hover {
+        text-decoration: underline;
+    }
 }
 
 .fto__page__episode-main_content {
@@ -85,7 +88,7 @@
             color: #fff;
         }
 
-        div.fto__page__episode-main_content--track_item {
+        .fto__page__episode-main_content--track_item {
             background-color: #1b1b1b;
             padding: 1rem;
             margin-bottom: 0.5rem;
@@ -102,19 +105,26 @@
                         color: var(--color-pink_medium);
                     }
                 }
-                
-                .fto__page__episode-main_content--track_item-goto_track_button {
-                    border-radius: 50%;
-                    background-color: #424242;
-                    height: 30px;
-                    width: 30px;
-                    border: 0px;
-                    margin: auto;
-                    align-self: auto;
-                    display: inline-flex;
+                .fto__page__episode-main_content--track_item-header_left:hover {
+                    background-color: #4d4d4d;
+                    opacity: 0.9;
+                }
+
+                .fto__page__episode-main_content--track_item-header_right {
+                    display: flex;
                     align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
+                    margin-right: 5px;
+
+                    .fto__page__episode-main_content--track_item-play_icon {
+                        height: 30px;
+                        width: 30px;
+                        cursor: pointer;
+                    }
+                    .fto__page__episode-main_content--track_item-play_icon:hover {
+                        stroke-width: 15;
+                        height: 35px;
+                        width: 35px;
+                    }
                 }
             }
 
@@ -153,10 +163,6 @@
                     -webkit-box-orient: vertical;
                 }
             }
-        }
-        
-        div.fto__page__episode-main_content--track_item:hover {
-            background-color: #4d4d4d;
         }
 
         .fto__page__episode-main_content--add_track_section {

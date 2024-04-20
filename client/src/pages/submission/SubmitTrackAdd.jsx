@@ -606,12 +606,20 @@ const SubmitTrackAdd = () => {
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Add Track
                             {(spEpisodeNo !== -1) ? (
-                                ' to Episode ' + spEpisodeNo
+                                <span>
+                                    <a href={'/anime/' + anime_id + '/episode/' + spEpisodeNo}>
+                                        {' to Episode ' + spEpisodeNo}
+                                    </a>
+                                </span>
                             ) : (
                                 ' to Series'
                             )}
                         </h1>
-                        <h4 className='fto__page__submission-content_header_subtitle'><strong>{submissionContextInfo.canonical_title}</strong></h4>
+                        <h4 className='fto__page__submission-content_header_subtitle'>
+                            <a href={'/anime/' + anime_id}>
+                                <strong>{submissionContextInfo.canonical_title}</strong>
+                            </a>
+                        </h4>
                         <hr className='fto__page__submission-horizontal_hr' />
                     </div>
                     
@@ -623,26 +631,29 @@ const SubmitTrackAdd = () => {
                                     placeholder='Track Name' readOnly={submitPreExistingTrack ? true : false}
                                     style={{ color: (submitPreExistingTrack) ? 'grey' : 'white' }}
                                     onChange={ handleChange_TrackAdd } />
-                                <button className='fto__button__pink fto__button__right fto__pointer' style={{marginTop: '5px'}} type='button' 
-                                    onClick={() => { SwitchAddRequestType(submitPreExistingTrack)}}>
-                                    <div className='fto__page__submission-main_content-align_end'>
-                                        {(!submitPreExistingTrack) ? (
-                                            <>
-                                                <IoAdd />
-                                                <span style={{margin: '0px 5px'}}>
-                                                    Add track from series archive 
-                                                </span>
-                                            </>  
-                                        ) : (
-                                            <>
-                                                <IoClose />
-                                                <span style={{margin: '0px 5px'}}>
-                                                    Add new track to episode 
-                                                </span>
-                                            </>  
-                                        )}
-                                </div>
-                                </button>
+                                    
+                                {(spEpisodeNo !== -1) && (
+                                    <button className='fto__button__pink fto__button__right fto__pointer' style={{marginTop: '5px'}} type='button' 
+                                        onClick={() => { SwitchAddRequestType(submitPreExistingTrack)}}>
+                                        <div className='fto__page__submission-main_content-align_end'>
+                                            {(!submitPreExistingTrack) ? (
+                                                <>
+                                                    <IoAdd />
+                                                    <span style={{margin: '0px 5px'}}>
+                                                        Add track from series archive 
+                                                    </span>
+                                                </>  
+                                            ) : (
+                                                <>
+                                                    <IoClose />
+                                                    <span style={{margin: '0px 5px'}}>
+                                                        Add new track to episode 
+                                                    </span>
+                                                </>  
+                                            )}
+                                    </div>
+                                    </button>
+                                )}
                             </div>
                             <div className='fto__page__submission-main_content-even_split fto_gap'>
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-left'>

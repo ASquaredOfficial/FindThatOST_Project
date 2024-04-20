@@ -43,6 +43,10 @@
         font-family: var(--font-family-manrope);
         font-weight: 800;
     }
+
+    h4:hover {
+        text-decoration: underline;
+    }
 }
 
 .fto__page__track-main_content {

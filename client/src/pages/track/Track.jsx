@@ -127,8 +127,16 @@ const Track = () => {
                             <hr className='fto__page__track-horizontal_hr' />
                             {spOccurrenceID !== -1 && (
                                 <div className='fto__page__track-content_subheading_section'>
-                                    <h4 className='fto__page__track-content_header_subtitle'><strong>{ftoTrackInfo.canonical_title}</strong></h4>
-                                    <h4 className='subheader_color'>Episode {ftoTrackInfo.episode_no}</h4>
+                                    <h4 className='fto__page__track-content_header_subtitle'>
+                                        <a href={'/anime/' + ftoTrackInfo.fto_anime_id}>
+                                            <strong>{ftoTrackInfo.canonical_title}</strong>
+                                        </a>
+                                    </h4>
+                                    <h4 className='subheader_color'>
+                                        <a href={'/anime/' + ftoTrackInfo.fto_anime_id + '/episode/' + ftoTrackInfo.episode_no}>
+                                            Episode {ftoTrackInfo.episode_no}
+                                        </a>
+                                    </h4>
                                 </div>
                             )}
                             <hr className='fto__page__track-horizontal_hr' />

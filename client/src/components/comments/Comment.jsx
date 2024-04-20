@@ -109,7 +109,7 @@ const Comment = ({
                     ) : (
                         <>
                             {(isCommentLiked === true) ? (
-                                <div style={ {display: 'flex', flexDirection: 'row'}}>
+                                <div style={ {display: 'flex', flexDirection: 'row', gap: '5px'}}>
                                     <div className="comment-action-icon_section">
                                         <BiSolidLike className="comment-action-icon" onClick={() => likeComment(comment.id)}/>
                                         {(likeDislikeCount.like_count !== 0) && 
@@ -124,7 +124,7 @@ const Comment = ({
                                     </div>
                                 </div>
                             ) : (
-                                <div style={ {display: 'flex', flexDirection: 'row'}}>
+                                <div style={ {display: 'flex', flexDirection: 'row', gap: '5px'}}>
                                     <div className="comment-action-icon_section">
                                         <BiLike className="comment-action-icon" onClick={() => likeComment(comment.id, true)}/>
                                         {(likeDislikeCount.like_count !== 0) && 

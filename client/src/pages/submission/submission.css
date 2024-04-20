@@ -31,6 +31,9 @@
         font-weight: 400;
         align-self: flex-start;
     }
+    .fto__page__submission-content_header_subtitle:hover {
+        text-decoration: underline;
+    }
 }
 
 .fto__page__submission-main_content {

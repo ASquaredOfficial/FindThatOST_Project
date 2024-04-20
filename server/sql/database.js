@@ -483,7 +483,7 @@ const GetTrackCountForMALAnimes = async (arrMalAnimeIDs) => {
 const GetTracksForEpisode = (nEpisodeID, sortBy = '') => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
-		"SELECT occurrence_id, track_id, track_name, fto_occurrence.track_type, fto_occurrence.scene_description",
+		"SELECT occurrence_id, track_id, track_name, fto_occurrence.track_type, fto_occurrence.scene_description, streaming_platform_links",
 		"FROM ((`fto_episode`",
 		"INNER JOIN fto_occurrence ON fto_episode.episode_id = fto_occurrence.fto_episode_id)",
 		"INNER JOIN fto_track ON fto_occurrence.fto_track_id = fto_track.track_id)",
@@ -509,8 +509,8 @@ const GetTracksForEpisode = (nEpisodeID, sortBy = '') => {
 const GetTrack = (nTrackID, nOccurrenceID = -1) => {
   return new Promise((resolve, reject) => {
     let sqlQuery = [
-		"SELECT track_id,",
-		"fto_anime.canonical_title, ",
+		"SELECT track_id, fto_track.fto_anime_id,",
+		"fto_anime.canonical_title,",
 		"track_name, artist_name, label_name, release_date, fandom_image_link, fandom_webpage_link,",
 		"streaming_platform_links, embedded_yt_video_id",
 		"FROM ((`fto_episode`",
