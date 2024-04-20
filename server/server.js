@@ -27,6 +27,7 @@ const {
     PostSubmission_TrackAddPreExisting,
     GetTrackCountForMALAnimes,
     PerformSelectQuery,
+    GetTrackOccurrences,
 } = require('./sql/database');
 
 // app.use((req, res, next) => {
@@ -329,7 +330,7 @@ app.get("/findthatost_api/getAnime/:nFtoAnimeID/full", async (req, res) => {
         const ftoAnimeTracks = await GetTracksForAnime(nFtoAnimeID);
         const ftoFullAnimeDetails = { 
             ...ftoAnimeDetails[0], 
-            track_list: ftoAnimeTracks,
+            track_list: (IsEmpty(ftoAnimeTracks) ? null : ftoAnimeTracks),
         };
         res.status(200).json(ftoFullAnimeDetails);
     }
@@ -626,11 +627,17 @@ app.get("/findthatost_api/getTrack/:nTrackID/", async (req, res) => {
     //Get List of Tracks for the episode with corresponding FTO Episode ID
     const nTrackID = req.params.nTrackID;
     try {
-        const ftoTracksDetails = await GetTrack(nTrackID);
-        if (ftoTracksDetails.length == 0) {
+        const ftoTrackDetails = await GetTrack(nTrackID);
+        if (ftoTrackDetails.length == 0) {
             return res.status(204).json({ error: 'No Results found' }).end(); 
         }
-        res.status(200).json(ftoTracksDetails);
+
+        const ftoEpisodeTracksOccurrence = await GetTrackOccurrences(nTrackID);
+        const ftoFullTrackDetails = { 
+            ...ftoTrackDetails[0], 
+            episode_occurrences: (IsEmpty(ftoEpisodeTracksOccurrence) ? null : ftoEpisodeTracksOccurrence),
+        };
+        res.status(200).json(ftoFullTrackDetails);
     }
     catch (error) {
         let objError = {};
@@ -645,11 +652,17 @@ app.get("/findthatost_api/getTrack/:nTrackID/context_id/:nOccurrenceID", async (
     const nTrackID = req.params.nTrackID;
     const nOccurrenceID = req.params.nOccurrenceID;
     try {
-        const ftoTracksDetails = await GetTrack(nTrackID, nOccurrenceID);
-        if (ftoTracksDetails.length == 0) {
+        const ftoTrackDetails = await GetTrack(nTrackID, nOccurrenceID);
+        if (ftoTrackDetails.length == 0) {
             return res.status(204).json({ error: 'No Results found' }).end(); 
         }
-        res.status(200).json(ftoTracksDetails);
+
+        const ftoEpisodeTracksOccurrence = await GetTrackOccurrences(nTrackID);
+        const ftoFullTrackDetails = { 
+            ...ftoTrackDetails[0], 
+            episode_occurrences: (IsEmpty(ftoEpisodeTracksOccurrence) ? null : ftoEpisodeTracksOccurrence),
+        };
+        res.status(200).json(ftoFullTrackDetails);
     }
     catch (error) {
         let objError = {};

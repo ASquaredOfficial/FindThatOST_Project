@@ -596,10 +596,13 @@ const Anime = () => {
             document.title = `${dataFromBackend.canonical_title} | FindThatOST Anime`;
             setMALAnimeInfo(dataFromExternalAPI_MAL.data);
             setPageListView(() => {
-                return {
-                    episode_list: pageListViewFocus.episode_list, 
-                    track_list: (pageListViewFocus.episode_list !== true) ? true : false,
-                };
+                if (!IsEmpty(dataFromBackend['track_list'])) {
+                    return {
+                        episode_list: pageListViewFocus.episode_list, 
+                        track_list: (pageListViewFocus.episode_list !== true) ? true : false,
+                    };
+                }
+                return pageListViewFocus;
             });
         } catch (error) {
             console.error('Error:', error.message);
@@ -790,7 +793,7 @@ const Anime = () => {
                                 (!IsEmpty(pageEpisodesInfo !== undefined) || !IsEmpty(ftoAnimeInfo['track_list'])) && (
                                     <div className='fto__page__anime-main_content_info_list'>
                                         <div className='fto__page__anime-main_content_info_list-header_section'>
-                                            {!IsEmpty(pageEpisodesInfo !== undefined) && (
+                                            {!IsEmpty(pageEpisodesInfo) && (
                                                 <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.episode_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
                                                     onClick={() => {setPageListView(() => {
                                                         if (pageListViewFocus.episode_list === false) {
@@ -804,7 +807,7 @@ const Anime = () => {
                                                     Episode List
                                                 </h4>
                                             )}
-                                            {!IsEmpty(ftoAnimeInfo['track_list'] !== undefined) && (
+                                            {!IsEmpty(ftoAnimeInfo['track_list']) && (
                                                 <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.track_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
                                                     onClick={() => {setPageListView(() => {
                                                         if (pageListViewFocus.track_list === false) {

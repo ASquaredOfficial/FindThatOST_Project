@@ -76,16 +76,16 @@ class SQLArrayHandler {
 }
 
 const LogError = (strFunctionName, strErrorMessage, strLineNumber = '') => {
-  let date = new Date(); // for now
-  let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', {
-	minimumIntegerDigits: 2,
-	useGrouping: false
-  })}:${date.getMilliseconds()}`;
+	let date = new Date(); // for now
+	let strDatetimeNow = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds().toLocaleString('en-US', {
+		minimumIntegerDigits: 2,
+		useGrouping: false
+	})}:${date.getMilliseconds()}`;
 
-  let errorString = `Error in function (${strFunctionName}-${filename}:${strLineNumber}).`;
-  errorString += `\nDatetime: (${strDatetimeNow})`
-  errorString += `\n${strErrorMessage}`;
-  console.log(errorString +`\n`, '-'.repeat(50));
+	let errorString = `Error in function (${strFunctionName}-${filename}:${strLineNumber}).`;
+	errorString += `\nDatetime: (${strDatetimeNow})`
+	errorString += `\n${strErrorMessage}`;
+	console.log(errorString +`\n`, '-'.repeat(50));
 };
 
 const PerformSelectQuery = (sqlCommand) => {
@@ -512,35 +512,54 @@ const GetTracksForEpisode = (nEpisodeID, sortBy = '') => {
 };
 
 const GetTrack = (nTrackID, nOccurrenceID = -1) => {
-  return new Promise((resolve, reject) => {
-    let sqlQuery = [
-		"SELECT track_id, fto_track.fto_anime_id,",
-		"fto_anime.canonical_title,",
-		"track_name, artist_name, label_name, release_date, fandom_image_link, fandom_webpage_link,",
-		"streaming_platform_links, embedded_yt_video_id",
-		"FROM ((`fto_episode`",
-		"INNER JOIN fto_occurrence ON fto_episode.episode_id = fto_occurrence.fto_episode_id)",
-		"INNER JOIN fto_track ON fto_occurrence.fto_track_id = fto_track.track_id)",
-		"INNER JOIN fto_anime ON fto_episode.fto_anime_id = fto_anime.anime_id", 
-		`WHERE track_id = ${nTrackID}`,
-    ];
-    if (nOccurrenceID !== -1) {
-		sqlQuery.splice(1, 0, "occurrence_id,");
-		sqlQuery.splice(3, 0, "fto_episode.episode_no, fto_episode.episode_title, fto_occurrence.track_type, fto_occurrence.scene_description,");
-		sqlQuery.push(`AND occurrence_id = ${nOccurrenceID}`)
-    }
-    const handler = new SQLArrayHandler(sqlQuery);
-    const sqlQueryString = handler.CombineStringsToQuery();
-    FtoConnection.query(sqlQueryString, (error, results) => {
-		if (error) {
-			LogError('GetTrack', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
-			reject(error);
-		} else {
-			resolve(results);
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT DISTINCT",
+			"fto_anime.canonical_title, `fto_track`.*",
+			"FROM ((`fto_episode`",
+			"INNER JOIN fto_occurrence ON fto_episode.episode_id = fto_occurrence.fto_episode_id)",
+			"INNER JOIN fto_track ON fto_occurrence.fto_track_id = fto_track.track_id)",
+			"INNER JOIN fto_anime ON fto_episode.fto_anime_id = fto_anime.anime_id", 
+			`WHERE track_id = ${nTrackID}`,
+		];
+		if (nOccurrenceID !== -1) {
+			sqlQuery.splice(1, 0, " occurrence_id, fto_episode.episode_title, fto_occurrence.track_type, fto_occurrence.scene_description,");
+			sqlQuery.push(`AND occurrence_id = ${nOccurrenceID}`)
 		}
-    });
-  });
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetTrack', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
 };
+
+const GetTrackOccurrences = (nFtoTrackId) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT `fto_occurrence`.fto_episode_id, `fto_episode`.episode_no ",
+			"FROM (`fto_episode`",
+			"INNER JOIN fto_occurrence ON fto_episode.episode_id = fto_occurrence.fto_episode_id)",
+			"INNER JOIN fto_track ON fto_occurrence.fto_track_id = fto_track.track_id",
+			`WHERE track_id = ${nFtoTrackId}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetTrackOccurrences', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
 
 const GetSubmissionContext_TrackAdd = (nFtoAnimeID, nEpisodeNo = -1) => {
   return new Promise((resolve, reject) => {
@@ -1185,6 +1204,7 @@ module.exports = {
 	GetTrackCountForMALAnimes,
 	GetTracksForEpisode,
 	GetTrack,
+	GetTrackOccurrences,
 	GetSubmissionContext_TrackAdd,
 	PostSubmission_TrackAdd,
 	PostSubmission_TrackAddPreExisting,

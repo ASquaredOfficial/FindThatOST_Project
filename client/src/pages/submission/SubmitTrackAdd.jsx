@@ -606,13 +606,13 @@ const SubmitTrackAdd = () => {
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Add Track
                             {(spEpisodeNo !== -1) ? (
-                                <span>
                                     <a href={'/anime/' + anime_id + '/episode/' + spEpisodeNo}>
                                         {' to Episode ' + spEpisodeNo}
                                     </a>
-                                </span>
                             ) : (
-                                ' to Series'
+                                <a href={'/anime/' + anime_id}>
+                                    ' to Series'
+                                </a>
                             )}
                         </h1>
                         <h4 className='fto__page__submission-content_header_subtitle'>
@@ -767,7 +767,7 @@ const SubmitTrackAdd = () => {
                                 <button className='fto__button__pink' type='submit' disabled={pageLoading}>
                                     Submit
                                 </button>
-                                <p className='fto__pointer'>Add to drafts</p>
+                                <p className='fto__page__submission-main_content-add_to_drafts fto__pointer'>Add to drafts</p>
                             </div>
                             )}
                         </form>

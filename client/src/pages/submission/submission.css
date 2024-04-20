@@ -33,6 +33,7 @@
     }
     .fto__page__submission-content_header_subtitle:hover {
         text-decoration: underline;
+        cursor: pointer;
     }
 }
 
@@ -96,6 +97,10 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+
+        .fto__page__submission-main_content-add_to_drafts:hover {
+            text-decoration: underline;
+        }
     }
 
     .fto__page__submission-main_content-align_end {

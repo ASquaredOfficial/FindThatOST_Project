@@ -590,12 +590,23 @@ const SubmitTrackEdit = () => {
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Edit Track
                             {(ftoEpisodeContext.episode_no !== -1) ? (
-                                ' in Episode ' + ftoEpisodeContext.episode_no
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}>
+                                    {` in Episode ${ftoEpisodeContext.episode_no}`}
+                                </a>
                             ) : (
-                                ' in Series'
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id}>
+                                    {` in Series`}
+                                </a>
                             )}
                         </h1>
-                        <h4 className='fto__page__submission-content_header_subtitle'><strong>{ftoEpisodeContext.episode_title}</strong></h4>
+                        
+                        {(ftoEpisodeContext.episode_no !== -1) && (
+                            <h4 className='fto__page__submission-content_header_subtitle'>
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}>
+                                    <strong>{ftoEpisodeContext.episode_title}</strong>
+                                </a>
+                            </h4>
+                        )}
                         <hr className='fto__page__submission-horizontal_hr' />
                     </div>
                     
@@ -752,7 +763,7 @@ const SubmitTrackEdit = () => {
                                 <button className='fto__button__pink' type='submit' disabled={pageLoading}>
                                     Submit
                                 </button>
-                                <p className='fto__pointer'>Add to drafts</p>
+                                <p className='fto__page__submission-main_content-add_to_drafts fto__pointer'>Add to drafts</p>
                             </div>
                             )}
                         </form>

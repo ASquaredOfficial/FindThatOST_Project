@@ -46,8 +46,8 @@ const Track = () => {
                     return { link_url, ...rest };
                 });
 
-                console.log("Track Info:", trackInfo.streaming_platform_links);
-                console.log("Converted to New Streaming Links:", updatedStreamingLinksArray);
+                console.debug("Track Info:", trackInfo.streaming_platform_links);
+                console.debug("Converted to New Streaming Links:", updatedStreamingLinksArray);
                 setStreamingPlatformsLinks(updatedStreamingLinksArray);
             }
         }
@@ -66,8 +66,21 @@ const Track = () => {
         try {
             // Fetch data from the backend
             const trackDataFromBackend = await FetchTrackDetails_FTO(nTrackID, nOccurrenceID);
-            console.log('Anime Data from backend:', trackDataFromBackend[0]);
-            setFTOTrackInfo(trackDataFromBackend[0]);
+            let episodeOccurences = null;
+            if (!IsEmpty(trackDataFromBackend['episode_occurrences'])) {
+                episodeOccurences = trackDataFromBackend['episode_occurrences'].map((trackInfo) => {
+                    if (Number(trackInfo['episode_no']) > 0) {
+                        return Number(trackInfo['episode_no']);
+                    }
+                }).sort(function(a, b){return a-b});
+            }
+
+            const ftoFullTrackAnimeDetails = { 
+                ...trackDataFromBackend, 
+                episode_occurrences: episodeOccurences,
+            };
+            setFTOTrackInfo(ftoFullTrackAnimeDetails);
+
         } catch (error) {
             console.error('Error:', error.message);
         }
@@ -93,8 +106,7 @@ const Track = () => {
             const response = await fetch(apiUrl_fto);
             if (response.status === 204) {
                 // Page doesn't exist, redirect to page doesnt exist page
-                console.log("Response status:", response.status)
-                
+                console.log("Response status:", response.status);
             }
             const data = await response.json();
             return data;
@@ -125,20 +137,20 @@ const Track = () => {
                                 {ftoTrackInfo.track_name}
                             </h1>
                             <hr className='fto__page__track-horizontal_hr' />
-                            {spOccurrenceID !== -1 && (
-                                <div className='fto__page__track-content_subheading_section'>
-                                    <h4 className='fto__page__track-content_header_subtitle'>
-                                        <a href={'/anime/' + ftoTrackInfo.fto_anime_id}>
-                                            <strong>{ftoTrackInfo.canonical_title}</strong>
-                                        </a>
-                                    </h4>
+                            <div className='fto__page__track-content_subheading_section'>
+                                <h4 className='fto__page__track-content_header_subtitle'>
+                                    <a href={'/anime/' + ftoTrackInfo.fto_anime_id}>
+                                        <strong>{ftoTrackInfo.canonical_title}</strong>
+                                    </a>
+                                </h4>
+                                {spOccurrenceID !== -1 && (
                                     <h4 className='subheader_color'>
                                         <a href={'/anime/' + ftoTrackInfo.fto_anime_id + '/episode/' + ftoTrackInfo.episode_no}>
-                                            Episode {ftoTrackInfo.episode_no}
+                                            Episode {spOccurrenceID}
                                         </a>
                                     </h4>
-                                </div>
-                            )}
+                                )}
+                            </div>
                             <hr className='fto__page__track-horizontal_hr' />
                         </div>
                         <div className='fto__page__track-main_content'>
@@ -166,36 +178,57 @@ const Track = () => {
                                 </div>
                             </div>
 
-                            {(spOccurrenceID !== -1 ) && (
-                                <div className='fto__page__track-main_content--edit_track_section'>
-                                        <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '/context_id/' + spOccurrenceID}>Edit Track</a>
+                            {ftoTrackInfo.episode_occurrences && (
+                                <div className='fto__page__track-main_content_info_list'>
+                                    <div className='fto__page__track-main_content_info_list-header_section'>
+                                        <h4 className={`fto__page__track-main_content-header`}>
+                                            Episode Occurrences
+                                        </h4>
+                                    </div>
+                                    <hr />
+
+                                    <div className='fto__page__track-main_content--episode_occurrences'>
+                                        {ftoTrackInfo.episode_occurrences.map((episodeNum, it) => {
+                                            return (
+                                                <a key={it} className='fto__page__track-main_content--episode_occurrence'
+                                                    href={`/anime/${ftoTrackInfo.fto_anime_id}/episode/${episodeNum}`} >
+                                                    {episodeNum}
+                                                </a>
+                                            )
+                                        })}
+                                    </div>
+                                    <br/>
                                 </div>
                             )}
 
-                            <div>
-                                {typeof (ftoTrackInfo.streaming_platform_links) == 'object' && (
-                                <div className='fto__page__track--streaming_platform_section'>
-                                    <h4>Listen On..</h4>
-                                    <hr className='fto__page__track-horizontal_hr' />
-
-                                    <div className='fto__page__track--streaming_platform_items'>
-                                        {streamingPlatformsLinks.map((streamPlatformInfo, it) => {
-                                            return (
-                                                <a className='fto__page__track--streaming_platform_item' target="_blank" rel="noopener noreferrer" key={it} href={streamPlatformInfo.link_url}>
-                                                    <img src={ GetPlatformIcon(streamPlatformInfo.platform_type) } alt='platform_icon'/>
-                                                    <div className='fto__page__track--streaming_platform_item_right'> 
-                                                        <p>{ GetPlatformNameString(streamPlatformInfo.platform_type) }</p>
-                                                        <h5 className='fto__page__track--streaming_platform_item-subheader subheader_color'>
-                                                            {streamPlatformInfo.link_url}
-                                                        </h5>
-                                                    </div>
-                                                </a>
-                                            )}
-                                        )}
-                                    </div>
+                            {(spOccurrenceID !== -1 ) && (
+                                <div className='fto__page__track-main_content--edit_track_section'>
+                                    <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '/context_id/' + spOccurrenceID}>Edit Track</a>
                                 </div>
-                                )}
+                            )}
+
+                            {typeof (ftoTrackInfo.streaming_platform_links) == 'object' && (
+                            <div className='fto__page__track--streaming_platform_section'>
+                                <h4>Listen On..</h4>
+                                <hr className='fto__page__track-horizontal_hr' />
+
+                                <div className='fto__page__track--streaming_platform_items'>
+                                    {streamingPlatformsLinks.map((streamPlatformInfo, it) => {
+                                        return (
+                                            <a className='fto__page__track--streaming_platform_item' target="_blank" rel="noopener noreferrer" key={it} href={streamPlatformInfo.link_url}>
+                                                <img src={ GetPlatformIcon(streamPlatformInfo.platform_type) } alt='platform_icon'/>
+                                                <div className='fto__page__track--streaming_platform_item_right'> 
+                                                    <p>{ GetPlatformNameString(streamPlatformInfo.platform_type) }</p>
+                                                    <h5 className='fto__page__track--streaming_platform_item-subheader subheader_color'>
+                                                        {streamPlatformInfo.link_url}
+                                                    </h5>
+                                                </div>
+                                            </a>
+                                        )}
+                                    )}
+                                </div>
                             </div>
+                            )}
                             
                             {(!IsEmpty(ftoTrackInfo.embedded_yt_video_id)) && (
                                 <iframe  className='fto__page__track--embedded_yt_video'

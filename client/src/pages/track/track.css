@@ -82,12 +82,62 @@
     .fto__page__track-main_content--edit_track_section {
         display: flex;
         justify-content: flex-end;
+
+        .fto__button__pink {
+            margin: 1rem 0rem 0rem;
+        }
+    }
+
+    .fto__page__track-main_content_info_list {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        margin-top: 1rem;
+        border-radius: 5px;
+        background: var(--color-bg-navbar_search_border);
+
+        .fto__page__track-main_content_info_list-header_section {
+            margin-bottom: 0.25rem;
+            padding: 10px 10px 5px;
+            display: flex;
+            gap: 20px;
+            
+            .fto__page__track-main_content-header {
+                display: inline-block;
+                padding: 5px 10px;
+            }
+        }
+
+        .fto__page__track-main_content--episode_occurrences {
+            display: flex;
+            flex-wrap: wrap;
+            background: #1b1b1b;
+            padding: 10px 15px;
+            border-bottom: 0.5px solid grey;
+            gap: 10px;
+
+            .fto__page__track-main_content--episode_occurrence {
+                display: inline-block;
+                width: 50px;
+                text-align: center;
+                padding: 5px;
+                background: var(--color-bg-navbar_search_border);
+                border-radius: 5px;
+            }
+            .fto__page__track-main_content--episode_occurrence:hover {
+                background-color: #1866b9;
+                cursor: pointer;
+                transition: 0.5s;
+            }
+        }
+
     }
     
     .fto__page__track--streaming_platform_section {
         flex-direction: row;
         align-items: center;
-        margin-bottom: 15px;
+        margin: 1.5rem 0rem;
 
         .fto__page__track--streaming_platform_items {
             display: flex;
@@ -128,6 +178,7 @@
     .fto__page__track--embedded_yt_video {
         width: 400px;
         height: 225px;
+        margin-top: 1rem;
 
         position: relative;
         left: 50%;
