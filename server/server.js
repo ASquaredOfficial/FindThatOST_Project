@@ -36,7 +36,7 @@ const {
 // });
 app.use(express.json());
 
-const episodeCommentsRouter = require("./routes/episode_comments")
+const episodeCommentsRouter = require("./routes/episode_comments");
 app.use("/findthatost_api/episode_comments", episodeCommentsRouter);
 
 // Read the file containing the database schema
@@ -341,10 +341,11 @@ app.get("/findthatost_api/getAnime/:nFtoAnimeID/full", async (req, res) => {
     }
 });
 
-app.get("/findthatost_api/postAnimeIntoDB/:nMalID", async (req, res) => {    
+app.post("/findthatost_api/postAnimeIntoDB/:nMalID", async (req, res) => {    
     // Insert Anime into DB and return new fto anime id
+    const { strMalAnimeTitle } = req.body;
     try {
-        const ftoResponse = await PostAnimeIntoDB(req.params.nMalID, -1);
+        const ftoResponse = await PostAnimeIntoDB(req.params.nMalID, strMalAnimeTitle);
         if (ftoResponse.affectedRows === 1 && ftoResponse.insertId !== 0) {
             return res.status(201).json(ftoResponse).end();
         }
@@ -358,10 +359,11 @@ app.get("/findthatost_api/postAnimeIntoDB/:nMalID", async (req, res) => {
     }
 });
 
-app.get("/findthatost_api/postAnimeIntoDB/:nMalID/:nKitsuID", async (req, res) => {
+app.post("/findthatost_api/postAnimeIntoDB/:nMalID/:nKitsuID", async (req, res) => {
     // Insert Anime into DB and return new fto anime id
+    const { strMalAnimeTitle } = req.body;
     try {
-        const ftoResponse = await PostAnimeIntoDB(req.params.nMalID, req.params.nKitsuID);
+        const ftoResponse = await PostAnimeIntoDB(req.params.nMalID, strMalAnimeTitle, req.params.nKitsuID);
         if (ftoResponse.affectedRows === 1 && ftoResponse.insertId !== 0) {
             return res.status(201).json(ftoResponse).end();
         }

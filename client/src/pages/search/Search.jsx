@@ -267,28 +267,29 @@ const Search = () => {
 
         // Get FTO Anime ID from FTO DB, then navigate to anime page
         console.log("Go to anime with mal id:", malID)
-        FetchAnimeMapping_FTO(malID);
+        FetchAnimeMapping_FTO(malID, malAnimeInfo.title);
     }
       
-    const FetchAnimeMapping_FTO = async (malAnimeID) => {
+    const FetchAnimeMapping_FTO = async (malAnimeID, strMalAnimeTitle = '') => {
         let apiUrl_fto = `/findthatost_api/getAnimeMappingMAL/${malAnimeID}`;
         console.debug(`Fetch url:, '${apiUrl_fto}'`);
         try {
-            const response = await fetch(apiUrl_fto)
+            const response = await fetch(apiUrl_fto);
     
             const responseStatus = response.status;
             if (responseStatus === 200) {
                 const responseData = await response.json();
                 if (responseData.length > 0) {
-                    let animeID = responseData[0].anime_id
+                    let animeID = responseData[0].anime_id;
         
                     // Navigate to the next page with the row ID
-                    console.log("Navigate to anime:", animeID)
+                    console.log("Navigate to anime:", animeID);
                     navigateToAnime(animeID);
                 }
             }
             else if (responseStatus === 204) {
                 // Get Kitsu Mapping, then insert new anime to Fto DB
+                Fetch_FTO_PostAnimeMapping(malAnimeID, strMalAnimeTitle);
                 FetchAnimeMapping_KITSU(malAnimeID);
             }
             else {
@@ -301,6 +302,75 @@ const Search = () => {
         }
     }
 
+    const Fetch_FTO_PostAnimeMapping = async (malAnimeID, strMalAnimeTitle) => {
+        const kitsuMappingResponse = await FetchAnimeMapping_KITSU(malAnimeID);
+        if (kitsuMappingResponse.meta.count > 0) {
+            // Get Kitsu ID for anime
+            let kitsuAnimeMappingsArray = kitsuMappingResponse.data;
+            let kitsuMappedAnimeObj = kitsuAnimeMappingsArray[0].relationships.item.data;
+            let kitsuAnimeID = kitsuMappedAnimeObj.id;
+
+            // Insert Anime into DB and return new fto anime id
+            let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
+            console.debug(`Fetch post anime context to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+            
+            try {
+                const postResponse = await fetch(apiUrl_fto, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ strMalAnimeTitle }),
+                });
+                const postResponseJson = await postResponse.json();
+
+                let affectedRows = postResponseJson.affectedRows;
+                if (affectedRows === 1) {
+                    let insertedAnimeId = postResponseJson.insertId;
+                    navigateToAnime(insertedAnimeId);
+                }
+                else {
+                    throw new Error(`An error occurred inserting new anime '${strMalAnimeTitle} 'with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}. Post Response:`, postResponseJson);
+                }
+            }
+            catch (err) {
+                toast('An internal error has occurred with the FindThatOST server. Please try again later.');
+                console.error("Error:", err);
+            }
+        }
+        else {
+            // Insert Anime into DB (without kitsu) and return new fto anime id
+            let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}`;
+            console.debug(`Fetch post anime context to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+            
+            try {
+                const postResponse = await fetch(apiUrl_fto, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ strMalAnimeTitle }),
+                });
+                const postResponseJson = await postResponse.json();
+
+                let affectedRows = postResponseJson.affectedRows;
+                if (affectedRows === 1) {
+                    let insertedAnimeId = postResponseJson.insertId;
+                    navigateToAnime(insertedAnimeId);
+                }
+                else {
+                    toast('An internal error has occurred with the FindThatOST server. Please try again later.');
+                    console.error(`An error occurred inserting new anime with mal_id(${malAnimeID})`);
+                    console.error(postResponseJson)
+                }
+            }
+            catch (err) {
+                toast('An internal error has occurred with the FindThatOST server. Please try again later.');
+                console.error("Error:", err);
+            }
+        }
+    }
+
     const FetchAnimeMapping_KITSU = async (malAnimeID) => {
         // Find mapping (if exists) from Kitsu API
         let apiUrl_kitsu = `https://kitsu.io/api/edge/mappings?${createSearchParams({
@@ -310,62 +380,11 @@ const Search = () => {
         }).toString()}`;
         console.debug(`Fetch url:, '${apiUrl_kitsu}'`);
 
-        await fetch(apiUrl_kitsu, {
+        const responseKitsu =  await fetch(apiUrl_kitsu, {
             mode: 'cors',
-            })
-            .then(response => response.json())
-            .then((resObject) => {
-                if (resObject.meta.count > 0) {
-                    // Get Kitsu ID for anime
-                    let kitsuAnimeMappingsArray = resObject.data;
-                    let kitsuMappedAnimeObj = kitsuAnimeMappingsArray[0].relationships.item.data;
-                    let kitsuAnimeID = kitsuMappedAnimeObj.id;
-
-                    // Insert Anime into DB and return new fto anime id
-                    let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
-                    console.debug(`Fetch url:, '${apiUrl_fto}'`);
-                    fetch(apiUrl_fto)
-                        .then(response => response.json())
-                        .then(response => {
-                            let affectedRows = response.affectedRows;
-                            if (affectedRows === 1) {
-                                let insertedAnimeId = response.insertId;
-                                navigateToAnime(insertedAnimeId);
-                            }
-                            else {
-                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID}) and kitsu_id(${kitsuAnimeID}`);
-                                console.error(response)
-                            }
-                        })
-                        .catch(err => {
-                            console.error("Error:", err)
-                            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
-                        });
-                }
-                else {
-                    // Insert Anime into DB (without kitsu) and return new fto anime id
-                    let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}`;
-                    console.debug(`Fetch url:, '${apiUrl_fto}'`);
-                    fetch(apiUrl_fto)
-                        .then(response => response.json())
-                        .then(response => {
-                            let affectedRows = response.affectedRows;
-                            if (affectedRows === 1) {
-                                let insertedAnimeId = response.insertId;
-                                navigateToAnime(insertedAnimeId);
-                            }
-                            else {
-                                toast('An internal error has occurred with the FindThatOST server. Please try again later.');
-                                console.error(`An error occurred inserting new anime with mal_id(${malAnimeID})`);
-                                console.error(response)
-                            }
-                        })
-                        .catch(err => {
-                            console.error("Error:", err)
-                            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
-                        });
-                }
-            });
+        });
+        const kitsuResponseJson = responseKitsu.json();
+        return kitsuResponseJson;
     }
 
     const FetchAnimeSongCount_FTO = async (listMalAnimeIds) => {

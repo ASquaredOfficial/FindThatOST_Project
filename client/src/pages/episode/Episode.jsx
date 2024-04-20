@@ -159,73 +159,71 @@ const Episode = () => {
      * 
      */
     const FetchUpdateAnimeData_FTO = async (ftoID, malAnimeDetails) => {
-        try {
-            // Get Prequel Anime in FTO DB (if present)
-            let ftoPrequelAnimeID = 0;
-            let arrMalAnimeRelations = malAnimeDetails.relations;
-            for (let it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
-                let animeRelation = arrMalAnimeRelations[it]
-                let animeRelationEntry = animeRelation.entry;
-                let animeRelationType = animeRelation.relation;
-                if (animeRelationType === 'Prequel') {
-                    let prequelEntries = animeRelationEntry;
+        // Get Prequel Anime in FTO DB (if present)
+        let ftoPrequelAnimeID = 0;
+        let arrMalAnimeRelations = malAnimeDetails.relations;
+        for (let it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
+            let animeRelation = arrMalAnimeRelations[it]
+            let animeRelationEntry = animeRelation.entry;
+            let animeRelationType = animeRelation.relation;
+            if (animeRelationType === 'Prequel') {
+                let prequelEntries = animeRelationEntry;
 
-                    let nLowestMalID = malAnimeInfo.mal_id;
-                    prequelEntries.map(entry => {
-                        if (entry.mal_id < nLowestMalID) {
-                            nLowestMalID = entry.mal_id;
-                        }
-                        return entry;
-                    });
-                    
-                    if (nLowestMalID !== malAnimeInfo.mal_id) {
-
-                        let apiUrl_fto = `/getAnimeMappingMAL/${nLowestMalID}`
-                        try {
-                            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-                            const response = await fetch(apiUrl_fto);
-                            if (response.status === 200) {
-                                const data = await response.json();
-                                ftoPrequelAnimeID = data[0].anime_id;
-                            }
-                        }
-                        catch (error) {
-                            throw new Error(`Error fetching data in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
-                        }
+                let nLowestMalID = malAnimeDetails.mal_id;
+                prequelEntries.map(entry => {
+                    if (entry.mal_id < nLowestMalID) {
+                        nLowestMalID = entry.mal_id;
                     }
-                    break;
-                }
-            }
+                    return entry;
+                });
+                
+                if (nLowestMalID !== malAnimeDetails.mal_id) {
+                    let apiUrl_fto = `/findthatost_api/getAnimeMappingMAL/${nLowestMalID}`;
+                    console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
 
-            let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id === null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
-            let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
-            let ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
-            
-            // Createn update query
-            let apiUrl_fto = '';
-            if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
-                apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
-            } else if (bUpdateCanonicalTitle) {
-                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
-            } else if (bUpdateParentAnimeID) {
-                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
-            }
-
-            // Perform Fetch Query to update anime
-            if (apiUrl_fto !== '') {
-                try {
-                    console.debug(`Fetch put data from the mal api to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
                     const response = await fetch(apiUrl_fto);
-                    await response.json();
+                    const responseJson = await response.json();
+                    if (response.status === 200) {
+                        ftoPrequelAnimeID = responseJson[0].anime_id;
+                    }
+                    else if (response.status === 204) {
+                        // No MAL to FTO mapping found for ${nLowestMalID}
+                        break;
+                    }
+                    else {
+                        toast('An internal error has occurred in FindThatOST Server. Please try again later.');
+                        console.error(`Error updating data in backend.\nFetch url: ${apiUrl_fto}\nResponse Status: ${response.status}\nResponse: ${responseJson}`);
+                    }
                 }
-                catch (error) {
-                    throw new Error('Error:', error);
-                }
+                break;
             }
-        } 
-        catch (error) {
-            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
-            throw new Error('Error updating data in backend');
+        }
+
+        let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
+        let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
+        let ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
+        
+        // Createn update query
+        let apiUrl_fto = '';
+        if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
+            apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
+        } else if (bUpdateCanonicalTitle) {
+            apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
+        } else if (bUpdateParentAnimeID) {
+            apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
+        }
+
+        // Perform Fetch Query to update anime
+        if (apiUrl_fto !== '') {
+            console.debug(`Fetch put data from the mal api to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+            try {
+                const response = await fetch(apiUrl_fto);
+                await response.json(); // Wait for response before contining
+            }
+            catch (error) {
+                toast('An internal error has occurred in FindThatOST Server. Please try again later.');
+                console.error(`Error updating data in backend.\nFetch url: ${apiUrl_fto}\nResponse: ${error}`);
+            }
         }
     }
     

@@ -97,6 +97,7 @@
             p.fto__page__episode-main_content-no_soundtracks{
                 text-align: center;
                 padding: 2rem 0rem;
+                border-bottom: 0.5px solid grey;
                 
                 background-color: #000000;
                 opacity: 0.3;
@@ -127,14 +128,15 @@
                     .fto__page__episode-main_content--track_item-header_right {
                         display: flex;
                         align-items: center;
-                        margin-right: 5px;
     
                         .fto__page__episode-main_content--track_item-play_icon {
+                            margin-right: 10px;
                             height: 30px;
                             width: 30px;
                             cursor: pointer;
                         }
                         .fto__page__episode-main_content--track_item-play_icon:hover {
+                            margin-right: 7.5px;
                             stroke-width: 15;
                             height: 35px;
                             width: 35px;

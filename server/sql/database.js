@@ -14,19 +14,19 @@ const {
 const { IsEmpty, GetSqlErrorObj, MyXNOR, LineNumber } = require('../utils/BackendUtils');
 
 const FtoConnection = mysql.createConnection({
-  host: !IsEmpty(process.env.FTO_APP_DB_MYSQL_HOST) ? process.env.FTO_APP_DB_MYSQL_HOST : '127.0.0.1',
-  user: !IsEmpty(process.env.FTO_APP_DB_MYSQL_USER) ? process.env.FTO_APP_DB_MYSQL_USER : 'root',
-  password: !IsEmpty(process.env.FTO_APP_DB_MYSQL_PSWD) ? process.env.FTO_APP_DB_MYSQL_PSWD : '',
-  database: !IsEmpty(process.env.FTO_APP_DB_MYSQL_NAME) ? process.env.FTO_APP_DB_MYSQL_NAME : 'findthatost_db',
+	host: !IsEmpty(process.env.FTO_APP_DB_MYSQL_HOST) ? process.env.FTO_APP_DB_MYSQL_HOST : '127.0.0.1',
+	user: !IsEmpty(process.env.FTO_APP_DB_MYSQL_USER) ? process.env.FTO_APP_DB_MYSQL_USER : 'root',
+	password: !IsEmpty(process.env.FTO_APP_DB_MYSQL_PSWD) ? process.env.FTO_APP_DB_MYSQL_PSWD : '',
+	database: !IsEmpty(process.env.FTO_APP_DB_MYSQL_NAME) ? process.env.FTO_APP_DB_MYSQL_NAME : 'findthatost_db',
 });
 
 // Create a MySQL connection pool
 const FtoConnectionPool = mysql.createPool({
-  connectionLimit: 10,
-  host: process.env.FTO_APP_DB_MYSQL_HOST,
-  user: process.env.FTO_APP_DB_MYSQL_USER,
-  password: process.env.FTO_APP_DB_MYSQL_PSWD,
-  database: process.env.FTO_APP_DB_MYSQL_NAME,
+	connectionLimit: 10,
+	host: !IsEmpty(process.env.FTO_APP_DB_MYSQL_HOST) ? process.env.FTO_APP_DB_MYSQL_HOST : '127.0.0.1',
+	user: !IsEmpty(process.env.FTO_APP_DB_MYSQL_USER) ? process.env.FTO_APP_DB_MYSQL_USER : 'root',
+	password: !IsEmpty(process.env.FTO_APP_DB_MYSQL_PSWD) ? process.env.FTO_APP_DB_MYSQL_PSWD : '',
+	database: !IsEmpty(process.env.FTO_APP_DB_MYSQL_NAME) ? process.env.FTO_APP_DB_MYSQL_NAME : 'findthatost_db',
 });
 
 FtoConnection.connect((err) => {
@@ -195,10 +195,11 @@ const GetAnimeMappingMAL = (nMalID) => {
   });
 };
 
-const PostAnimeIntoDB = (nMalID, nKitsuID) => {
+const PostAnimeIntoDB = (nMalID, strMalAnimeTitle, nKitsuID = null) => {
   return new Promise((resolve, reject) => {
     let post_data = {
         mal_id: nMalID,
+		canonical_title: strMalAnimeTitle,
         kitsu_id: nKitsuID,
     }
     let sqlQuery = `INSERT INTO ${tblName_anime} SET ?`;

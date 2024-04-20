@@ -559,7 +559,6 @@ const SubmitTrackAdd = () => {
         if (queryStatusCode === 200) {
             console.log("I am finished")
             if (ftoEpisodeID !== -1) {
-                console.log("Navigating to episode")
                 navigateToEpisode(anime_id, spEpisodeNo);
             }
             else {
@@ -782,9 +781,9 @@ const SubmitTrackAdd = () => {
                                     <>
                                         <h3 className='fto__page__submission-content_header_subtitle'>
                                             {!(submitPreExistingTrack && !IsEmpty(preExistingTrackInfo)) ? (
-                                                <strong>Add New Track to '{submissionContextInfo.canonical_title}' success!</strong>
+                                                <strong>Successfully Addedd New Track to {`'${submissionContextInfo.canonical_title}'`}!</strong>
                                             ): (
-                                                <strong>Add {preExistingTrackInfo} Track to '{submissionContextInfo.canonical_title}' success!</strong>
+                                                <strong>Successfully Added {!IsEmpty(preExistingTrackInfo.track_name) ? `'${preExistingTrackInfo.track_name}'` :  '' } Track to {!IsEmpty(submissionContextInfo.canonical_title) ? `'${submissionContextInfo.canonical_title}'` :  ''}!</strong>
                                             )}
                                         </h3>
                                         <button className='fto__button__pink' onClick={ handleModalOnButtonClick }>

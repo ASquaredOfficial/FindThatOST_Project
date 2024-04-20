@@ -133,6 +133,7 @@
         p.fto__page__anime-main_content-no_soundtracks{
             text-align: center;
             padding: 2rem 0rem;
+            border-bottom: 0.5px solid grey;
             
             background-color: #000000;
             opacity: 0.7;
