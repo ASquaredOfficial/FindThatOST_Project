@@ -516,14 +516,13 @@ const GetTrack = (nTrackID, nOccurrenceID = -1) => {
 		let sqlQuery = [
 			"SELECT DISTINCT",
 			"fto_anime.canonical_title, `fto_track`.*",
-			"FROM ((`fto_episode`",
-			"INNER JOIN fto_occurrence ON fto_episode.episode_id = fto_occurrence.fto_episode_id)",
-			"INNER JOIN fto_track ON fto_occurrence.fto_track_id = fto_track.track_id)",
-			"INNER JOIN fto_anime ON fto_episode.fto_anime_id = fto_anime.anime_id", 
+			"FROM `fto_track`",
+			"INNER JOIN fto_anime ON fto_anime.anime_id = fto_track.fto_anime_id", 
 			`WHERE track_id = ${nTrackID}`,
 		];
 		if (nOccurrenceID !== -1) {
 			sqlQuery.splice(1, 0, " occurrence_id, fto_episode.episode_title, fto_occurrence.track_type, fto_occurrence.scene_description,");
+			sqlQuery.splice(4, 0, "INNER JOIN fto_occurrence ON fto_occurrence.fto_track_id = fto_track.track_id");
 			sqlQuery.push(`AND occurrence_id = ${nOccurrenceID}`)
 		}
 		const handler = new SQLArrayHandler(sqlQuery);

@@ -414,7 +414,7 @@ const Anime = () => {
 
             let startEpisode = 1 + ((ftoEpisodePageNum - 1) * 20);
             const kitsuPageEpisodesResponse = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, startEpisode-1 );
-            const kitsuPageEpisodes = kitsuPageEpisodesResponse.data;
+            const kitsuPageEpisodes = (Object.keys(kitsuPageEpisodesResponse).length > 0 && Array.isArray(kitsuPageEpisodesResponse)) ? kitsuPageEpisodesResponse.data : [];
 
             const episodesInfo = [];
             let endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;

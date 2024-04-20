@@ -1,13 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import './episode.css';
 
 import { Navbar, Footer, Comments} from "../../components";
 import { ParsePosterImage_Horzontal } from "../../utils/MalApiUtils"
 import { IsEmpty } from "../../utils/RegularUtils"
 
-import arrow_icon from '../../assets/Arrow_Icon.svg'
-import pencil_icon from '../../assets/Pencil_Icon.svg'
 import { FaPlayCircle } from "react-icons/fa";
 import { toast } from 'react-toastify';
 
@@ -20,7 +18,8 @@ const Episode = () => {
     const [ malEpisodeInfo, setMALEpisodeInfo ] = useState();
     const [ malEpisodeImageInfo, setMALEpisodeImageInfo ] = useState();
     const [ kitsuEpisodeInfo, setKitsuEpisodeInfo ] = useState();
-    const [ pageEpisodeInfo, setPageEpisodeInfo ] = useState();
+    const [ pageEpisodeInfo, setPageEpisodeInfo ] = useState({});
+    const [ pageEpisodeThumbnail, setPageEpisodeInfoThumbail ] = useState();
     const [ episodeListOfTracks, setEpisodeListOfTracks ] = useState();
 
     const [ viewSpotifyPlayModal, setViewSpotifyPlayModal ] = useState(false);
@@ -41,17 +40,25 @@ const Episode = () => {
     }, [malAnimeInfo]);
 
     useEffect(() => {
-        if (malEpisodeInfo !== undefined || kitsuEpisodeInfo !== undefined) {
+        if (malAnimeInfo !== undefined || malEpisodeInfo !== undefined || kitsuEpisodeInfo !== undefined) {
             let episodeInfo = {};
 
-            // episodeInfo.title_en = () ? malEpisodeInfo.title;
             if (malEpisodeInfo !== undefined) {
-                episodeInfo.title_en_us = malEpisodeInfo.title;
-                episodeInfo.title_en_jp = malEpisodeInfo.title_romanji;
-                episodeInfo.title_ja_jp = malEpisodeInfo.title_japanese;
-                episodeInfo.synopsis = malEpisodeInfo.synopsis;
-                episodeInfo.aired = String(malEpisodeInfo.aired).substring(0, 10);
-
+                if (!episodeInfo.hasOwnProperty('title_en_us') || IsEmpty(episodeInfo.title_en_us)) {
+                    episodeInfo.title_en_us = malEpisodeInfo.title;
+                }
+                if (!episodeInfo.hasOwnProperty('title_en_jp') || IsEmpty(episodeInfo.title_en_jp)) {
+                    episodeInfo.title_en_jp = malEpisodeInfo.title_romanji;
+                }
+                if (!episodeInfo.hasOwnProperty('title_ja_jp') || IsEmpty(episodeInfo.title_ja_jp)) {
+                    episodeInfo.title_ja_jp = malEpisodeInfo.title_japanese;
+                }
+                if (!episodeInfo.hasOwnProperty('synopsis') || IsEmpty(episodeInfo.synopsis)) {
+                    episodeInfo.synopsis = malEpisodeInfo.synopsis;
+                }
+                if (!episodeInfo.hasOwnProperty('aired') || IsEmpty(episodeInfo.aired)) {
+                    episodeInfo.aired = String(malEpisodeInfo.aired).substring(0, 10);
+                }
                 if (malEpisodeImageInfo !== undefined) {
                     episodeInfo.image_url = malEpisodeImageInfo;
                 }
@@ -74,14 +81,27 @@ const Episode = () => {
                 if (!episodeInfo.hasOwnProperty('aired') || IsEmpty(episodeInfo.aired)) {
                     episodeInfo.aired = kitsuEpisodeInfo.airdate;
                 }
-                if (!episodeInfo.hasOwnProperty('image_url')) {
+                if (!episodeInfo.hasOwnProperty('image_url') || IsEmpty(episodeInfo.image_url)) {
                     episodeInfo.image_url = kitsuEpisodeInfo.thumbnail.original;
                 }
             }
-            setPageEpisodeInfo(episodeInfo);
+
+            if (malAnimeInfo !== undefined) {
+                if (!episodeInfo.hasOwnProperty('image_url') || IsEmpty(episodeInfo.image_url)) {
+                    episodeInfo.image_url = (!IsEmpty(malAnimeInfo.images.jpg.image_url)) ? malAnimeInfo.images.jpg.image_url : null
+                }
+            }
+            
+            setPageEpisodeInfo({...pageEpisodeInfo, ...episodeInfo});
         }
         
-    }, [malEpisodeInfo, malEpisodeImageInfo, kitsuEpisodeInfo]);
+    }, [malAnimeInfo, malEpisodeInfo, malEpisodeImageInfo, kitsuEpisodeInfo]);
+
+    useEffect(() => {
+        if (pageEpisodeInfo !== undefined && pageEpisodeInfo.hasOwnProperty('image_url') && !IsEmpty(pageEpisodeInfo.image_url)) {
+            setPageEpisodeInfoThumbail(pageEpisodeInfo.image_url);
+        }
+    }, [pageEpisodeInfo])
 
     /**
      * Get anime details for anime with corresponding FTO Anime ID.
@@ -396,17 +416,25 @@ const Episode = () => {
             // Use data from the backend to make the second fetch to the external API
             let malID = animeDataFromBackend[0].mal_id;
             const dataFromExternalAPI_MAL = await FetchFullAnimeData_MAL(malID);
-            const episodeData_malAPI = await FetchEpisodeData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);
-            const episodeImageData_malAPI = await FetchEpisodeImageData_MAL(malID, episodeDataFromBackend[0].mal_episode_id);
-            const episodeData_kitsuAPI = await FetchEpisodeData_KITSU( episodeDataFromBackend[0].kitsu_episode_id);
             console.debug('Anime Data from external MAL API:', dataFromExternalAPI_MAL);
-            console.debug('Episode Data from MAL API:', episodeData_malAPI);
-            console.debug('Episode Image Data from MAL API:', episodeImageData_malAPI);
-            console.debug('Episode Data from external KITSU API:', episodeData_kitsuAPI);
             setMALAnimeInfo(dataFromExternalAPI_MAL.data);
-            setMALEpisodeInfo(episodeData_malAPI.data);
-            setMALEpisodeImageInfo(episodeImageData_malAPI);
-            setKitsuEpisodeInfo(episodeData_kitsuAPI.data.attributes);
+
+            if (!IsEmpty(episodeDataFromBackend[0].malEpisodeID) || !IsEmpty(episodeDataFromBackend[0].kitsu_episode_id)) {
+                if (!IsEmpty(episodeDataFromBackend[0].malEpisodeID)) {    
+                    let malEpisodeID = episodeDataFromBackend[0].mal_episode_id;
+                    const episodeData_malAPI = await FetchEpisodeData_MAL(malID, malEpisodeID);
+                    const episodeImageData_malAPI = await FetchEpisodeImageData_MAL(malID, malEpisodeID);
+                    console.debug('Episode Data from MAL API:', episodeData_malAPI);
+                    console.debug('Episode Image Data from MAL API:', episodeImageData_malAPI);
+                    setMALEpisodeInfo(episodeData_malAPI.data);
+                    setMALEpisodeImageInfo(episodeImageData_malAPI);
+                }
+                if (!IsEmpty(episodeDataFromBackend[0].kitsu_episode_id)) {
+                    const episodeData_kitsuAPI = await FetchEpisodeData_KITSU( episodeDataFromBackend[0].kitsu_episode_id);
+                    console.debug('Episode Data from external KITSU API:', episodeData_kitsuAPI);
+                    setKitsuEpisodeInfo(episodeData_kitsuAPI.data.attributes);
+                }
+            }
 
             //Get all tracks for this anime
             const episodeListOfTracksFromBackend = await FetchEpisodeListOfTracks_FTO(episodeDataFromBackend[0].episode_id, 'track_type');
@@ -489,7 +517,7 @@ const Episode = () => {
             <div className='gradient__bg'>
                 <Navbar />
 
-                {pageEpisodeInfo !== undefined && (
+                {!IsEmpty(pageEpisodeThumbnail) && (
                     <div className='fto__page__episode-content section__padding' style={{paddingBottom: 0}}>
                         
                         <div className='fto__page__episode-content_heading_section'>
@@ -507,12 +535,20 @@ const Episode = () => {
                         <div className='fto__page__episode-main_content'>
                             <div className='fto__page__episode-main_content--episode_details'>
                                 <div className='fto__page__episode-main_content--episode_details-left'>
-                                    <img alt='Episode Thumbnail' className='fto__page__episode-main_content--episode_details-thumbnail' src={ParsePosterImage_Horzontal(pageEpisodeInfo.image_url)}/>
+                                    <img alt='Episode Thumbnail' className='fto__page__episode-main_content--episode_details-thumbnail' 
+                                        src={ParsePosterImage_Horzontal(pageEpisodeThumbnail)} />
                                 </div>
+                                
+                                {!IsEmpty(pageEpisodeInfo) && (
                                 <div className='fto__page__episode-main_content--episode_details-right'>
-                                    <h2>{pageEpisodeInfo.title_en_us}</h2>
-                                    <h4 className='subheader_color'>{FormatEpisodeSubHeader(pageEpisodeInfo.title_en_jp, pageEpisodeInfo.title_ja_jp)}</h4>
-                                    <hr className='fto__page__episode-horizontal_hr'/>
+                                    
+                                    {(!IsEmpty(pageEpisodeInfo.title_en_us) || !IsEmpty(pageEpisodeInfo.title_en_jp) || !IsEmpty(pageEpisodeInfo.title_ja_jp)) && ( 
+                                        <>
+                                            <h2>{!IsEmpty(pageEpisodeInfo.title_en_us) ? pageEpisodeInfo.title_en_us : ''}</h2>
+                                            <h4 className='subheader_color'>{FormatEpisodeSubHeader(pageEpisodeInfo.title_en_jp, pageEpisodeInfo.title_ja_jp)}</h4>
+                                            <hr className='fto__page__episode-horizontal_hr'/>
+                                        </>
+                                    )}
 
                                     {pageEpisodeInfo.aired !== undefined && ( 
                                         <div className='fto__page__episode-main_content--episode_details-info_item'>
@@ -520,13 +556,16 @@ const Episode = () => {
                                         </div>
                                     )}
 
-                                    {pageEpisodeInfo.synopsis !== undefined && ( 
-                                        <div className='fto__page__episode-main_content--episode_details-info_item'>
-                                            <p><u>Episode Description </u></p>
+                                    <div className='fto__page__episode-main_content--episode_details-info_item'>
+                                        <p><u>Episode Description </u></p>
+                                        {(pageEpisodeInfo.synopsis !== undefined) ? ( 
                                             <p className='fto__page__episode-main_content-text'>{pageEpisodeInfo.synopsis}</p>
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className='fto__page__episode-main_content-text'>{`Episode ${episode_no} of ${malAnimeInfo.titles[0].title}`}.</p>
+                                        )}
+                                    </div>
                                 </div>
+                                )}
                             </div>
                             
                             {malAnimeInfo !== undefined && (
