@@ -162,7 +162,7 @@ const Anime = () => {
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing episode details.
      */
     const FetchEpisodeMapping = async (ftoAnimeID) => {
-            let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${ftoAnimeID}`;
+            let apiUrl_fto = `/findthatost_api/anime/${ftoAnimeID}/episodes`;
             console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             try {
                 const response = await fetch(apiUrl_fto);
@@ -200,20 +200,23 @@ const Anime = () => {
 
         // Get All Kitsu Episodes
         let allKitsuAnimeEpisodes = [];
-        let nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
-        let kitsuQueryOffset = 0;
-        let iter = 0;
-        while (kitsuQueryOffset <= ((nLastOffset * 20) - 20) && iter < nLastOffset) {
-            const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, kitsuQueryOffset);
-            allKitsuAnimeEpisodes.push(...kitsuPageEpisodes.data);
-
-            let apiLinks = kitsuPageEpisodes.links;
-            if (!('next' in apiLinks)) {
-                break;
+        if (!IsEmpty(ftoAnimeInfo.kitsu_id)) {
+            console.log("Anime Kitsu ID:", ftoAnimeInfo.kitsu_id)
+            let nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
+            let kitsuQueryOffset = 0;
+            let iter = 0;
+            while (kitsuQueryOffset <= ((nLastOffset * 20) - 20) && iter < nLastOffset) {
+                const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, kitsuQueryOffset);
+                allKitsuAnimeEpisodes.push(...kitsuPageEpisodes.data);
+    
+                let apiLinks = kitsuPageEpisodes.links;
+                if (!('next' in apiLinks)) {
+                    break;
+                }
+    
+                kitsuQueryOffset = kitsuQueryOffset + 20;
+                iter++;
             }
-
-            kitsuQueryOffset = kitsuQueryOffset + 20;
-            iter++;
         }
         
         // Create a combined array of episode details
@@ -263,7 +266,7 @@ const Anime = () => {
         // Add missing episodes to episode database.
         let data = listOfMissingEpisodesDetails;
         if (listOfMissingEpisodesDetails.length > 0) {
-            let apiUrl_fto = `/findthatost_api/postMissingEpisodes/${id}`;
+            let apiUrl_fto = `/findthatost_api/anime/${id}/post_missing_episodes`;
             try {
                     const response = await fetch(apiUrl_fto, 
                     {
@@ -295,7 +298,7 @@ const Anime = () => {
      * 
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
-        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}/full`
+        let apiUrl_fto = `/findthatost_api/anime/${Number(ftoAnimeID)}/full`
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
             const response = await fetch(apiUrl_fto);
@@ -414,7 +417,7 @@ const Anime = () => {
 
             let startEpisode = 1 + ((ftoEpisodePageNum - 1) * 20);
             const kitsuPageEpisodesResponse = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, startEpisode-1 );
-            const kitsuPageEpisodes = (Object.keys(kitsuPageEpisodesResponse).length > 0 && Array.isArray(kitsuPageEpisodesResponse)) ? kitsuPageEpisodesResponse.data : [];
+            const kitsuPageEpisodes = (Object.keys(kitsuPageEpisodesResponse).length > 0 && Array.isArray(kitsuPageEpisodesResponse.data)) ? kitsuPageEpisodesResponse.data : [];
 
             const episodesInfo = [];
             let endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;
@@ -513,7 +516,7 @@ const Anime = () => {
             let animeRelation = arrMalAnimeRelations[it]
             let animeRelationEntry = animeRelation.entry;
             let animeRelationType = animeRelation.relation;
-            if (animeRelationType === 'Prequel') {
+            if (animeRelationType === 'Prequel' || animeRelationType === 'Parent story') {
                 let prequelEntries = animeRelationEntry;
 
                 let nLowestMalID = malAnimeDetails.mal_id;
@@ -525,20 +528,20 @@ const Anime = () => {
                 });
                 
                 if (nLowestMalID !== malAnimeDetails.mal_id) {
-                    let apiUrl_fto = `/findthatost_api/getAnimeMappingMAL/${nLowestMalID}`;
+                    let apiUrl_fto = `/findthatost_api/anime/mal_mapping/${nLowestMalID}`;
                     console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
 
                     const response = await fetch(apiUrl_fto);
-                    const responseJson = await response.json();
                     if (response.status === 200) {
+                        const responseJson = await response.json();
                         ftoPrequelAnimeID = responseJson[0].anime_id;
                     }
                     else if (response.status === 204) {
                         // No MAL to FTO mapping found for ${nLowestMalID}
-                        break;
                     }
                     else {
                         toast('An internal error has occurred in FindThatOST Server. Please try again later.');
+                        const responseJson = await response.json();
                         console.error(`Error updating data in backend.\nFetch url: ${apiUrl_fto}\nResponse Status: ${response.status}\nResponse: ${responseJson}`);
                     }
                 }
@@ -546,25 +549,29 @@ const Anime = () => {
             }
         }
 
+        let ftoCanonicalTitle = malAnimeDetails.titles[0].title;
         let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
-        let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
-        let ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
+        let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '' || ftoAnimeInfo.canonical_title !== ftoCanonicalTitle);
         
         // Createn update query
         let apiUrl_fto = '';
         if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
-            apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
+            apiUrl_fto =`/findthatost_api/anime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
         } else if (bUpdateCanonicalTitle) {
-            apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
+            apiUrl_fto = `/findthatost_api/anime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
         } else if (bUpdateParentAnimeID) {
-            apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
+            apiUrl_fto = `/findthatost_api/anime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
         }
 
         // Perform Fetch Query to update anime
         if (apiUrl_fto !== '') {
             console.debug(`Fetch put data from the mal api to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             try {
-                const response = await fetch(apiUrl_fto);
+                const response = await fetch(apiUrl_fto, 
+                    {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
                 await response.json(); // Wait for response before contining
             }
             catch (error) {

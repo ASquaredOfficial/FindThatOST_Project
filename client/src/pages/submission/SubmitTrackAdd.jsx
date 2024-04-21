@@ -119,9 +119,9 @@ const SubmitTrackAdd = () => {
      */
     const FetchSubmissionContextDetails_FTO = async (nAnimeID, nEpisodeNo) => {
         try {
-            let apiUrl_fto = `/findthatost_api/getSubmissionContext/track_add/${Number(nAnimeID)}`;
+            let apiUrl_fto = `/findthatost_api/submission/context_info/track_add/${Number(nAnimeID)}`;
             if (nEpisodeNo !== -1) {
-                apiUrl_fto += `/episode_no/${Number(nEpisodeNo)}`
+                apiUrl_fto += `/episode_number/${Number(nEpisodeNo)}`
             }
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
@@ -282,6 +282,21 @@ const SubmitTrackAdd = () => {
         if (inputElementName === 'submit_sceneDesc') {
             setCharCount_SceneDesc(inputElementValue);
         }
+        // Update scene description platform icon
+        else if (inputElementName === 'submit_songType' && (!pageInputs.hasOwnProperty('submit_sceneDesc') || IsEmpty(pageInputs['submit_sceneDesc'])) && (ftoEpisodeID !== -1)) {
+            if (inputElementValue === 'songType_OP') {
+                const trackAddform = document.getElementById('track_add_form');
+                trackAddform['submit_sceneDesc'].value = `Opening for ${submissionContextInfo.canonical_title} Episode ${spEpisodeNo}.`;
+                setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
+                setPageInputs(values => ({...values, ['submit_sceneDesc']: trackAddform['submit_sceneDesc'].value}));
+            }
+            else if (inputElementValue === 'songType_ED') {
+                const trackAddform = document.getElementById('track_add_form');
+                trackAddform['submit_sceneDesc'].value = `Ending for ${submissionContextInfo.canonical_title} Episode ${spEpisodeNo}.`;
+                setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
+                setPageInputs(values => ({...values, ['submit_sceneDesc']: trackAddform['submit_sceneDesc'].value}));
+            }
+        }
         // Update input platform icon
         else if (inputElementName.startsWith('submit_streamPlat_item_')) {
             // Get platform input item id
@@ -383,7 +398,7 @@ const SubmitTrackAdd = () => {
         setPageLoading(true);
         
         const formValues = event.target.elements // as HTMLFormControlsCollection;
-        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs, submitPreExistingTrack);
+        let inputsValid = ValidateInputs(formValues, platformItems, {setUserSubmission, setPlatformItems, setPageInputs}, pageInputs, (ftoEpisodeID === -1), submitPreExistingTrack);
         if (inputsValid) {
             // Update user submission
             const updatedSubmission = { 
@@ -439,7 +454,7 @@ const SubmitTrackAdd = () => {
      */
     const FetchPostSubmissionTrackAdd_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId = 1) => {
         objUserSubmission['user_id'] = nUserId;
-        let apiUrl_fto = `/findthatost_api/postSubmission/track_add/${Number(nAnimeID)}`;
+        let apiUrl_fto = `/findthatost_api/submission/submit/track_add/${Number(nAnimeID)}`;
         if (nEpisodeNo !== -1) {
             apiUrl_fto += `/episode_id/${Number(submissionContextInfo.episode_id)}`
         }
@@ -512,6 +527,13 @@ const SubmitTrackAdd = () => {
             strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
         }
 
+        // Validate Scene Description
+        inputElement = formElements[`submit_sceneDesc`];
+        if (IsEmpty(inputElement.value)) {
+            AddErrorToFtoInput(inputElement);
+            strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
+        }
+
         // If error occurred, update latest submitted tracks variable and scroll to error input. 
         if (!IsEmpty(strElemIdFirstInvalidInput)) {
         
@@ -535,7 +557,7 @@ const SubmitTrackAdd = () => {
     const FetchPostSubmissionTrackAddPreExisting_FTO = async (nFtoEpisodeId, objUserSubmission, nUserId = 1) => {
         objUserSubmission['user_id'] = nUserId;
         objUserSubmission['track_id'] = preExistingTrackInfo['track_id'];
-        let apiUrl_fto = `/findthatost_api/postSubmission/track_add_pre_existing/${nFtoEpisodeId}`;
+        let apiUrl_fto = `/findthatost_api/submission/submit/track_add_pre_existing/${nFtoEpisodeId}`;
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         const response = await fetch(apiUrl_fto, 
         {
@@ -574,6 +596,7 @@ const SubmitTrackAdd = () => {
     const SwitchAddRequestType = (bAddExistingTrackMode) => {
         if (bAddExistingTrackMode) {
             setPageFormValues({track_name: ''});
+            setPageInputs({});
             setSubmitPreExistingTrack(false);
         } else {
             setAddPreExistingTrackModalVisibility(true);
@@ -605,13 +628,13 @@ const SubmitTrackAdd = () => {
                     <div className='fto__page__submission-content_heading_section'>
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Add Track
-                            {(spEpisodeNo !== -1) ? (
+                            {(ftoEpisodeID !== -1) ? (
                                     <a href={'/anime/' + anime_id + '/episode/' + spEpisodeNo}>
                                         {' to Episode ' + spEpisodeNo}
                                     </a>
                             ) : (
                                 <a href={'/anime/' + anime_id}>
-                                    ' to Series'
+                                    {' to Series'}
                                 </a>
                             )}
                         </h1>
@@ -632,7 +655,7 @@ const SubmitTrackAdd = () => {
                                     style={{ color: (submitPreExistingTrack) ? 'grey' : 'white' }}
                                     onChange={ handleChange_TrackAdd } />
                                     
-                                {(spEpisodeNo !== -1) && (
+                                {(ftoEpisodeID !== -1) && (
                                     <button className='fto__button__pink fto__button__right fto__pointer' style={{marginTop: '5px'}} type='button' 
                                         onClick={() => { SwitchAddRequestType(submitPreExistingTrack)}}>
                                         <div className='fto__page__submission-main_content-align_end'>
@@ -656,6 +679,7 @@ const SubmitTrackAdd = () => {
                                 )}
                             </div>
                             <div className='fto__page__submission-main_content-even_split fto_gap'>
+                                {(ftoEpisodeID !== -1) && (
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-left'>
                                     <label htmlFor='submit_songType'>Enter Song Type<span className='fto-red__asterisk'>*</span>:</label>
                                     <select id='submit_songType' name='submit_songType' className='fto_input'
@@ -674,6 +698,7 @@ const SubmitTrackAdd = () => {
                                         </option>
                                     </select>
                                 </div>
+                                )}
                                 {(!submitPreExistingTrack) && (
                                 <div className='fto__page__submission-main_content-input_section fto__page__submission-main_content-right'>
                                     <label htmlFor='submit_releaseDate'>Enter Release Date:</label>
@@ -750,6 +775,7 @@ const SubmitTrackAdd = () => {
                                 </div>
                             </>
                             )}
+                            {(spEpisodeNo !== -1) && (
                             <div className='fto__page__submission-main_content-input_section'>
                                 <label htmlFor='submit_sceneDesc'>Enter Scene Description:</label>
                                 <textarea id='submit_sceneDesc' name='submit_sceneDesc' type='text' className='fto_input'
@@ -761,6 +787,7 @@ const SubmitTrackAdd = () => {
                                     </span>
                                 </div>
                             </div>
+                            )}
                             
                             {(queryStatusCode !== 200) && (
                             <div className='fto__page__submission-main_content-submit_section'>

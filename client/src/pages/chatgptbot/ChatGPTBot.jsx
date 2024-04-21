@@ -106,7 +106,7 @@ const ChatGPTBot = () => {
         const objChatGPTQuery = {
             msg_history: objMsgHistory,
         };
-        let apiUrl_fto = `/findthatost_api/chatbot`;
+        let apiUrl_fto = `/findthatost_api/openai/assistant`;
         console.debug(`Fetch gpt response, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         const chatGptReponse = await fetch(apiUrl_fto, 
         {

@@ -133,7 +133,7 @@ const SubmitTrackEdit = () => {
      */
     const FetchSubmissionContextDetails_FTO = async (nTrackID, nOccurrenceID) => {
         try {
-            let apiUrl_fto = `/findthatost_api/getSubmissionContext/track_edit/${Number(nTrackID)}`;
+            let apiUrl_fto = `/findthatost_api/submission/context_info/track_edit/${Number(nTrackID)}`;
             if (nOccurrenceID !== -1) {
                 apiUrl_fto += `/occurrence_id/${Number(nOccurrenceID)}`
             }
@@ -371,7 +371,7 @@ const SubmitTrackEdit = () => {
      */
     const FetchPostSubmissionTrackEdit_FTO = async (nTrackID, nFtoOccurrenceID, objUserSubmission, nUserId = 1) => {
         objUserSubmission['user_id'] = nUserId;
-        let apiUrl_fto = `/findthatost_api/postSubmission/track_edit/${Number(nTrackID)}`;
+        let apiUrl_fto = `/findthatost_api/submission/submit/track_edit/${Number(nTrackID)}`;
         if (nFtoOccurrenceID !== -1) {
             apiUrl_fto += `/occurrence_id/${nFtoOccurrenceID}`;
         }

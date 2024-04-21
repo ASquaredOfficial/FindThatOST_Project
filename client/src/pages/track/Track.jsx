@@ -97,7 +97,7 @@ const Track = () => {
      * 
      */
     const FetchTrackDetails_FTO = async (nTrackID, nOccurrenceID) => {
-        let apiUrl_fto = `/findthatost_api/getTrack/${Number(nTrackID)}`;
+        let apiUrl_fto = `/findthatost_api/track/${Number(nTrackID)}`;
         if (nOccurrenceID !== -1) {
             apiUrl_fto += `/context_id/${Number(nOccurrenceID)}`
         }

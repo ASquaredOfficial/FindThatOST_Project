@@ -90,7 +90,7 @@ const SubmitTrackRemoveModal = (
         const objUserSubmission = {};
         objUserSubmission['user_id'] = nUserId;
         objUserSubmission['submit_removeReason'] = charCount_removeReasons;
-        let apiUrl_fto = `/findthatost_api/postSubmission/track_remove/${Number(nTrackID)}/occurrence_id/${nFtoOccurrenceID}`;
+        let apiUrl_fto = `/findthatost_api/submission/submit/track_remove/${Number(nTrackID)}/occurrence_id/${nFtoOccurrenceID}`;
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         const response = await fetch(apiUrl_fto, 
         {

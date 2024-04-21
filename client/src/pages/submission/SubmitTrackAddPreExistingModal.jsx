@@ -44,7 +44,7 @@ const SubmitTrackAddPreExistingModal = (
 
     const FetchAllAnimeTracks_FTO = async (nFtoAnimeID, nExcludedFtoEpisodeId = -1) => {
         try {
-            let apiUrl_fto = `/findthatost_api/getAnimeTracks/anime_id/${Number(nFtoAnimeID)}`;
+            let apiUrl_fto = `/findthatost_api/anime/${Number(nFtoAnimeID)}/tracks`;
             console.debug(`Fetch anime tracks data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto, 
             {

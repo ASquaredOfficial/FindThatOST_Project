@@ -271,7 +271,7 @@ const Search = () => {
     }
       
     const FetchAnimeMapping_FTO = async (malAnimeID, strMalAnimeTitle = '') => {
-        let apiUrl_fto = `/findthatost_api/getAnimeMappingMAL/${malAnimeID}`;
+        let apiUrl_fto = `/findthatost_api/anime/mal_mapping/${malAnimeID}`;
         console.debug(`Fetch url:, '${apiUrl_fto}'`);
         try {
             const response = await fetch(apiUrl_fto);
@@ -311,7 +311,7 @@ const Search = () => {
             let kitsuAnimeID = kitsuMappedAnimeObj.id;
 
             // Insert Anime into DB and return new fto anime id
-            let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}/${kitsuAnimeID}`;
+            let apiUrl_fto = `/findthatost_api/anime/mal_anime_id/${malAnimeID}/kitsu_anime_id/${kitsuAnimeID}`;
             console.debug(`Fetch post anime context to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             
             try {
@@ -340,7 +340,7 @@ const Search = () => {
         }
         else {
             // Insert Anime into DB (without kitsu) and return new fto anime id
-            let apiUrl_fto = `/findthatost_api/postAnimeIntoDB/${malAnimeID}`;
+            let apiUrl_fto = `/findthatost_api/anime/mal_anime_id/${malAnimeID}`;
             console.debug(`Fetch post anime context to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             
             try {
@@ -388,7 +388,7 @@ const Search = () => {
     }
 
     const FetchAnimeSongCount_FTO = async (listMalAnimeIds) => {
-        let apiUrl_fto = `/findthatost_api/getAnimeTrackCount/mal_ids`;
+        let apiUrl_fto = `/findthatost_api/anime/anime_list_track_counts/post_mal_ids`;
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         const response = await fetch(apiUrl_fto, 
         {

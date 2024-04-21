@@ -113,7 +113,7 @@ const Episode = () => {
      * 
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
-        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}`
+        let apiUrl_fto = `/findthatost_api/anime/${Number(ftoAnimeID)}`
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
@@ -136,7 +136,7 @@ const Episode = () => {
      * 
      */
     const FetchEpisodeData_FTO = async (ftoAnimeID, nEpisodeNo) => {
-        let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${Number(ftoAnimeID)}/episode_no/${Number(nEpisodeNo)}`
+        let apiUrl_fto = `/findthatost_api/anime/${Number(ftoAnimeID)}/episode_number/${Number(nEpisodeNo)}`
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
             const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
@@ -198,7 +198,7 @@ const Episode = () => {
                 });
                 
                 if (nLowestMalID !== malAnimeDetails.mal_id) {
-                    let apiUrl_fto = `/findthatost_api/getAnimeMappingMAL/${nLowestMalID}`;
+                    let apiUrl_fto = `/findthatost_api/anime/mal_mapping/${nLowestMalID}`;
                     console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
 
                     const response = await fetch(apiUrl_fto);
@@ -226,11 +226,11 @@ const Episode = () => {
         // Createn update query
         let apiUrl_fto = '';
         if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
-            apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
+            apiUrl_fto =`/findthatost_api/anime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
         } else if (bUpdateCanonicalTitle) {
-            apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
+            apiUrl_fto = `/findthatost_api/anime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
         } else if (bUpdateParentAnimeID) {
-            apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
+            apiUrl_fto = `/findthatost_api/anime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
         }
 
         // Perform Fetch Query to update anime
@@ -379,7 +379,7 @@ const Episode = () => {
      */
     const FetchEpisodeListOfTracks_FTO = async (nEpisodeID, sortQuery = '') => {
         try {
-            let apiUrl_fto = `/findthatost_api/getTracks/episode_id/${Number(nEpisodeID)}`
+            let apiUrl_fto = `/findthatost_api/episode/${Number(nEpisodeID)}/all_tracks`
             if (!IsEmpty(sortQuery)) {
                 apiUrl_fto += `/sort_by/${sortQuery}`;
             }
