@@ -22,8 +22,8 @@ const Episode = () => {
     const [ pageEpisodeThumbnail, setPageEpisodeInfoThumbail ] = useState();
     const [ episodeListOfTracks, setEpisodeListOfTracks ] = useState();
 
-    const [ viewSpotifyPlayModal, setViewSpotifyPlayModal ] = useState(false);
-    const [ currentSpotifyTrackId, setCurrentSpotifyId ] = useState()
+    const [ embeddedTrackModalVisibility, setEmbeddedTrackModalVisibility ] = useState(false);
+    const [ currentTrackData, setCurrentTrackData ] = useState()
 
     useEffect(() => {
         document.title = `Episode ${episode_no} Tracks | AnimeID(${anime_id})`;
@@ -495,21 +495,41 @@ const Episode = () => {
 
     return (
         <div className='fto__page__episode'>
-            {viewSpotifyPlayModal && (
+            {embeddedTrackModalVisibility && (
                 <div className='fto_modal'>
                     <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
-                        <button className="fto__button__pink" style={{ position: 'absolute', top: '1px', left: '10px', zIndex: '1'}} 
-                            onClick={() => {
-                                setViewSpotifyPlayModal(false);
-                                setCurrentSpotifyId();
-                            }}>
-                            Close
-                        </button>
-                        <iframe style={{ borderRadius: "12px", margin: '0', border: '0' }}
-                            title="Spotify Track Player"
-                            src={`https://open.spotify.com/embed/track/${currentSpotifyTrackId}?utm_source=generator&theme=0`} 
-                            width="300" height="400" allowFullScreen 
-                            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture" loading="lazy" />
+                        {!IsEmpty(currentTrackData['apple_music']) ? (
+                            <>
+                                <iframe  style={{ overflow: 'hidden', borderRadius: '10px', border: '0', paddingTop: '20px', width: '300px', height: '400px'}}
+                                    title="Apple Music Track Player"
+                                    src={`https://embed.music.apple.com/song/${currentTrackData['apple_music']}?theme=light`}
+                                    allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" 
+                                    sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" 
+                                    allowFullScreen/>
+                                <button className="fto__button__pink" style={{ position: 'absolute', top: '85px', right: '15px', zIndex: '1'}} 
+                                    onClick={() => {
+                                        setEmbeddedTrackModalVisibility(false);
+                                        setCurrentTrackData();
+                                    }}>
+                                    Close
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button className="fto__button__pink" style={{ position: 'absolute', top: '1px', left: '10px', zIndex: '1'}} 
+                                    onClick={() => {
+                                        setEmbeddedTrackModalVisibility(false);
+                                        setCurrentTrackData();
+                                    }}>
+                                    Close
+                                </button>
+                                <iframe style={{ borderRadius: "12px", margin: '0', border: '0' }}
+                                    title="Spotify Track Player"
+                                    src={`https://open.spotify.com/embed/track/${currentTrackData['spotify']}?utm_source=generator&theme=0`} 
+                                    width="300" height="400" allowFullScreen 
+                                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture" loading="lazy" />
+                            </>
+                        )}
                     </div>
                 </div>
             )}
@@ -597,10 +617,13 @@ const Episode = () => {
                                                             </a>
                                                             <div className='fto__page__episode-main_content--track_item-header_right'>
                                                                 {(!IsEmpty(trackInfo.streaming_platform_links) && typeof(JSON.parse(trackInfo.streaming_platform_links)) === 'object') && 
-                                                                    !IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify']) && (      
+                                                                    (!IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify']) || !IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['apple_music'])) && (      
                                                                     <FaPlayCircle 
                                                                         className='fto__page__episode-main_content--track_item-play_icon' 
-                                                                        onClick={() => {setViewSpotifyPlayModal(true); setCurrentSpotifyId(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify'])}}
+                                                                        onClick={() => {
+                                                                            setEmbeddedTrackModalVisibility(true); 
+                                                                            setCurrentTrackData(JSON.parse(trackInfo.streaming_platform_links)['data']);
+                                                                        }}
                                                                     />
                                                                 )}
                                                             </div>

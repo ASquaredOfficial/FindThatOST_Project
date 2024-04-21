@@ -119,14 +119,44 @@
         }
 
         .fto__page__anime-main_content_info_list-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             background: #1b1b1b;
             padding: 10px 15px;
             border-bottom: 0.5px solid grey;
+
+            
+            .fto__page__anime-main_content_episode_heading {
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 1; /* number of lines to show */
+                        line-clamp: 1; 
+                -webkit-box-orient: vertical;
+            }
 
             .fto__page__anime-main_content_episode_heading:hover {
                 cursor: pointer;
                 text-decoration: underline;
                 opacity: 0.9;
+            }
+
+            .fto__page__anime-main_content_info_list-row_right {
+                display: flex;
+                align-items: center;
+
+                .fto__page__anime-main_content_info_list--track_item-play_icon {
+                    margin-right: 10px;
+                    height: 20px;
+                    width: 20px;
+                    cursor: pointer;
+                }
+                .fto__page__anime-main_content_info_list--track_item-play_icon:hover {
+                    margin-right: 7.5px;
+                    stroke-width: 15;
+                    height: 25px;
+                    width: 25px;
+                }
             }
         }
         

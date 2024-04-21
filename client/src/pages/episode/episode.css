@@ -64,6 +64,10 @@
 
         .fto__page__episode-main_content--episode_details-left {
             margin:auto;
+
+            .fto__page__episode-main_content--episode_details-thumbnail {
+                max-width: 300px;
+            }
         }
 
         .fto__page__episode-main_content--episode_details-right {
