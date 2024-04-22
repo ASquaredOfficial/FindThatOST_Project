@@ -193,6 +193,10 @@
     .fto__navbar-sign {
         display: none;
     }
+
+    .fto__navbar-menu_container-links-sign {
+        display:block;
+    }
 }
 
 @media screen and (max-width: 700px) {
@@ -210,10 +214,6 @@
 @media screen and (max-width: 550px) {
     .fto__navbar {
         padding:  1rem 4rem
-    }
-
-    .fto__navbar-menu_container-links-sign {
-        display:block;
     }
 
     .fto__navbar-menu_container {

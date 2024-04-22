@@ -1,4 +1,6 @@
 import React, {useEffect} from 'react'
+import './menu.css';
+
 import { useLocation } from 'react-router-dom';
 
 const Menu = ({FocusOnSearchBar}) => {
@@ -11,7 +13,7 @@ const Menu = ({FocusOnSearchBar}) => {
     return (
         <>
         <p><a href={'/home/'}>Home</a></p>
-        <p><a onClick={FocusOnSearchBar}>Search</a></p>
+        <p className='fto__menu-search'><a onClick={FocusOnSearchBar}>Search</a></p>
         <p><a href={'/chatbot/'}>Ask ChatGPT</a></p> {/*href='#askchatgpt'*/}
         </>
     )

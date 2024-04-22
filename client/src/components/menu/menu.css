@@ -1,0 +1,6 @@
+@media screen and (min-width: 700px) {
+    /*Edit for slightly smaller tablet or smaller screens*/
+    .fto__menu-search {
+        display: none;
+    }
+}
