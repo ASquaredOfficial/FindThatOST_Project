@@ -90,9 +90,9 @@ const SubmitTrackAddPreExistingModal = (
     }
 
     return (
-        <div className="fto_modal">
+        <div className="fto__modal">
 
-            <div className="fto_modal-content">
+            <div className="fto__modal-content">
                 <h3>
                     Select Track from track list
                 </h3>
@@ -124,7 +124,7 @@ const SubmitTrackAddPreExistingModal = (
                         </>
                     )}
                 </div>
-                <div className='fto_modal-content-footer'>
+                <div className='fto__modal-content-footer'>
                     <button className='fto__button__gray' type='button' onClick={ CloseModal }>Cancel</button>
                 </div>
             </div>

@@ -41,6 +41,7 @@
 .fto__page__anime-main_content {
     display: flex;
     flex-direction: row;
+    width: 100%;
 
     font-family: var(--font-family-manrope);
     color: #fff;

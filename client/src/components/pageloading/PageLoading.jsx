@@ -1,11 +1,12 @@
 import React from 'react';
+import './pageloading.css';
 
 const PageLoading = () => {
 
     return (
-        <div className='fto_loading'>
-            <div className='fto_modal_overlay-bg fto_loading-cursor' />
-            <div className={'fto_loading-text_section fto_input'} 
+        <div className='fto__page__loading'>
+            <div className='fto__modal-overlay-bg fto__page__loading-cursor' />
+            <div className={'fto__page__loading-text_section fto_input'} 
                 style={
                     { 
                         position: 'fixed', 
@@ -15,10 +16,10 @@ const PageLoading = () => {
                         padding: '20px',
                     }
                 }>
-                <p className={'fto_loading-text fto_unselectable'}>
+                <p className={'fto__page__loading-text fto_unselectable'}>
                     Loading...
                 </p>
-                <div className="fto_loading-loader" />
+                <div className="fto__page__loading-loader" />
             </div>
         </div>
     )

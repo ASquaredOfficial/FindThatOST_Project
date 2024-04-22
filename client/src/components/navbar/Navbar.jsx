@@ -125,7 +125,7 @@ const Navbar = () => {
                     </div>
                 </>
             ) : (
-                <div className='fto_modal'>
+                <div className='fto__modal'>
                     <MobileSearchBar
                         setMobileSearchbarVisiblity={setMobileSearchbarVisiblity}
                         HandleSearchbarSubmit={HandleSearchbarSubmit}

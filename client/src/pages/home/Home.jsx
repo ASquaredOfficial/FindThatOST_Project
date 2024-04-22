@@ -1,14 +1,13 @@
 import React, {useEffect} from 'react';
 import './home.css';
 
-
 import { Navbar, Footer, } from "../../components";
 import { Header, AskChatGPT} from "../../containers";
 
 const Home = () => {
     
     useEffect(() => {
-        document.title = `Home`;
+        document.title = `Home | FindThatOST`;
     }, []);
 
     return (

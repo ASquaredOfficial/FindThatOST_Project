@@ -123,8 +123,8 @@ const SubmitTrackRemoveModal = (
     }
 
     return (
-        <div className="fto_modal">
-            <div className="fto_modal-content">
+        <div className="fto__modal">
+            <div className="fto__modal-content">
                 <form id='track_remove_form'>
                     <div className='title_confirmation'>
                         <h1>
@@ -138,13 +138,13 @@ const SubmitTrackRemoveModal = (
                             placeholder='Short desctription of reason for deleting track from episode.' maxLength={ maxCharCountLength_removeReasons } 
                             onChange={ handleChange_TrackRemove } value={charCount_removeReasons}
                         />
-                        <div className='fto_modal-content-align_end'>
+                        <div className='fto__modal-content-align_end'>
                             <span>
                                 {charCount_removeReasons.length}/{maxCharCountLength_removeReasons} characters
                             </span>
                         </div>
                     </div>
-                    <div className='fto_modal-content-footer'>
+                    <div className='fto__modal-content-footer'>
                         <button className='fto__button__gray' type='button' onClick={ CloseModal }>Cancel</button>
                         <button className='fto__button__pink' type='button' onClick={ handleSubmit_TrackRemove }>Continue</button>
                     </div>

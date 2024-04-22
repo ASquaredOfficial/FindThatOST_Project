@@ -46,15 +46,15 @@ const SubmitTrackAdd = () => {
         let listOfClassNames = ftoPageElem.className.split(" ");
         if (pageLoading === true) {
             // if page doesn't have the class, add loading class
-            if (listOfClassNames.indexOf('fto_loading-cursor') === -1) {
-                listOfClassNames.unshift('fto_loading-cursor');
+            if (listOfClassNames.indexOf('fto__page__loading-cursor') === -1) {
+                listOfClassNames.unshift('fto__page__loading-cursor');
                 ftoPageElem.className =  listOfClassNames.join(' ').trim();
             }
         }
         else {
             // if page does have the class, remove loading
-            if (listOfClassNames.indexOf('fto_loading-cursor') !== -1) {
-                let classNameIndex = Number(listOfClassNames.findIndex(item => item === "fto_loading-cursor"));
+            if (listOfClassNames.indexOf('fto__page__loading-cursor') !== -1) {
+                let classNameIndex = Number(listOfClassNames.findIndex(item => item === "fto__page__loading-cursor"));
                 listOfClassNames.splice(classNameIndex, 1);
                 ftoPageElem.className = listOfClassNames.join(' ').trim();
             }
@@ -802,8 +802,8 @@ const SubmitTrackAdd = () => {
                     
                     {(queryStatusCode > 0) && (
                     <div className='fto__page__submission-pop_up'>
-                        <div className="fto_modal">
-                            <div className="fto_modal-content">
+                        <div className="fto__modal">
+                            <div className="fto__modal-content">
                                 {(queryStatusCode === 200) ? (
                                     <>
                                         <h3 className='fto__page__submission-content_header_subtitle'>

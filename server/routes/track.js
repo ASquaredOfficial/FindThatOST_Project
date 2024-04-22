@@ -11,7 +11,6 @@ router.get("/:nTrackID", async (req, res) => {
     const nTrackID = req.params.nTrackID;
     try {
         const ftoTrackDetails = await GetTrack(nTrackID);
-        console.log("Track Details:", ftoTrackDetails)
         if (ftoTrackDetails.length == 0) {
             return res.status(204).json({ error: 'No Results found' }).end(); 
         }
