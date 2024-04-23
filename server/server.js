@@ -16,14 +16,17 @@ app.use("/findthatost_api/anime", animeRouter);
 const episodeRouter = require("./routes/episode");
 app.use("/findthatost_api/episode", episodeRouter);
 
+const episodeCommentsRouter = require("./routes/episode_comments");
+app.use("/findthatost_api/episode_comments", episodeCommentsRouter);
+
 const trackRouter = require("./routes/track");
 app.use("/findthatost_api/track", trackRouter);
 
 const submissionRouter = require("./routes/submission");
 app.use("/findthatost_api/submission", submissionRouter);
 
-const episodeCommentsRouter = require("./routes/episode_comments");
-app.use("/findthatost_api/episode_comments", episodeCommentsRouter);
+const submissionCommentsRouter = require("./routes/submission_comments");
+app.use("/findthatost_api/submission_comments", submissionCommentsRouter);
 
 const openaiCommentsRouter = require("./routes/openai");
 app.use("/findthatost_api/openai", openaiCommentsRouter);

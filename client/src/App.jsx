@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
-import { Home, Search, Anime, Episode, Track, SubmitTrackAdd, SubmitTrackEdit, ChatGPTBot } from './pages'
+import { Home, Search, Anime, Episode, Track, SubmitTrackAdd, SubmitTrackEdit, ChatGPTBot, TrackRequestView } from './pages'
 import './App.css'
 import './pages/general.css'
 
@@ -23,6 +23,7 @@ const App = () => {
 					<Route element={<ChatGPTBot />} path="/chatbot/" />
 					<Route element={<SubmitTrackAdd />} path="/submission/track_add/:anime_id/" />
 					<Route element={<SubmitTrackEdit />} path="/submission/track_edit/:track_id/context_id/:occurrence_id" />
+					<Route element={<TrackRequestView />} path="/request/:request_id" />
 					<Route element={<Home />} path="*" />
 				</Routes>
 			</BrowserRouter>

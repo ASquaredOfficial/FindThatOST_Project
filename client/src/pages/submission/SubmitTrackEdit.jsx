@@ -578,6 +578,7 @@ const SubmitTrackEdit = () => {
                         setSuccessfulSubmitQuery={setSuccessfulSubmitQuery}
                         trackID={track_id}
                         occurrenceID={occurrence_id}
+                        episodeID={ftoEpisodeID}
                         setFtoEpisodeID={setFtoEpisodeID}
                         setPageToEditMode={setPageToEditMode}
                     />

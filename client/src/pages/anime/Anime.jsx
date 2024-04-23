@@ -741,7 +741,7 @@ const Anime = () => {
                                 <h4 className='fto__page__anime-content_header_subtitle'><strong>{malAnimeTitles !== undefined && ( malAnimeTitles.English )}</strong></h4>
                             )}
                         </div>
-                        <hr className='fto__page__anime-horizontal_hr' />
+                        <hr className='fto_horizontal_hr' />
                         
                         <div className='fto__page__anime-main_content'>
                             <div className='fto__page__anime-main_content_left'>

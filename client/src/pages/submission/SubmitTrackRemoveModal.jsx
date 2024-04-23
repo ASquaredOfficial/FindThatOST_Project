@@ -11,6 +11,7 @@ const SubmitTrackRemoveModal = (
         setPageToEditMode,
         trackID,
         occurrenceID,
+        episodeID,
     }) => {
 
     const [ charCount_removeReasons, setCharCount_removeReasons] = useState('');
@@ -49,7 +50,7 @@ const SubmitTrackRemoveModal = (
         const currentFormValues = document.getElementById('track_remove_form');
         let bIsValid = ValidateInputs(currentFormValues);
         if (bIsValid) {
-            FetchPostSubmissionTrackRemove_FTO(trackID, occurrenceID);
+            FetchPostSubmissionTrackRemove_FTO(trackID, occurrenceID, episodeID);
         }
         setPageLoading(false);
     }
@@ -80,17 +81,18 @@ const SubmitTrackRemoveModal = (
      * Perform all fetches to set up the webpage.
      * @async
      * @function FetchPostSubmissionTrackRemove_FTO
-     * @param {number|string}  nTrackID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
-     * @param {number|string}  nFtoOccurrenceID -  Episode No track is being added to. -1 if added to no specific episode.
+     * @param {number|string}  nTrackID - Page/Track ID from url, corresponds to FindThatOST Track ID.
+     * @param {number|string}  nFtoOccurrenceID -  Occurrence ID being deleted.
+     * @param {number|string}  nFtoEpisodeID -  Episode ID track is being removed from.
      * @param {object}  objUserSubmission - Object containg data submitted by user.
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackRemove_FTO = async (nTrackID, nFtoOccurrenceID, nUserId = 1) => {
+    const FetchPostSubmissionTrackRemove_FTO = async (nTrackID, nFtoOccurrenceID, nFtoEpisodeID, nUserId = 1) => {
         const objUserSubmission = {};
         objUserSubmission['user_id'] = nUserId;
         objUserSubmission['submit_removeReason'] = charCount_removeReasons;
-        let apiUrl_fto = `/findthatost_api/submission/submit/track_remove/${Number(nTrackID)}/occurrence_id/${nFtoOccurrenceID}`;
+        let apiUrl_fto = `/findthatost_api/submission/submit/track_remove/${Number(nTrackID)}/occurrence_id/${nFtoOccurrenceID}/episode_id/${nFtoEpisodeID}`;
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         const response = await fetch(apiUrl_fto, 
         {

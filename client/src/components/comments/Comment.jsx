@@ -189,6 +189,7 @@ const Comment = ({
                                         currentUserId={currentUserId}    
                                         deleteComment={deleteComment}
                                         addComment={addComment}
+                                        updateComment={updateComment}
                                         likeComment={likeComment}
                                         activeComment={activeComment}
                                         setActiveComment={setActiveComment}

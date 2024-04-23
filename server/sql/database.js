@@ -54,14 +54,14 @@ class SQLArrayHandler {
 		// Append subsequent strings with \n before them
 		for (let i = 1; i < this.strings.length; i++) {
 			if (combinedString.endsWith(",")) {
-			combinedString = combinedString.substring(0,combinedString.length) + ' ';
+				combinedString = combinedString.substring(0,combinedString.length) + ' ';
 			}
 			else {
-			combinedString += "\n";
+				combinedString += "\n";
 			}
 
 			if (this.strings[i].startsWith("INNER JOIN")) {
-			combinedString += "\t";
+				combinedString += "\t";
 			} 
 			combinedString += this.strings[i].trim();
 		}
@@ -410,6 +410,7 @@ const DeleteCommentFromEpisode = (nFtoCommentID, nUserId) => {
 
 const PatchCommentLikesOnEpisode = (nFtoCommentID, objLikesDislikes, nUserId) => {
 	return new Promise((resolve, reject) => {
+		console.log("LikesDislikes:", (IsEmpty(objLikesDislikes)))
 		let post_data = {
 			comment_likes: JSON.stringify(objLikesDislikes),
 		}
@@ -860,29 +861,29 @@ const PostSubmission_TrackAddPreExisting = (nFtoEpisodeID, objSubmitDetails) => 
 }
 
 const GetSubmissionContext_TrackEdit = (nFtoTrackID, nFtoOccurrenceID = -1) => {
-  return new Promise((resolve, reject) => {
-    let sqlQuery = [
-		"SELECT *",
-		"FROM `fto_track`",
-		`WHERE track_id = ${nFtoTrackID}`,
-    ];
-	
-    if (nFtoOccurrenceID !== -1) {
-		sqlQuery.splice(2, 0, "INNER JOIN `fto_occurrence` ON fto_track.track_id = fto_occurrence.fto_track_id");
-		sqlQuery.splice(3, 0, "INNER JOIN fto_episode ON fto_occurrence.fto_episode_id = fto_episode.episode_id");
-		sqlQuery.push(`AND occurrence_id = ${nFtoOccurrenceID}`)
-    }
-    const handler = new SQLArrayHandler(sqlQuery);
-    const sqlQueryString = handler.CombineStringsToQuery();
-    FtoConnection.query(sqlQueryString, (error, results) => {
-		if (error) {
-			LogError('GetSubmissionContext', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
-			reject(error);
-		} else {
-			resolve(results);
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT *",
+			"FROM `fto_track`",
+			`WHERE track_id = ${nFtoTrackID}`,
+		];
+		
+		if (nFtoOccurrenceID !== -1) {
+			sqlQuery.splice(2, 0, "INNER JOIN `fto_occurrence` ON fto_track.track_id = fto_occurrence.fto_track_id");
+			sqlQuery.splice(3, 0, "INNER JOIN fto_episode ON fto_occurrence.fto_episode_id = fto_episode.episode_id");
+			sqlQuery.push(`AND occurrence_id = ${nFtoOccurrenceID}`)
 		}
-    });
-  });
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetSubmissionContext', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
 }
 
 /**
@@ -1069,7 +1070,7 @@ const PostSubmission_TrackEdit = (nFtoTrackID, nFtoOccurrenceID, objUserSubmissi
  *                              If no matching records are found, the promise resolves to an empty array.
  *                              If an error occurs during the database query, the promise rejects with the error.
  */
-const PostSubmission_TrackRemove = (nFtoTrackID, nFtoOccurrenceID, objUserSubmission) => {
+const PostSubmission_TrackRemove = (nFtoTrackID, nFtoOccurrenceID, nFtoEpisodeID, objUserSubmission) => {
 	return new Promise((resolve, reject) => {
 		FtoConnectionPool.getConnection((err, ftoConnectionPool) => {
 			if (err) {
@@ -1115,7 +1116,7 @@ const PostSubmission_TrackRemove = (nFtoTrackID, nFtoOccurrenceID, objUserSubmis
 						const postData2 = {
 							fto_user_id: nUserID,
 							fto_track_id: nFtoTrackID,
-							fto_occurrence_id: nFtoOccurrenceID,
+							fto_episode_id: nFtoEpisodeID,
 							track_remove_reason: String(objUserSubmission.submit_removeReason),
 						};
 						ftoConnectionPool.query(sqlQuery2, postData2, (err2, result2) => {
@@ -1186,6 +1187,326 @@ const PostSubmission_TrackRemove = (nFtoTrackID, nFtoOccurrenceID, objUserSubmis
 	});
 }
 
+const GetSubmissionDetails = (nSubmissionID, bIncludeMalID = false) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT fto_anime_id, user_username, `fto_request_submissions`.*",
+			"FROM `fto_request_submissions`",
+			"INNER JOIN `fto_track` ON `fto_track`.`track_id` = fto_track_id",
+			"INNER JOIN `fto_users` ON `fto_users`.`user_id` = `fto_user_id`",
+			`WHERE request_submission_id = ${nSubmissionID}`,
+		];
+		
+		if (bIncludeMalID) {
+			sqlQuery.splice(1, 0, ", `fto_anime`.`mal_id`");
+			sqlQuery.splice(4, 0, "INNER JOIN `fto_anime` ON `fto_anime`.`anime_id` = fto_anime_id");
+		}
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetSubmissionDetails', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const GetSubmissionDetailsTrackAdd = (nTrackAddSubmissionID) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT episode_no, `fto_request_track_add`.*",
+			"FROM `fto_request_track_add`",
+			"INNER JOIN `fto_episode` ON `fto_episode`.`episode_id` = fto_episode_id",
+			`WHERE request_track_add_id = ${nTrackAddSubmissionID}`,
+		];
+		
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetSubmissionDetails', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				if (!IsEmpty(results[0].streaming_platform_links)) {
+					let newResults = results;
+					newResults[0].streaming_platform_links = JSON.parse(results[0].streaming_platform_links);
+					return resolve(newResults)
+				}
+				resolve(results);
+			}
+		});
+	});
+}
+
+const GetSubmissionDetailsTrackAddPreExisting = (nTrackAddSubmissionID) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT episode_no, `fto_request_track_add_preexisting`.*",
+			"FROM `fto_request_track_add_preexisting`",
+			"INNER JOIN `fto_episode` ON `fto_episode`.`episode_id` = fto_episode_id",
+			`WHERE request_track_add_id = ${nTrackAddSubmissionID}`,
+		];
+		
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetSubmissionDetailsTrackAddPreExisting', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const GetSubmissionDetailsTrackEdit = (nTrackEditSubmissionID) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT episode_no, `fto_request_track_edit`.*",
+			"FROM `fto_request_track_edit`",
+			"INNER JOIN `fto_occurrence` ON `fto_occurrence`.`occurrence_id` = `fto_request_track_edit`.`fto_occurrence_id`",
+			"INNER JOIN `fto_episode` ON `fto_episode`.`episode_id` = fto_episode_id",
+			`WHERE request_track_edit_id = ${nTrackEditSubmissionID}`,
+		];
+		
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetSubmissionDetailsTrackEdit', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const GetSubmissionDetailsTrackRemove = (nTrackRemoveSubmissionID) => {
+	return new Promise((resolve, reject) => {
+		// return reject("No reason");
+		let sqlQuery = [
+			"SELECT episode_no, `fto_request_track_remove_from_episode`.*",
+			"FROM `fto_request_track_remove_from_episode`",
+			"INNER JOIN `fto_episode` ON `fto_episode`.`episode_id` = fto_episode_id",
+			`WHERE request_track_remove_id = ${nTrackRemoveSubmissionID}`,
+		];
+		
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetSubmissionDetailsTrackRemove', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const PatchUpVotesOnSubmission = (nFtoSubmissionCommentID, objUpvotesDownvotes, nUserId) => {
+	return new Promise((resolve, reject) => {
+		let post_data = {
+			request_upvotes: JSON.stringify(objUpvotesDownvotes),
+		}
+		let sqlQuery = [
+			"UPDATE `fto_request_submissions`",
+			"SET ?",
+			`WHERE request_submission_id  = ${nFtoSubmissionCommentID}`,
+			`AND fto_user_id = ${nUserId}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, post_data, (error, results) => {
+			if (error) {
+				LogError('PatchUpVotesOnSubmission', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+/**
+ * Updates a track in the FTO database.
+ * @function GetSubmissionComments
+ * @param {number} nFtoSubmissionID -  The ID of the submission comments are for.
+ * @returns {Promise<object[]>} A promise that resolves to an array of anime objects matching the provided ID.
+ *                              Each object represents an episode comment from the database.
+ *                              If no matching records are found, the promise resolves to an empty array.
+ *                              If an error occurs during the database query, the promise rejects with the error.
+ */
+const GetSubmissionComments = (nFtoSubmissionID) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT `fto_request_submissions_comments`.*, user_username",
+			"FROM `fto_request_submissions_comments`",
+			"INNER JOIN `fto_users` ON fto_user_id = `fto_users`.`user_id`",
+			`WHERE fto_request_submission_id = ${nFtoSubmissionID}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetSubmissionComments', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const PostCommentOnSubmission = (nFtoSubmissionID, strCommentText, nUserId, nParentID = null) => {
+	return new Promise((resolve, reject) => {
+		let post_data = {
+			fto_user_id: nUserId,
+			fto_request_submission_id: nFtoSubmissionID,
+			comment_parent_id: nParentID,
+			comment_content: strCommentText,
+		}
+		let sqlQuery = `INSERT INTO fto_request_submissions_comments SET ?`;
+		FtoConnection.query(sqlQuery, post_data, (error, results) => {
+			if (error) {
+				LogError('PostCommentOnSubmission', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const PatchCommentOnSubmission = (nFtoSubmissionCommentID, strCommentText, nUserId) => {
+	return new Promise((resolve, reject) => {
+		let post_data = {
+			comment_content: strCommentText,
+		}
+		let sqlQuery = [
+			"UPDATE `fto_request_submissions_comments`",
+			"SET ?",
+			`WHERE request_comment_id = ${nFtoSubmissionCommentID}`,
+			`AND fto_user_id = ${nUserId}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, post_data, (error, results) => {
+			if (error) {
+				LogError('PatchCommentOnSubmission', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
+const DeleteCommentFromSubmission = (nFtoSubmissionCommentID, nUserId) => {
+	return new Promise((resolve, reject) => {
+		FtoConnectionPool.getConnection((err, ftoConnectionPool) => {
+			if (err) {
+				LogError('DeleteCommentFromSubmission', `Failed to connect to the database.\nError Message: ${err.sqlMessage}`, LineNumber());
+				reject(GetSqlErrorObj(err));
+				return;
+			}
+			
+			ftoConnectionPool.beginTransaction(async (err0) => {
+				if (err0) {
+					LogError('DeleteCommentFromSubmission', `Failed to start transaction.\nError Message: ${err0.sqlMessage}`, LineNumber());
+					reject(GetSqlErrorObj(err0));
+					return;
+				}
+
+				let sqlQueryDisableFKC = 'SET FOREIGN_KEY_CHECKS = 0;'
+				ftoConnectionPool.query(sqlQueryDisableFKC, (err1) => {
+					if (err1) {
+						ftoConnectionPool.rollback(() => {
+							// Failed to disable foreign key checks
+							reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
+							LogError('DeleteCommentFromSubmission', `Failed to disable foreign key checks.\nSQL Query:"${sqlQueryDisableFKC}".\nError Message: ${err1.sqlMessage}`);
+						});
+						return;
+					}
+
+					let sqlQuery = [
+						"DELETE FROM `fto_request_submissions_comments`",
+						`WHERE (request_comment_id = ${nFtoSubmissionCommentID} AND fto_user_id = ${nUserId})`,
+						`OR comment_parent_id = ${nFtoSubmissionCommentID}`,
+					];
+					const handler = new SQLArrayHandler(sqlQuery);
+					const sqlQueryString = handler.CombineStringsToQuery();
+					ftoConnectionPool.query(sqlQueryString, (err2, results) => {
+						if (err2) {
+							ftoConnectionPool.rollback(() => {
+								// Failed to delete data into table
+								reject(GetSqlErrorObj(err2, `${filename}:${LineNumber()}`));
+								LogError('DeleteCommentFromSubmission', `SQL Query:"${sqlQueryString}".\nError Message: ${err2.sqlMessage}`);
+							});
+							return;
+						}
+
+						let sqlQueryEnableFKC = 'SET FOREIGN_KEY_CHECKS = 1;'
+						ftoConnectionPool.query(sqlQueryEnableFKC, (err3) => {
+							if (err3) {
+								ftoConnectionPool.rollback(() => {
+									// Failed to enable foreign key checks
+									reject(GetSqlErrorObj(err3, `${filename}:${LineNumber()}`));
+									LogError('DeleteCommentFromSubmission', `Failed to enable foreign key checks.\nSQL Query:"${sqlQueryEnableFKC}".\nError Message: ${err3.sqlMessage}`);
+								});
+								return;
+							}
+
+							ftoConnectionPool.commit((err4) => {
+								if (err4) {
+									ftoConnectionPool.rollback(() => {
+										LogError('DeleteCommentFromSubmission', `Failed to commit transaction.\nError Message: ${err4.sqlMessage}`);
+										reject(GetSqlErrorObj(err4, `${filename}:${LineNumber()}`));
+									});
+									return;
+								}
+								resolve(results);
+							});
+						});
+					}); 
+
+				});
+			});
+			ftoConnectionPool.release();
+		});
+
+	});
+}
+
+const PatchCommentLikesOnSubmission = (nFtoSubmissionCommentID, objLikesDislikes, nUserId) => {
+	return new Promise((resolve, reject) => {
+		let post_data = {
+			comment_likes: JSON.stringify(objLikesDislikes),
+		}
+		let sqlQuery = [
+			"UPDATE `fto_request_submissions_comments`",
+			"SET ?",
+			`WHERE request_comment_id = ${nFtoSubmissionCommentID}`,
+			`AND fto_user_id = ${nUserId}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, post_data, (error, results) => {
+			if (error) {
+				LogError('PatchCommentLikesOnEpisode', `SQL Query:"${sqlQuery}".\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
 module.exports = {
 	PerformSelectQuery,
 	GetAllAnime,
@@ -1193,6 +1514,7 @@ module.exports = {
 	PatchAnime,
 	GetAnimeMappingMAL,
 	PostAnimeIntoDB,
+
 	GetEpisodeMapping,
 	PostEpisodesIntoDB,
 	GetEpisodeComments,
@@ -1200,15 +1522,30 @@ module.exports = {
 	PatchCommentOnEpisode,
 	DeleteCommentFromEpisode,
 	PatchCommentLikesOnEpisode,
+
 	GetTracksForAnime,
 	GetTrackCountForMALAnimes,
 	GetTracksForEpisode,
 	GetTrack,
 	GetTrackOccurrences,
+
+	GetSubmissionDetails,
+	GetSubmissionDetailsTrackAdd,
+	GetSubmissionDetailsTrackAddPreExisting,
+	GetSubmissionDetailsTrackEdit,
+	GetSubmissionDetailsTrackRemove,
 	GetSubmissionContext_TrackAdd,
 	PostSubmission_TrackAdd,
 	PostSubmission_TrackAddPreExisting,
 	GetSubmissionContext_TrackEdit,
 	PostSubmission_TrackEdit,
 	PostSubmission_TrackRemove,
+	PatchUpVotesOnSubmission,
+
+	GetSubmissionComments,
+	PostCommentOnSubmission,
+	PatchCommentOnSubmission,
+	DeleteCommentFromSubmission,
+	PatchCommentLikesOnSubmission,
+
 };

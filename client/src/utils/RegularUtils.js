@@ -369,7 +369,7 @@ const GetTimeAgoBetweenDates = (oldDate, dateNow) => {
         }
         else {
             // Less than a day ago
-            let nDifferenceInTimeHours = (nDifferenceInTime / (1000 * 60 * 60)) % 24;
+            let nDifferenceInTimeHours = Math.floor((nDifferenceInTime / (1000 * 60 * 60)) % 24);
             if (nDifferenceInTimeHours === 1) {
                 // 1 hour ago ( between 60mins and 120 mins)
                 strDateAgoValue = nDifferenceInTimeHours;
@@ -413,8 +413,6 @@ const GetTimeAgoBetweenDates = (oldDate, dateNow) => {
     let strTimeAgo = Math.ceil(strDateAgoValue) + ' ' + strDateUnit;
     return strTimeAgo;
 }
-
-
 
 export { 
     ParseClassName, 

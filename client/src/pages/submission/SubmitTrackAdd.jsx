@@ -810,7 +810,7 @@ const SubmitTrackAdd = () => {
                                             {!(submitPreExistingTrack && !IsEmpty(preExistingTrackInfo)) ? (
                                                 <strong>Successfully Addedd New Track to {`'${submissionContextInfo.canonical_title}'`}!</strong>
                                             ): (
-                                                <strong>Successfully Added {!IsEmpty(preExistingTrackInfo.track_name) ? `'${preExistingTrackInfo.track_name}'` :  '' } Track to {!IsEmpty(submissionContextInfo.canonical_title) ? `'${submissionContextInfo.canonical_title}'` :  ''}!</strong>
+                                                <strong>Successfully Added {!IsEmpty(preExistingTrackInfo.track_name) ? `'${preExistingTrackInfo.track_name}'` :  '' } Track to {!IsEmpty(submissionContextInfo.canonical_title) ? `'${submissionContextInfo.canonical_title}' Episode ${spEpisodeNo}` :  ''}!</strong>
                                             )}
                                         </h3>
                                         <button className='fto__button__pink' onClick={ handleModalOnButtonClick }>

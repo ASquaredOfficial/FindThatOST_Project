@@ -1,12 +1,19 @@
 const express = require("express");
 const router = express.Router();
 const { 
+    GetSubmissionDetails,
     GetSubmissionContext_TrackAdd,
     GetSubmissionContext_TrackEdit,
     PostSubmission_TrackAdd,
     PostSubmission_TrackAddPreExisting,
     PostSubmission_TrackEdit,
     PostSubmission_TrackRemove,
+    GetSubmissionComments,
+    GetSubmissionDetailsTrackAdd,
+    GetSubmissionDetailsTrackAddPreExisting,
+    GetSubmissionDetailsTrackEdit,
+    GetSubmissionDetailsTrackRemove,
+    PatchUpVotesOnSubmission,
 } = require('../sql/database');
 const { IsEmpty } = require("../utils/BackendUtils");
 
@@ -202,7 +209,7 @@ router.post("/submit/track_edit/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", a
     } 
 });
 
-router.post("/submit/track_remove/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID", async (req, res) => {
+router.post("/submit/track_remove/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID/episode_id/:nFtoEpisodeID", async (req, res) => {
     const { objUserSubmission } = req.body;
     if (!objUserSubmission) {
         return res.status(400).json({ error: 'Invalid data format' });
@@ -211,8 +218,8 @@ router.post("/submit/track_remove/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID",
     try {
         const nFtoTrackID = req.params.nFtoTrackID;
         const nFtoOccurrenceID = req.params.nFtoOccurrenceID;
-        console.log("Details:", objUserSubmission);
-        const ftoResponse = await PostSubmission_TrackRemove(nFtoTrackID, nFtoOccurrenceID, objUserSubmission);
+        const nFtoEpisodeID = req.params.nFtoEpisodeID;
+        const ftoResponse = await PostSubmission_TrackRemove(nFtoTrackID, nFtoOccurrenceID, nFtoEpisodeID, objUserSubmission);
         if (!IsEmpty(ftoResponse)) {
             res.status(200).json(ftoResponse);
         }
@@ -233,6 +240,111 @@ router.post("/submit/track_remove/:nFtoTrackID/occurrence_id/:nFtoOccurrenceID",
         res.status(500).json(objError);
         console.log(`Insert Request Error (${objError.time}):\n`, error);
     } 
+});
+
+router.get("/details/:nFtoSubmissionID", async (req, res) => {
+    //Get Submission Details for the submission with corresponding FTO Submission ID
+    const nFtoSubmissionID = req.params.nFtoSubmissionID;
+    try {
+        const ftoSubmissionDetails = await GetSubmissionDetails(nFtoSubmissionID);
+        if (ftoSubmissionDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found', data: ftoSubmissionDetails }).end(); 
+        }
+        else {
+
+            // Get User Edits
+            let ftoTrackAddSubmissionExtraDetails;
+            if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_ADD') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackAdd(ftoSubmissionDetails[0].request_id);
+            }
+            else if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_ADD_PRE') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackAddPreExisting(ftoSubmissionDetails[0].request_id);
+            }
+            else if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_EDIT') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackEdit(ftoSubmissionDetails[0].request_id);
+            }
+            else if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_REMOVE') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackRemove(ftoSubmissionDetails[0].request_id);
+            }
+
+            const ftoFullSubmissionDetails = { 
+                ...ftoSubmissionDetails[0], 
+                submission_details: (IsEmpty(ftoTrackAddSubmissionExtraDetails) ? null : ftoTrackAddSubmissionExtraDetails[0]),
+            };
+            return res.status(200).json(ftoFullSubmissionDetails);
+        }
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+router.get("/details/:nFtoSubmissionID/full", async (req, res) => {
+    //Get Submission Details for the submission with corresponding FTO Submission ID
+    const nFtoSubmissionID = req.params.nFtoSubmissionID;
+    try {
+        let bIncludeMalID = true;
+        const ftoSubmissionDetails = await GetSubmissionDetails(nFtoSubmissionID, bIncludeMalID);
+        if (ftoSubmissionDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found', data: ftoSubmissionDetails }).end(); 
+        }
+        else {
+            // Get comments
+            const ftoSubmissionComments = await GetSubmissionComments(ftoSubmissionDetails[0].request_id);
+
+            // Get User Edits
+            let ftoTrackAddSubmissionExtraDetails;
+            if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_ADD') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackAdd(ftoSubmissionDetails[0].request_id);
+            }
+            else if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_ADD_PRE') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackAddPreExisting(ftoSubmissionDetails[0].request_id);
+            }
+            else if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_EDIT') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackEdit(ftoSubmissionDetails[0].request_id);
+            }
+            else if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_REMOVE') {
+                ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackRemove(ftoSubmissionDetails[0].request_id);
+            }
+
+            const ftoFullSubmissionDetails = { 
+                ...ftoSubmissionDetails[0], 
+                submission_details: (IsEmpty(ftoTrackAddSubmissionExtraDetails) ? null : ftoTrackAddSubmissionExtraDetails[0]),
+                submission_comments: (IsEmpty(ftoSubmissionComments) ? null : ftoSubmissionComments),
+            };
+            return res.status(200).json(ftoFullSubmissionDetails);
+        }
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+router.patch("/comment_likes/:nFtoSubmissionID", async (req, res) => {
+    const nFtoSubmissionID = req.params.nFtoSubmissionID;
+    const { objUserSubmission } = req.body;
+    const nFtoUserId = objUserSubmission.userId;
+    const arrUpvotesDownvotes = objUserSubmission.arrUpvotesDownvotes;
+    try {
+        const ftoUpdateSubmissionUpVotesResult = await PatchUpVotesOnSubmission(nFtoSubmissionID, arrUpvotesDownvotes, nFtoUserId);
+        if (!IsEmpty(ftoUpdateSubmissionUpVotesResult) && typeof(ftoUpdateSubmissionUpVotesResult) === 'object' && ftoUpdateSubmissionUpVotesResult['affectedRows'] === 0) {
+            return res.status(400).json({ error: 'Resource Not Updated', responseBody: ftoUpdateSubmissionUpVotesResult}).end(); 
+        }
+        res.status(200).json(ftoUpdateSubmissionUpVotesResult);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+        console.log("Update response:", objError);
+    }
 });
 
 module.exports = router;

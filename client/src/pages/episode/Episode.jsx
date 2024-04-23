@@ -8,9 +8,17 @@ import { IsEmpty } from "../../utils/RegularUtils"
 
 import { FaPlayCircle } from "react-icons/fa";
 import { toast } from 'react-toastify';
+import {
+	Fetch_FTO_GetEpisodeComments as getCommentsApi,
+	Fetch_FTO_PostEpisodeComment as createCommentApi,
+	Fetch_FTO_DeleteEpisodeComment as deleteCommentApi,
+	Fetch_FTO_PatchEpisodeComment as updateCommentApi,
+	Fetch_FTO_PatchEpisodeCommentLikes as updateCommentLikesApi,
+} from './episode_comments_api';
 
 const Episode = () => {
     const { anime_id, episode_no } = useParams();
+    const user_properties = {userId: 1, username: "Admin1012"};
     
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
@@ -617,8 +625,13 @@ const Episode = () => {
 
                         {ftoEpisodeInfo && (
                             <Comments 
-                                currentUserId={1}
-                                ftoEpisodeId={ftoEpisodeInfo.episode_id}/>
+                                ftoPageId={ftoEpisodeInfo.episode_id}
+                                currentUserId={user_properties}
+                                getCommentsApi={getCommentsApi}  
+                                createCommentApi={createCommentApi} 
+                                deleteCommentApi={deleteCommentApi} 
+                                updateCommentApi={updateCommentApi} 
+                                updateCommentLikesApi={updateCommentLikesApi} />
                         )}  
                     </div>
                 )}

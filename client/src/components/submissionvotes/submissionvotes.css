@@ -1,0 +1,31 @@
+.submission__votes-actions {
+    background: var(--color-bg-navbar_search_border);
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: inline-flex;
+    font-size: 12px;
+    color: lightgray;
+    gap: 10px;
+
+    .submission__votes-action-icon_section {
+        display: flex;
+        gap: 5px;
+
+        .submission__votes-action-icon {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .submission__votes-action-icon:hover {
+            background-color: lightgray;
+            opacity: 0.9;
+        }
+        
+        .submission__votes-action-icon_text {
+            height: 15px;
+            width: 15px;
+            color: gray;
+        }
+    }
+}

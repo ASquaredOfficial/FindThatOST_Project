@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-// import './home.css';
 
 import { IsEmpty } from '../../utils/RegularUtils';
 

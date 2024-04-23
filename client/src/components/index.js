@@ -5,3 +5,4 @@ export { default as Menu } from './menu/Menu';
 export { default as PageLoading } from './pageloading/PageLoading';
 export { default as Comments } from './comments/Comments';
 export { default as ModalEmbeddedTrack } from './modal/ModalEmbeddedTrack';
+export { default as StreamingPlatformLinksList } from './streamingplatformlinkslist/StreamingPlatformLinksList';
