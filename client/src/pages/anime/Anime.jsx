@@ -9,7 +9,14 @@ import { IsEmpty, ParseClassName } from "../../utils/RegularUtils"
 import { toast } from 'react-toastify';
 import { FaPlayCircle } from 'react-icons/fa';
 
-const Anime = () => {
+const Anime = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const location = useLocation();
     const { id } = useParams();
     const { navigateToAnime } = useCustomNavigate();
@@ -728,7 +735,10 @@ const Anime = () => {
             )}
 
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {malAnimeInfo !== undefined && (
                     <div className='fto__page__anime-content section__padding' style={{paddingBottom: 0}}>

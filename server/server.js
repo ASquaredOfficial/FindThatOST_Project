@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 var port = process.env.PORT || 5000;
 
+const { GetUserDetails } = require('./sql/database');
 // app.use((req, res, next) => {
 //     setTimeout(() => {
 //         next();
@@ -31,13 +32,22 @@ app.use("/findthatost_api/submission_comments", submissionCommentsRouter);
 const openaiCommentsRouter = require("./routes/openai");
 app.use("/findthatost_api/openai", openaiCommentsRouter);
 
-app.get("/findthatost_api/user_details", (req, res) => {
-    res.json({
-        "user_id": 1,
-        "username": "Adrian",
-        "user_type": "admin",
-        "email": "doradi3xplorer@gmail.com",
-    });
+app.get("/findthatost_api/user/:nFtoUserID", async (req, res) => {
+    //Get user details for user with id nFtoUserID
+    const nFtoUserID = req.params.nFtoUserID;
+    try {
+        const ftoUserDetails = await GetUserDetails(nFtoUserID);
+        if (!ftoUserDetails || ftoUserDetails.length == 0) {
+            return res.status(204).json({ error: 'No Results found' }).end(); 
+        }
+        res.status(200).json(ftoUserDetails[0]);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
 });
 
 app.listen(port, ()=> {console.log(`Server started on port ${port}`)});

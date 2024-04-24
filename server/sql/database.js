@@ -101,6 +101,30 @@ const PerformSelectQuery = (sqlCommand) => {
 	});
 };
 
+const GetUserDetails = (nFtoUserID, bFullDetails = false) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			(!bFullDetails) ? (
+				"SELECT user_id AS userId, user_username AS username"
+			) : (
+				"SELECT user_id AS userId, user_username AS username, user_join_date AS joinDate, user_email AS email"
+			),
+			"FROM `fto_users`",
+			`WHERE user_id = ${nFtoUserID}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetAllAnime', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+};
+
 const GetAllAnime = () => {
 	return new Promise((resolve, reject) => {
 		let sqlQuery = [
@@ -1509,6 +1533,7 @@ const PatchCommentLikesOnSubmission = (nFtoSubmissionCommentID, objLikesDislikes
 
 module.exports = {
 	PerformSelectQuery,
+	GetUserDetails,
 	GetAllAnime,
 	GetAnime,
 	PatchAnime,

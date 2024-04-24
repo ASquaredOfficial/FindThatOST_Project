@@ -8,7 +8,14 @@ import { FormatDateToMidDateString, AddSubtitle, GetEpisodeCount} from "../../ut
 import { IsEmpty } from '../../utils/RegularUtils';
 import { toast } from 'react-toastify';
 
-const Search = () => {
+const Search = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const location = useLocation();
     const { navigateToSearch, navigateToAnime } = useCustomNavigate();
 
@@ -429,7 +436,10 @@ const Search = () => {
     return (
         <div className='fto__page__search'>
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
                 
                 <div className='fto__page__search-content section__padding' style={mainViewStyle}>
                     <h1 className='gradient__text'>

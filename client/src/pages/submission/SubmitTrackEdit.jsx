@@ -12,7 +12,14 @@ import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
 import SubmitTrackRemoveModal from './SubmitTrackRemoveModal';
 import { toast } from 'react-toastify';
 
-const SubmitTrackEdit = () => {
+const SubmitTrackEdit = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
     const { track_id } = useParams();
     const { occurrence_id } = useParams();
@@ -560,7 +567,6 @@ const SubmitTrackEdit = () => {
             setSuccessfulSubmitQuery();
         }
     }
-    
 
     return (
         <div id='fto__page' className='fto__page__submission'>
@@ -569,7 +575,10 @@ const SubmitTrackEdit = () => {
             )}
 
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {pageRemoveTrackModalVisibility && (
                     <SubmitTrackRemoveModal 

@@ -7,14 +7,25 @@ import Menu from '../menu/Menu'
 import Ftologo from '../ftologo/Ftologo';
 import search_icon from '../../assets/Search_Icon.svg'
 import { MobileSearchBar } from '../../containers';
+import { IsEmpty } from '../../utils/RegularUtils';
 
-const Navbar = () => {
+const Navbar = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const { navigateToSearch } = useCustomNavigate();
 
     const [toggleMenu, setToggleMenu] = useState(false);
     const [bMobileSearchbarVisible, setMobileSearchbarVisiblity] = useState(false);
     const [formData, setFormData] = useState(''); //handle navbar searchbar submit
-    const [backendData, setBackendData] = useState ([{}]) //username info from backend
+    const [backendData, setBackendData] = useState({
+        userId: null, 
+        username: null
+    });
   
     useEffect(() => {
         // Render (onMount)
@@ -22,15 +33,11 @@ const Navbar = () => {
             //if search page, add search string from url to searchbar
             setFormData(new URLSearchParams(window.location.search).get('query'))
         }
-        
-		fetch("/findthatost_api/user_details").then(
-			response => response.json()
-		).then(
-			data => {
-				setBackendData(data);
-			}
-		);
     }, []);
+    
+    useEffect(() => {
+        setBackendData(user_properties);
+    }, [user_properties]);
 
     const HandleSearchbarSubmit = (e) => {
         e.preventDefault();
@@ -79,17 +86,17 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    {(typeof backendData.username == 'undefined') ? (
+                    {(IsEmpty(backendData.username)) ? (
                         //If no username passed, load non signed in navbar
                         <div className='fto__navbar-sign'>
-                        <p><strong>Log in</strong></p>
-                        <button type='button' className='fto__button__pink'>Sign Up</button>
+                            <p className='fto__navbar-login' onClick={SignInFunction} tabIndex='0'><strong>Log in</strong></p>
+                            <button type='button' className='fto__button__pink'>Sign Up</button>
                         </div>
                     ): (
                         //If username passed, load username to navbar
                         <div className='fto__navbar-sign'>
-                        <p><strong>{backendData.username}</strong></p>
-                        <button type='button' className='fto__button__pink'>Sign Out</button>
+                            <p className='fto__navbar-loggedin'><strong>{backendData.username}</strong></p>
+                            <button type='button' className='fto__button__pink' onClick={SignOutFunction}>Sign Out</button>
                         </div>
                     )}
 
@@ -104,17 +111,17 @@ const Navbar = () => {
                             <div className='fto__navbar-menu_container-links'>
                             <Menu 
                                 FocusOnSearchBar={FocusOnSearchBar}/>
-                            {(typeof backendData.username === 'undefined') ? (
+                            {(IsEmpty(backendData.username)) ? (
                                 //If no username passed, load non signed in navbar
                                 <div className='fto__navbar-menu_container-links-sign'>
-                                <p><strong>Log in</strong></p>
-                                <button type='button'className='fto__button__pink'>Sign Up</button>
+                                    <p className='fto__navbar-login' onClick={SignInFunction} tabIndex='0'><strong>Log in</strong></p>
+                                    <button type='button'className='fto__button__pink'>Sign Up</button>
                                 </div>
                             ): (
                                 //If username passed, load username to navbar
                                 <div className='fto__navbar-menu_container-links-sign'>
-                                <p><strong>{backendData.username}</strong></p>
-                                <button type='button' className='fto__button__pink'>Sign Out</button>
+                                    <p className='fto__navbar-loggedin'><strong>{backendData.username}</strong></p>
+                                    <button type='button' className='fto__button__pink' onClick={SignOutFunction}>Sign Out</button>
                                 </div>
                             )}
                             </div>

@@ -10,7 +10,14 @@ import { MapTrackType } from '../../utils/FTOApiUtils'
 import { GetPlatformIcon, GetPlatformNameString, IsFandomImageUrl } from '../../utils/HyperlinkUtils';
 import { toast } from 'react-toastify';
 
-const Track = () => {
+const Track = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const { track_id } = useParams();
     const location = useLocation();
 
@@ -128,7 +135,10 @@ const Track = () => {
     return (
         <div className='fto__page__track'>
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {ftoTrackInfo !== undefined && (
                     <div className='fto__page__track-content section__padding' style={{paddingBottom: 0}}>

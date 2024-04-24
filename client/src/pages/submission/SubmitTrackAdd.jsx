@@ -11,7 +11,14 @@ import { useCustomNavigate } from '../../routing/navigation'
 import SubmitTrackAddPreExistingModal from './SubmitTrackAddPreExistingModal';
 import { toast } from 'react-toastify';
 
-const SubmitTrackAdd = () => {
+const SubmitTrackAdd = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
     const location = useLocation();
     const { anime_id } = useParams();
@@ -164,6 +171,52 @@ const SubmitTrackAdd = () => {
         const inputElementValue = inputElement.value;
         setPageInputs(values => ({...values, [inputElementName]: inputElementValue}));
         
+        RemoveErrorIfValid(inputElement);
+
+        // Update character count label
+        if (inputElementName === 'submit_sceneDesc') {
+            setCharCount_SceneDesc(inputElementValue);
+        }
+        // Update scene description platform icon
+        else if (inputElementName === 'submit_songType' && (!pageInputs.hasOwnProperty('submit_sceneDesc') || IsEmpty(pageInputs['submit_sceneDesc'])) && (ftoEpisodeID !== -1)) {
+            if (inputElementValue === 'songType_OP') {
+                const trackAddform = document.getElementById('track_add_form');
+                trackAddform['submit_sceneDesc'].value = `Opening for ${submissionContextInfo.canonical_title} Episode ${spEpisodeNo}.`;
+                setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
+                setPageInputs(values => ({...values, ['submit_sceneDesc']: trackAddform['submit_sceneDesc'].value}));
+            }
+            else if (inputElementValue === 'songType_ED') {
+                const trackAddform = document.getElementById('track_add_form');
+                trackAddform['submit_sceneDesc'].value = `Ending for ${submissionContextInfo.canonical_title} Episode ${spEpisodeNo}.`;
+                setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
+                setPageInputs(values => ({...values, ['submit_sceneDesc']: trackAddform['submit_sceneDesc'].value}));
+            }
+        }
+        // Update input platform icon
+        else if (inputElementName.startsWith('submit_streamPlat_item_')) {
+            // Get platform input item id
+            const platInputNamePrefix = 'submit_streamPlat_item_';
+            const regex = new RegExp(`${platInputNamePrefix}(\\d+)$`);
+            const match = regex.exec(inputElementName);
+            const platElemId = match ? parseInt(match[1]) : null;
+
+            ListenToPlatformInput(inputElementValue, platElemId, platformItems, { setPlatformItems });
+        }
+    }
+
+    /**
+     * Check if input is valid, then remove error.
+     * @function RemoveErrorIfValid
+     * @param {HTMLElement}  inputElementBeingChecked - Input Element.
+     * @returns {undefined} 
+     * 
+     */
+    const RemoveErrorIfValid = (inputElementBeingChecked) => {
+        let inputElement = HTMLElement;
+        inputElement = inputElementBeingChecked;
+        const inputElementName = String(inputElement.name);
+        const inputElementValue = inputElement.value;
+
         // Validate input, if its in error state
         let listOfClassNames = inputElement.className.split(" ");
         let classNameIndex = Number(listOfClassNames.findIndex(item => item === "fto_input-error"));
@@ -275,37 +328,32 @@ const SubmitTrackAdd = () => {
             listOfClassNames.splice(classNameIndex, 1);
 
             //Update input cascade styling (via className)
-            event.target.className = listOfClassNames.join(' ').trim();
+            inputElement.className = listOfClassNames.join(' ').trim();
         }
+    }
 
-        // Update character count label
-        if (inputElementName === 'submit_sceneDesc') {
-            setCharCount_SceneDesc(inputElementValue);
-        }
-        // Update scene description platform icon
-        else if (inputElementName === 'submit_songType' && (!pageInputs.hasOwnProperty('submit_sceneDesc') || IsEmpty(pageInputs['submit_sceneDesc'])) && (ftoEpisodeID !== -1)) {
-            if (inputElementValue === 'songType_OP') {
-                const trackAddform = document.getElementById('track_add_form');
-                trackAddform['submit_sceneDesc'].value = `Opening for ${submissionContextInfo.canonical_title} Episode ${spEpisodeNo}.`;
-                setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
-                setPageInputs(values => ({...values, ['submit_sceneDesc']: trackAddform['submit_sceneDesc'].value}));
-            }
-            else if (inputElementValue === 'songType_ED') {
-                const trackAddform = document.getElementById('track_add_form');
-                trackAddform['submit_sceneDesc'].value = `Ending for ${submissionContextInfo.canonical_title} Episode ${spEpisodeNo}.`;
-                setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
-                setPageInputs(values => ({...values, ['submit_sceneDesc']: trackAddform['submit_sceneDesc'].value}));
-            }
-        }
-        // Update input platform icon
-        else if (inputElementName.startsWith('submit_streamPlat_item_')) {
-            // Get platform input item id
-            const platInputNamePrefix = 'submit_streamPlat_item_';
-            const regex = new RegExp(`${platInputNamePrefix}(\\d+)$`);
-            const match = regex.exec(inputElementName);
-            const platElemId = match ? parseInt(match[1]) : null;
+    /**
+     * Remove error from all inputs.
+     * @function RemoveErrorIfValid
+     * @param {String}  strPageFormName - Page Form Name.
+     * @returns {undefined} 
+     * 
+     */
+    const RemoveFormErrors = (strPageFormName) => {
+        const trackAddform = document.getElementById(strPageFormName);
+        for  (let i = 0; i < trackAddform.elements.length; ++i) {
+            // Validate input, if its in error state
+            let inputElement = HTMLElement;
+            inputElement = trackAddform.elements[i];
+            let listOfClassNames = inputElement.className.split(" ");
+            let classNameIndex = Number(listOfClassNames.findIndex(item => item === "fto_input-error"));
+            if (classNameIndex > -1) {
+                //Remove error style from Input
+                listOfClassNames.splice(classNameIndex, 1);
 
-            ListenToPlatformInput(inputElementValue, platElemId, platformItems, { setPlatformItems });
+                //Update input cascade styling (via className)
+                inputElement.className = listOfClassNames.join(' ').trim();
+            }
         }
     }
 
@@ -314,6 +362,7 @@ const SubmitTrackAdd = () => {
         trackAddform['submit_trackName'].value = objTrackInfo.track_name;
         trackAddform['submit_songType'].value = '';
         trackAddform['submit_sceneDesc'].value = '';
+        RemoveFormErrors('track_add_form');
         setCharCount_SceneDesc(trackAddform['submit_sceneDesc'].value);
         // trackAddform['submit_trackName'].value = 'My test track';
         // trackAddform['submit_songType'].value = 'songType_OP';
@@ -437,7 +486,7 @@ const SubmitTrackAdd = () => {
             
             console.debug(`Fetch data:`, updatedSubmission);  
             await new Promise(resolve => setTimeout(resolve, 1000));  
-            FetchPostSubmissionTrackAdd_FTO(anime_id, spEpisodeNo, updatedSubmission);
+            FetchPostSubmissionTrackAdd_FTO(anime_id, spEpisodeNo, updatedSubmission, user_properties.userId);
         }
         setPageLoading(false);
     }
@@ -452,7 +501,11 @@ const SubmitTrackAdd = () => {
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackAdd_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId = 1) => {
+    const FetchPostSubmissionTrackAdd_FTO = async (nAnimeID, nEpisodeNo, objUserSubmission, nUserId) => {
+        if (IsEmpty(nUserId)) {
+            toast("You must sign in to make a submission.");
+            return;
+        }
         objUserSubmission['user_id'] = nUserId;
         let apiUrl_fto = `/findthatost_api/submission/submit/track_add/${Number(nAnimeID)}`;
         if (nEpisodeNo !== -1) {
@@ -511,7 +564,7 @@ const SubmitTrackAdd = () => {
             console.debug(`Fetch data:`, newUserSubmission);  
             await new Promise(resolve => setTimeout(resolve, 1000));  
             let nEpisodeID = Number(submissionContextInfo.episode_id);
-            FetchPostSubmissionTrackAddPreExisting_FTO(nEpisodeID, newUserSubmission);
+            FetchPostSubmissionTrackAddPreExisting_FTO(nEpisodeID, newUserSubmission, user_properties.userId);
         } 
         setPageLoading(false);
     }
@@ -554,7 +607,11 @@ const SubmitTrackAdd = () => {
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackAddPreExisting_FTO = async (nFtoEpisodeId, objUserSubmission, nUserId = 1) => {
+    const FetchPostSubmissionTrackAddPreExisting_FTO = async (nFtoEpisodeId, objUserSubmission, nUserId) => {
+        if (IsEmpty(nUserId)) {
+            toast("You must sign in to make a submission.");
+            return;
+        }
         objUserSubmission['user_id'] = nUserId;
         objUserSubmission['track_id'] = preExistingTrackInfo['track_id'];
         let apiUrl_fto = `/findthatost_api/submission/submit/track_add_pre_existing/${nFtoEpisodeId}`;
@@ -579,7 +636,6 @@ const SubmitTrackAdd = () => {
 
     const handleModalOnButtonClick = () => {
         if (queryStatusCode === 200) {
-            console.log("I am finished")
             if (ftoEpisodeID !== -1) {
                 navigateToEpisode(anime_id, spEpisodeNo);
             }
@@ -610,7 +666,10 @@ const SubmitTrackAdd = () => {
             )}
 
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {addPreExistingTrackModalVisibility && (
                     <SubmitTrackAddPreExistingModal 

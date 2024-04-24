@@ -16,9 +16,15 @@ import {
 } from './request_comments_api';
 import SubmissionVotes from '../../components/submissionvotes/submissionvotes';
 
-const TrackRequestView = () => {
+const TrackRequestView = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const { request_id } = useParams();
-    const user_properties = {userId: 1, username: "Admin1012"};
     
     const [ ftoSubmissionInfo, setFTOSubmissionInfo] = useState();
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
@@ -321,7 +327,10 @@ const TrackRequestView = () => {
     return (
         <div className='fto__page__requestview'>
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {ftoSubmissionInfo && (
                 <div className='fto__page__requestview-content section__padding' style={{paddingBottom: 0}}>

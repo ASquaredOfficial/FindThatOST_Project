@@ -16,9 +16,15 @@ import {
 	Fetch_FTO_PatchEpisodeCommentLikes as updateCommentLikesApi,
 } from './episode_comments_api';
 
-const Episode = () => {
+const Episode = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const { anime_id, episode_no } = useParams();
-    const user_properties = {userId: 1, username: "Admin1012"};
     
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
@@ -512,7 +518,10 @@ const Episode = () => {
             )}
 
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {!IsEmpty(pageEpisodeThumbnail) && (
                     <div className='fto__page__episode-content section__padding' style={{paddingBottom: 0}}>

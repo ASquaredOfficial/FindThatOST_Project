@@ -8,7 +8,14 @@ import { MainContainer, ChatContainer, MessageList, MessageInput, TypingIndicato
 import { IsEmpty } from '../../utils/RegularUtils';
 import { toast } from 'react-toastify';
 
-const ChatGPTBot = () => {
+const ChatGPTBot = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     // Get the location object
     const location = useLocation();
 
@@ -147,7 +154,11 @@ const ChatGPTBot = () => {
 
     return (
         <div id='fto__page__chatgptbot' className='fto__page__chatgptbot gradient__bg' style={{ height: contentHeight}}>
-            <Navbar/>
+            <Navbar 
+                SignInFunction={SignInFunction} 
+                SignOutFunction={SignOutFunction} 
+                user_properties={user_properties} />
+
             <div className='fto__page__chatgptbot-content section__padding' style={{paddingBottom: 0}}>
                 <h3 style={{ fontFamily: 'var(--font-family-manrope)', color: 'white'}}>
                     FTO-ChatBOT
