@@ -347,13 +347,12 @@ const Anime = ({
      * 
      * @async
      * @function FetchFullAnimeData_AniList
-     * @param {Array<JSON>}  dataFromBackend - The array of json objects (max length 1) containing anime details.
+     * @param {Array<JSON>}  malID - MyAnimeList Anime ID.
      * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing anime info from MAL API.
      * 
      */
-    const FetchFullAnimeData_AniList = async (dataFromBackend) => {
+    const FetchFullAnimeData_AniList = async (malID) => {
         try {
-            let malID = dataFromBackend.mal_id;
             const newResponse = await fetch('https://graphql.anilist.co', {
                 method: 'POST',
                 headers: {
@@ -412,11 +411,13 @@ const Anime = ({
             if (airStatus === 'Currently Airing') {
                 // Get episode count and latest episode numusing AniList API
                 try {
-                    const dataFromExternalAPI_AniList = await FetchFullAnimeData_AniList(malAnimeDetails);
+                    let malAnimeID = malAnimeDetails.mal_id;
+                    const dataFromExternalAPI_AniList = await FetchFullAnimeData_AniList(malAnimeID);
                     console.log('Data from external AniList API:', dataFromExternalAPI_AniList);
                     setAniListEpisodeCountInfo(dataFromExternalAPI_AniList);
                     latestEpisodeNumber = dataFromExternalAPI_AniList.data.Media.nextAiringEpisode.episode - 1;
                 } catch (error) {
+                    toast("Unable to get episode information for currently airing anime.");
                     console.error('Error:', error.message);
                 }
             }

@@ -203,6 +203,10 @@ const Fetch_FTO_PatchEpisodeComment = async (nFtoCommentId, strCommentBody, nUse
  * 
  */
 const Fetch_FTO_PatchEpisodeCommentLikes = async (nFtoCommentId, objLikesDislikes, nUserId) => {
+    if (IsEmpty(nUserId)) {
+        toast("You must sign in to perform this operation.");
+        return;
+    }
     const objUserSubmission = {
         userId: nUserId,
         likesDislikes: objLikesDislikes,

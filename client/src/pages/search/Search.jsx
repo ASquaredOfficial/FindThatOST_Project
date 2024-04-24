@@ -33,7 +33,7 @@ const Search = ({
         'ova',  // Stands for Original Video Animation, which are anime released directly to video without prior broadcast.
         'special', // Refers to special episodes or one-off releases that may accompany a TV series or OVA.
         'ona', // Stands for Original Net Animation, which are anime distributed over the internet.
-        'tv_special', // Refers to special episodes or one-off releases specifically related to television series.
+        'tv special', // Refers to special episodes or one-off releases specifically related to television series.
     ];
 
     // Render (onMount)
@@ -262,7 +262,7 @@ const Search = ({
         }
     }
 
-    const HandleSearchRowOnclick = (malID, malAnimeInfo) => {
+    const HandleSearchRowOnclick = async (malID, malAnimeInfo) => {
         if (malAnimeInfo.status === 'Not yet aired') {
             toast('We do not support shows that have not aired yet.');
             return;
@@ -271,10 +271,81 @@ const Search = ({
             toast('This not a supported anime type.');
             return
         }
+        
+        let airStatus = malAnimeInfo.status;
+        if (airStatus !== 'Not yet aired') {
+            if (airStatus === 'Currently Airing') {
+                // Get episode count and latest episode numusing AniList API
+                try {
+                    let malAnimeID = malAnimeInfo.mal_id;
+                    const [ aniListResponse, dataFromExternalAPI_AniList ] = await FetchFullAnimeData_AniList(malAnimeID);
+                    console.log('Data from external AniList API:', dataFromExternalAPI_AniList);
+                    console.log('AniList API Response:', aniListResponse);
+                    if (IsEmpty(dataFromExternalAPI_AniList.data.Media)) {
+                        toast("Unable to get episode information for currently airing anime.");
+                        return;
+                    }
+                    // latestEpisodeNumber = dataFromExternalAPI_AniList.data.Media.nextAiringEpisode.episode - 1; // Latest episode no
+                } catch (error) {
+                    toast("Unable to get episode information for currently airing anime.");
+                    console.error('Error:', error.message);
+                }
+            }
+        }
 
         // Get FTO Anime ID from FTO DB, then navigate to anime page
         console.log("Go to anime with mal id:", malID)
         FetchAnimeMapping_FTO(malID, malAnimeInfo.title);
+    }
+    
+    /**
+     * Get anime details from AniList API using MAL ID mapped from the FTOAnimeID from backend response.
+     * 
+     * @async
+     * @function FetchFullAnimeData_AniList
+     * @param {Array<JSON>}  malID - MyAnimeList Anime ID.
+     * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing anime info from MAL API.
+     * 
+     */
+    const FetchFullAnimeData_AniList = async (malID) => {
+        try {
+            const newResponse = await fetch('https://graphql.anilist.co', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                  query: `
+                    query ($malId: Int) {
+                        Media(type: ANIME, idMal: $malId) {
+                            id
+                            title {
+                                romaji
+                            }
+                            episodes
+                            nextAiringEpisode {
+                                episode
+                                id
+                            }
+                        }
+                    }
+                  `,
+                  variables: {
+                    malId: malID,
+                  },
+                }),
+            });
+            
+            const externalDataAniList = await newResponse.json();
+            return [ newResponse.status, externalDataAniList] ;
+        } 
+        catch (error) {
+            if (error.message !== '') {
+                console.error("Error messsage:", error.message)
+            }
+            throw new Error('Error fetching data from external API (AniList)');
+        }
     }
       
     const FetchAnimeMapping_FTO = async (malAnimeID, strMalAnimeTitle = '') => {

@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { 
-    GetSubmissionDetails,
     GetSubmissionContext_TrackAdd,
     GetSubmissionContext_TrackEdit,
     PostSubmission_TrackAdd,
@@ -9,6 +8,7 @@ const {
     PostSubmission_TrackEdit,
     PostSubmission_TrackRemove,
     GetSubmissionComments,
+    GetSubmissionDetails,
     GetSubmissionDetailsTrackAdd,
     GetSubmissionDetailsTrackAddPreExisting,
     GetSubmissionDetailsTrackEdit,
@@ -251,7 +251,6 @@ router.get("/details/:nFtoSubmissionID", async (req, res) => {
             return res.status(204).json({ error: 'No Results found', data: ftoSubmissionDetails }).end(); 
         }
         else {
-
             // Get User Edits
             let ftoTrackAddSubmissionExtraDetails;
             if (ftoSubmissionDetails[0]['submission_type'] == 'TRACK_ADD') {

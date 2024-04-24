@@ -621,7 +621,6 @@ const Episode = ({
                                                                 {trackInfo.scene_description}
                                                             </p>
                                                         </div>
-                                                        
                                                     </div>
                                                 );
                                             })

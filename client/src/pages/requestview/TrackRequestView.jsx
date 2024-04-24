@@ -293,6 +293,10 @@ const TrackRequestView = ({
      * 
      */
     const Fetch_FTO_PatchRequestUpVotes = async (nFtoSubmissionId, arrUpvotesDownvotes, nUserId) => {
+        if (IsEmpty(nUserId)) {
+            toast("You must sign in to perform this operation.");
+            return;
+        }
         const objUserSubmission = {
             userId: nUserId,
             arrUpvotesDownvotes: arrUpvotesDownvotes,

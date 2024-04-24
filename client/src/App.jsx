@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 import { Home, Search, Anime, Episode, Track, SubmitTrackAdd, SubmitTrackEdit, ChatGPTBot, TrackRequestView } from './pages'
