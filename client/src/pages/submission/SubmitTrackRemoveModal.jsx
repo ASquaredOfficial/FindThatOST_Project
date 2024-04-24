@@ -11,6 +11,11 @@ const SubmitTrackRemoveModal = (
         setPageToEditMode,
         trackID,
         occurrenceID,
+        episodeID,
+        user_properties = {
+            userId: null, 
+            username: null
+        }
     }) => {
 
     const [ charCount_removeReasons, setCharCount_removeReasons] = useState('');
@@ -49,7 +54,7 @@ const SubmitTrackRemoveModal = (
         const currentFormValues = document.getElementById('track_remove_form');
         let bIsValid = ValidateInputs(currentFormValues);
         if (bIsValid) {
-            FetchPostSubmissionTrackRemove_FTO(trackID, occurrenceID);
+            FetchPostSubmissionTrackRemove_FTO(trackID, occurrenceID, episodeID, user_properties.userId);
         }
         setPageLoading(false);
     }
@@ -80,17 +85,22 @@ const SubmitTrackRemoveModal = (
      * Perform all fetches to set up the webpage.
      * @async
      * @function FetchPostSubmissionTrackRemove_FTO
-     * @param {number|string}  nTrackID - Page/Anime ID from url, corresponds to FindThatOST Anime ID.
-     * @param {number|string}  nFtoOccurrenceID -  Episode No track is being added to. -1 if added to no specific episode.
+     * @param {number|string}  nTrackID - Page/Track ID from url, corresponds to FindThatOST Track ID.
+     * @param {number|string}  nFtoOccurrenceID -  Occurrence ID being deleted.
+     * @param {number|string}  nFtoEpisodeID -  Episode ID track is being removed from.
      * @param {object}  objUserSubmission - Object containg data submitted by user.
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackRemove_FTO = async (nTrackID, nFtoOccurrenceID, nUserId = 1) => {
+    const FetchPostSubmissionTrackRemove_FTO = async (nTrackID, nFtoOccurrenceID, nFtoEpisodeID, nUserId) => {
+        if (IsEmpty(nUserId)) {
+            toast("You must sign in to make a submission.");
+            return;
+        }
         const objUserSubmission = {};
         objUserSubmission['user_id'] = nUserId;
         objUserSubmission['submit_removeReason'] = charCount_removeReasons;
-        let apiUrl_fto = `/findthatost_api/postSubmission/track_remove/${Number(nTrackID)}/occurrence_id/${nFtoOccurrenceID}`;
+        let apiUrl_fto = `/findthatost_api/submission/submit/track_remove/${Number(nTrackID)}/occurrence_id/${nFtoOccurrenceID}/episode_id/${nFtoEpisodeID}`;
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         const response = await fetch(apiUrl_fto, 
         {
@@ -123,8 +133,8 @@ const SubmitTrackRemoveModal = (
     }
 
     return (
-        <div className="fto_modal">
-            <div className="fto_modal-content">
+        <div className="fto__modal">
+            <div className="fto__modal-content">
                 <form id='track_remove_form'>
                     <div className='title_confirmation'>
                         <h1>
@@ -138,13 +148,13 @@ const SubmitTrackRemoveModal = (
                             placeholder='Short desctription of reason for deleting track from episode.' maxLength={ maxCharCountLength_removeReasons } 
                             onChange={ handleChange_TrackRemove } value={charCount_removeReasons}
                         />
-                        <div className='fto_modal-content-align_end'>
+                        <div className='fto__modal-content-align_end'>
                             <span>
                                 {charCount_removeReasons.length}/{maxCharCountLength_removeReasons} characters
                             </span>
                         </div>
                     </div>
-                    <div className='fto_modal-content-footer'>
+                    <div className='fto__modal-content-footer'>
                         <button className='fto__button__gray' type='button' onClick={ CloseModal }>Cancel</button>
                         <button className='fto__button__pink' type='button' onClick={ handleSubmit_TrackRemove }>Continue</button>
                     </div>

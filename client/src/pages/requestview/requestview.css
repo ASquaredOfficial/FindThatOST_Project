@@ -1,0 +1,159 @@
+.fto__page__requestview {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.fto__page__requestview-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+
+    font-family: var(--font-family-manrope);
+    color: #fff;
+
+    margin: auto;
+    padding-bottom: 0;
+
+}
+
+.fto__page__requestview-main_content-text {
+    font-size: 0.9em;
+    color: #fff;
+}
+
+.fto__page__requestview-main_content-header {
+    font-weight: 900;
+    color: #fff;
+}
+
+.fto__page__requestview-content_heading_section {
+    font-family: var(--font-family-manrope);
+    margin-bottom: 0.5rem;
+    width: 100%;
+
+    .fto__page__requestview-content_header_title {
+        font-weight: 800;
+    }
+    
+    .fto__page__requestview-content_header_subtitle {
+        color: fff;
+        font-weight: 400;
+        align-self: flex-start;
+        margin-bottom: 5px;
+    }
+    
+    .fto__page__requestview-content_header_subheading {
+        margin-top: 5px;
+        color: fff;
+        font-weight: 400;
+        align-self: flex-start;
+    }
+    .fto__page__requestview-content_header_subheading:hover {
+        text-decoration: underline;
+        opacity: 0.9;
+    }
+}
+
+.fto__page__requestview-main_content {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+
+    width: 100%;
+    margin: auto;
+    padding-bottom: 0;
+
+    > div {
+        flex-direction: column;
+    }
+}
+
+.fto__page__requestview-main_content_left {
+    display: flex;
+    border-right:1px solid #fff;
+    min-width: 225px;
+    padding: 1rem;
+
+    .fto__page__requestview-main_content_left-anime_image {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .fto__page__requestview-main_content-main_info {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+}
+
+.fto__page__requestview-main_content_right {
+    width: 100%;
+    color: #fff;
+    padding: 1rem;
+    
+    .fto__page__requestview--streaming_platform_section {
+        flex-direction: row;
+        align-items: center;
+        margin: 1.5rem 0rem;
+    }
+    
+    .fto__page__requestview-main_content_right-request_user {
+        text-align: end;
+    }
+}
+
+@media screen and (max-width: 850px) {
+    .fto__page__requestview-main_content {
+        flex-direction: column;
+
+        > div {
+            flex-direction: row;
+        }
+
+        .fto__page__requestview-main_content_right {
+            border-top: 1px solid #fff;
+        }
+
+    }
+
+    .fto__page__requestview-main_content_left {
+        border-right: 0px;
+
+        .fto__page__requestview-main_content_left-anime_image {
+            width: 225px;
+        }
+
+        .fto__page__requestview-main_content-main_info {
+            width: 100%;
+            margin-left: 10px;
+        }
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .fto__page__anime-main_content_left {
+        .fto__page__requestview-main_content_left-anime_image {
+            width: 80%;
+        }
+    }
+}
+
+@media screen and (max-width: 650px) {
+    .fto__page__requestview-main_content {
+        > div {
+            flex-direction: column;
+        }
+    }
+
+    .fto__page__requestview-main_content_left {
+        .fto__page__requestview-main_content_left-anime_image {
+            width: 80%;
+            max-width: 225px;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+    }
+}

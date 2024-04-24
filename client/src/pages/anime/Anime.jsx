@@ -2,16 +2,24 @@ import React, {useEffect, useState, createElement} from 'react';
 import { useLocation, useParams } from "react-router-dom";
 import './anime.css';
 
-import { Navbar, Footer} from "../../components";
+import { Navbar, Footer, ModalEmbeddedTrack} from "../../components";
 import { useCustomNavigate } from './../../routing/navigation'
 import { AreDefaultAndEnglishTitlesDifferent, ParseAnimePosterImage } from "../../utils/MalApiUtils"
 import { IsEmpty, ParseClassName } from "../../utils/RegularUtils"
 import { toast } from 'react-toastify';
+import { FaPlayCircle } from 'react-icons/fa';
 
-const Anime = () => {
+const Anime = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const location = useLocation();
     const { id } = useParams();
-    const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
+    const { navigateToAnime } = useCustomNavigate();
 
     const searchParams = new URLSearchParams(location.search);
     const [ spEpisodePageNum, setEpisodePageNum ] = useState(parseInt(searchParams.get('episode_page_no'), 10) || 1);
@@ -24,6 +32,10 @@ const Anime = () => {
     const [ malAnimeTitles, setAnimeTitles ] = useState();
     const [ malAnimeRelations, setAnimeRelations ] = useState();
     const [ pageEpisodesInfo, setPageEpisodesInfo ] = useState();
+    const [ pageListViewFocus, setPageListView ] = useState({episode_list: null, track_list: null});
+    
+    const [ embeddedTrackModalVisibility, setEmbeddedTrackModalVisibility ] = useState(false);
+    const [ currentTrackData, setCurrentTrackData ] = useState()
 
     useEffect(() => {
         console.debug(`Render-Anime (onMount): ${location.href}`);
@@ -89,6 +101,13 @@ const Anime = () => {
     
     useEffect(() => {
         if (pageEpisodesInfo !== undefined) {
+            setPageListView(() => {
+                return {
+                    episode_list: true, 
+                    track_list: (pageListViewFocus.track_list === true ) ? false : pageListViewFocus.track_list,
+                };
+            });
+
             // Get episode number to see the
             let animeStatus = malAnimeInfo.status;
             let nLatestEpisode = Number(malAnimeInfo.episodes);
@@ -135,7 +154,7 @@ const Anime = () => {
             if (responseStatus !== 500 && responseStatus !== undefined) {
                 // Successful Insert of missing episodes into DB, get new episode mapping
                 const newAnimeEpisodesData = await FetchEpisodeMapping(id);
-                console.log(`New Episodes for Anime ${id} added to FTO database: `, newAnimeEpisodesData);
+                console.log(`New Episodes for AnimeID ${id} added to FTO database: `, newAnimeEpisodesData);
                 setFTOAnimeEpisodesInfo(newAnimeEpisodesData);
             }
         }
@@ -154,7 +173,7 @@ const Anime = () => {
      * @returns {Promise<Array<JSON>>|undefined} The array of json objects containing episode details.
      */
     const FetchEpisodeMapping = async (ftoAnimeID) => {
-            let apiUrl_fto = `/findthatost_api/getEpisodes/anime/${ftoAnimeID}`;
+            let apiUrl_fto = `/findthatost_api/anime/${ftoAnimeID}/episodes`;
             console.debug(`Fetch url:, '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             try {
                 const response = await fetch(apiUrl_fto);
@@ -182,30 +201,40 @@ const Anime = () => {
         // Get All MAL Episodes
         let allMALAnimeEpisodes = [];
         let malQueryPage = 1;
+        // {status: '429', type: 'RateLimitException', message: 'You are being rate-limited. Please follow Rate Lim….api.jikan.moe/#section/Information/Rate-Limiting', error: null}
         while (malQueryPage > 0) {
             const malPageEipsodes = await FetchEpisodeData_MAL(malAnimeInfo.mal_id, malQueryPage);
+            if (malPageEipsodes.status === 429) {
+                console.warn("We are being Rate-Limited");
+                toast("Anime Size is too big. We are being rate limited");
+                await new Promise(resolve => setTimeout(resolve, 5000));  
+                continue;
+            }
             
-            console.log("MAL episodes:", malPageEipsodes);
+            console.debug("MAL episodes:", malPageEipsodes);
             allMALAnimeEpisodes.push(...malPageEipsodes.data);
             malQueryPage = (malPageEipsodes.pagination.has_next_page === true) ? malQueryPage + 1 : 0;
         }
 
         // Get All Kitsu Episodes
         let allKitsuAnimeEpisodes = [];
-        let nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
-        let kitsuQueryOffset = 0;
-        let iter = 0;
-        while (kitsuQueryOffset <= ((nLastOffset * 20) - 20) && iter < nLastOffset) {
-            const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, kitsuQueryOffset);
-            allKitsuAnimeEpisodes.push(...kitsuPageEpisodes.data);
-
-            let apiLinks = kitsuPageEpisodes.links;
-            if (!('next' in apiLinks)) {
-                break;
+        if (!IsEmpty(ftoAnimeInfo.kitsu_id)) {
+            console.log("Anime Kitsu ID:", ftoAnimeInfo.kitsu_id)
+            let nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
+            let kitsuQueryOffset = 0;
+            let iter = 0;
+            while (kitsuQueryOffset <= ((nLastOffset * 20) - 20) && iter < nLastOffset) {
+                const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, kitsuQueryOffset);
+                allKitsuAnimeEpisodes.push(...kitsuPageEpisodes.data);
+    
+                let apiLinks = kitsuPageEpisodes.links;
+                if (!('next' in apiLinks)) {
+                    break;
+                }
+    
+                kitsuQueryOffset = kitsuQueryOffset + 20;
+                iter++;
             }
-
-            kitsuQueryOffset = kitsuQueryOffset + 20;
-            iter++;
         }
         
         // Create a combined array of episode details
@@ -253,20 +282,35 @@ const Anime = () => {
         );
 
         // Add missing episodes to episode database.
-        let data = listOfMissingEpisodesDetails;
+        let dataArray = listOfMissingEpisodesDetails;
         if (listOfMissingEpisodesDetails.length > 0) {
-            let apiUrl_fto = `/findthatost_api/postMissingEpisodes/${id}`;
+            let apiUrl_fto = `/findthatost_api/anime/${id}/post_missing_episodes`;
             try {
-                    const response = await fetch(apiUrl_fto, 
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ data }),
-                    });
-                    const responseStatus = response.status;
-                    await response.json();
+                    let bCompletedAllInsert = false;
+                    let responseStatus = 0;
+                    let nInsertIndex = 0
+                    const nSliceSize = 50;
+                    while (!bCompletedAllInsert) {
+                        console.debug(`Getting data between [${nInsertIndex},${Math.min(nInsertIndex + nSliceSize, Object.keys(dataArray).length)}]`);
+                        let data = dataArray.slice(nInsertIndex, Math.min(nInsertIndex + nSliceSize, Object.keys(dataArray).length));
+                        console.debug(`Length of data ${Object.keys(data).length}:`, data);
+                        const response = await fetch(apiUrl_fto, 
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ data }),
+                        });
+                        responseStatus = response.status;
+                        await response.json();
+                        nInsertIndex = nInsertIndex + nSliceSize;
+
+                        if (nInsertIndex >= Object.keys(dataArray).length) {
+                            bCompletedAllInsert = true;
+                            console.debug('All Missing Episodes Inserted');
+                        }
+                    }
                     return responseStatus;
             }
             catch (error) {
@@ -287,7 +331,7 @@ const Anime = () => {
      * 
      */
     const FetchAnimeData_FTO = async (ftoAnimeID) => {
-        let apiUrl_fto = `/findthatost_api/getAnime/${Number(ftoAnimeID)}`
+        let apiUrl_fto = `/findthatost_api/anime/${Number(ftoAnimeID)}/full`
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
             const response = await fetch(apiUrl_fto);
@@ -308,9 +352,8 @@ const Anime = () => {
      * @returns {Promise<Array<JSON>|undefined} - JSON Object containing anime info from MAL API.
      * 
      */
-    const FetchFullAnimeData_MAL = async (dataFromBackend) => {
-        let malID = dataFromBackend[0].mal_id;
-        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${malID}/full`;
+    const FetchFullAnimeData_MAL = async (nMalId) => {
+        let apiUrl_mal = `https://api.jikan.moe/v4/anime/${nMalId}/full`;
         console.debug(`Fetch data from External API, url: '${apiUrl_mal}'`);
         try {
             const response = await fetch(apiUrl_mal);
@@ -326,13 +369,12 @@ const Anime = () => {
      * 
      * @async
      * @function FetchFullAnimeData_AniList
-     * @param {Array<JSON>}  dataFromBackend - The array of json objects (max length 1) containing anime details.
+     * @param {Array<JSON>}  malID - MyAnimeList Anime ID.
      * @returns {Promise<Array<JSON>>|undefined} - JSON Object containing anime info from MAL API.
      * 
      */
-    const FetchFullAnimeData_AniList = async (dataFromBackend) => {
+    const FetchFullAnimeData_AniList = async (malID) => {
         try {
-            let malID = dataFromBackend.mal_id;
             const newResponse = await fetch('https://graphql.anilist.co', {
                 method: 'POST',
                 headers: {
@@ -391,11 +433,13 @@ const Anime = () => {
             if (airStatus === 'Currently Airing') {
                 // Get episode count and latest episode numusing AniList API
                 try {
-                    const dataFromExternalAPI_AniList = await FetchFullAnimeData_AniList(malAnimeDetails);
+                    let malAnimeID = malAnimeDetails.mal_id;
+                    const dataFromExternalAPI_AniList = await FetchFullAnimeData_AniList(malAnimeID);
                     console.log('Data from external AniList API:', dataFromExternalAPI_AniList);
                     setAniListEpisodeCountInfo(dataFromExternalAPI_AniList);
                     latestEpisodeNumber = dataFromExternalAPI_AniList.data.Media.nextAiringEpisode.episode - 1;
                 } catch (error) {
+                    toast("Unable to get episode information for currently airing anime.");
                     console.error('Error:', error.message);
                 }
             }
@@ -407,7 +451,7 @@ const Anime = () => {
 
             let startEpisode = 1 + ((ftoEpisodePageNum - 1) * 20);
             const kitsuPageEpisodesResponse = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, startEpisode-1 );
-            const kitsuPageEpisodes = kitsuPageEpisodesResponse.data;
+            const kitsuPageEpisodes = (Object.keys(kitsuPageEpisodesResponse).length > 0 && Array.isArray(kitsuPageEpisodesResponse.data)) ? kitsuPageEpisodesResponse.data : [];
 
             const episodesInfo = [];
             let endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;
@@ -499,73 +543,75 @@ const Anime = () => {
      * 
      */
     const FetchUpdateAnimeData_FTO = async (ftoID, malAnimeDetails) => {
-        try {
-            // Get Prequel Anime in FTO DB (if present)
-            let ftoPrequelAnimeID = 0;
-            let arrMalAnimeRelations = malAnimeDetails.relations;
-            for (let it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
-                let animeRelation = arrMalAnimeRelations[it]
-                let animeRelationEntry = animeRelation.entry;
-                let animeRelationType = animeRelation.relation;
-                if (animeRelationType === 'Prequel') {
-                    let prequelEntries = animeRelationEntry;
+        // Get Prequel Anime in FTO DB (if present)
+        let ftoPrequelAnimeID = 0;
+        let arrMalAnimeRelations = malAnimeDetails.relations;
+        for (let it = 0; it <  Object.keys(arrMalAnimeRelations).length; it++) {
+            let animeRelation = arrMalAnimeRelations[it]
+            let animeRelationEntry = animeRelation.entry;
+            let animeRelationType = animeRelation.relation;
+            if (animeRelationType === 'Prequel' || animeRelationType === 'Parent story') {
+                let prequelEntries = animeRelationEntry;
 
-                    let nLowestMalID = malAnimeDetails.mal_id;
-                    prequelEntries.map(entry => {
-                        if (entry.mal_id < nLowestMalID) {
-                            nLowestMalID = entry.mal_id;
-                        }
-                        return entry;
-                    });
-                    
-                    if (nLowestMalID !== malAnimeDetails.mal_id) {
-
-                        let apiUrl_fto = `/getAnimeMappingMAL/${nLowestMalID}`
-                        try {
-                            console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-                            const response = await fetch(apiUrl_fto);
-                            if (response.status === 200) {
-                                const data = await response.json();
-                                ftoPrequelAnimeID = data[0].anime_id;
-                            }
-                        }
-                        catch (error) {
-                            throw new Error(`Error fetching data in backend.\nError message: ${error}\nFetch url: ${apiUrl_fto}`);
-                        }
+                let nLowestMalID = malAnimeDetails.mal_id;
+                prequelEntries.map(entry => {
+                    if (entry.mal_id < nLowestMalID) {
+                        nLowestMalID = entry.mal_id;
                     }
-                    break;
-                }
-            }
+                    return entry;
+                });
+                
+                if (nLowestMalID !== malAnimeDetails.mal_id) {
+                    let apiUrl_fto = `/findthatost_api/anime/mal_mapping/${nLowestMalID}`;
+                    console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
 
-            let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
-            let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '');
-            let ftoCanonicalTitle = (!bUpdateCanonicalTitle) ? '' : malAnimeDetails.titles[0].title;;
-            
-            // Createn update query
-            let apiUrl_fto = '';
-            if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
-                apiUrl_fto =`/findthatost_api/patchAnime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
-            } else if (bUpdateCanonicalTitle) {
-                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
-            } else if (bUpdateParentAnimeID) {
-                apiUrl_fto = `/findthatost_api/patchAnime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
-            }
-
-            // Perform Fetch Query to update anime
-            if (apiUrl_fto !== '') {
-                try {
-                    console.debug(`Fetch put data from the mal api to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
                     const response = await fetch(apiUrl_fto);
-                    await response.json();
+                    if (response.status === 200) {
+                        const responseJson = await response.json();
+                        ftoPrequelAnimeID = responseJson[0].anime_id;
+                    }
+                    else if (response.status === 204) {
+                        // No MAL to FTO mapping found for ${nLowestMalID}
+                    }
+                    else {
+                        toast('An internal error has occurred in FindThatOST Server. Please try again later.');
+                        const responseJson = await response.json();
+                        console.error(`Error updating data in backend.\nFetch url: ${apiUrl_fto}\nResponse Status: ${response.status}\nResponse: ${responseJson}`);
+                    }
                 }
-                catch (error) {
-                    toast('An internal error has occurred in FindThatOST Server. Please try again later.');
-                    throw new Error('Error:', error);
-                }
+                break;
             }
-        } 
-        catch (error) {
-            throw new Error('Error updating data in backend');
+        }
+
+        let ftoCanonicalTitle = malAnimeDetails.titles[0].title;
+        let bUpdateParentAnimeID = (ftoAnimeInfo.parent_anime_id == null || ftoAnimeInfo.parent_anime_id === 0) && ftoPrequelAnimeID !== 0;
+        let bUpdateCanonicalTitle = (ftoAnimeInfo.canonical_title === '' || ftoAnimeInfo.canonical_title !== ftoCanonicalTitle);
+        
+        // Createn update query
+        let apiUrl_fto = '';
+        if (bUpdateCanonicalTitle && bUpdateParentAnimeID) {
+            apiUrl_fto =`/findthatost_api/anime/${ftoID}/title/${ftoCanonicalTitle}/parent_id/${encodeURIComponent(ftoPrequelAnimeID)}`;
+        } else if (bUpdateCanonicalTitle) {
+            apiUrl_fto = `/findthatost_api/anime/${ftoID}/title/${encodeURIComponent(ftoCanonicalTitle)}`;
+        } else if (bUpdateParentAnimeID) {
+            apiUrl_fto = `/findthatost_api/anime/${ftoID}/parent_id/${ftoPrequelAnimeID}`;
+        }
+
+        // Perform Fetch Query to update anime
+        if (apiUrl_fto !== '') {
+            console.debug(`Fetch put data from the mal api to backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
+            try {
+                const response = await fetch(apiUrl_fto, 
+                    {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                await response.json(); // Wait for response before contining
+            }
+            catch (error) {
+                toast('An internal error has occurred in FindThatOST Server. Please try again later.');
+                console.error(`Error updating data in backend.\nFetch url: ${apiUrl_fto}\nResponse: ${error}`);
+            }
         }
     }
 
@@ -583,13 +629,22 @@ const Anime = () => {
             const dataFromBackend = await FetchAnimeData_FTO(pageId);
         
             // Use data from the backend to make the second fetch to the external API
-            const dataFromExternalAPI_MAL = await FetchFullAnimeData_MAL(dataFromBackend);
+            const dataFromExternalAPI_MAL = await FetchFullAnimeData_MAL(dataFromBackend.mal_id);
         
             console.log('Data from backend:', dataFromBackend);
             console.log('Data from external MAL API:', dataFromExternalAPI_MAL);
-            setFTOAnimeInfo(dataFromBackend[0]);
-            document.title = `${dataFromBackend[0].canonical_title} | FindThatOST Anime`;
+            setFTOAnimeInfo(dataFromBackend);
+            document.title = `${dataFromBackend.canonical_title} | FindThatOST Anime`;
             setMALAnimeInfo(dataFromExternalAPI_MAL.data);
+            setPageListView(() => {
+                if (!IsEmpty(dataFromBackend['track_list'])) {
+                    return {
+                        episode_list: pageListViewFocus.episode_list, 
+                        track_list: (pageListViewFocus.episode_list !== true) ? true : false,
+                    };
+                }
+                return pageListViewFocus;
+            });
         } catch (error) {
             console.error('Error:', error.message);
         }
@@ -680,7 +735,7 @@ const Anime = () => {
         );
     }
 
-    // Hanle episode list page number change
+    // Handle episode list page number change
     const HandleEpiosdeListPageChange = (newPageNum) => {
         // Get the search string and new page number, and change url
         searchParams.set('episode_page_no', newPageNum);
@@ -690,17 +745,23 @@ const Anime = () => {
         // Fetch episode info for the new page
         FetchEpisodeData(malAnimeInfo, newPageNum);
         window.scrollTo(0, 0)
-    };
-
-    const HandleEpisodeRowOnClick = (episodeDetails) => {
-        // Navigate to the episode
-        navigateToEpisode(id, episodeDetails.episode_no, ftoAnimeEpisodesInfo[episodeDetails.episode_no]);
     }
 
     return (
         <div className='fto__page__anime'>
+            {embeddedTrackModalVisibility && (
+                <ModalEmbeddedTrack 
+                    modalVisibility={embeddedTrackModalVisibility}
+                    setModalVisibility={setEmbeddedTrackModalVisibility}
+                    embeddedTrackData={currentTrackData}
+                    setEmbeddedTrackData={setCurrentTrackData}/>
+            )}
+
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {malAnimeInfo !== undefined && (
                     <div className='fto__page__anime-content section__padding' style={{paddingBottom: 0}}>
@@ -713,7 +774,7 @@ const Anime = () => {
                                 <h4 className='fto__page__anime-content_header_subtitle'><strong>{malAnimeTitles !== undefined && ( malAnimeTitles.English )}</strong></h4>
                             )}
                         </div>
-                        <hr className='fto__page__anime-horizontal_hr' />
+                        <hr className='fto_horizontal_hr' />
                         
                         <div className='fto__page__anime-main_content'>
                             <div className='fto__page__anime-main_content_left'>
@@ -780,23 +841,95 @@ const Anime = () => {
                                     </div>
                                 )}
 
-                                {// Show Anime Episode List
-                                pageEpisodesInfo !== undefined && (
-                                    <div className='fto__page__anime-main_content_episode_list'>
-                                        <h4 className='fto__page__anime-main_content-header'>Episode List</h4>
+                                {// Show Anime Episode and/or Track List List
+                                (!IsEmpty(pageEpisodesInfo !== undefined) || !IsEmpty(ftoAnimeInfo['track_list'])) && (
+                                    <div className='fto__page__anime-main_content_info_list'>
+                                        <div className='fto__page__anime-main_content_info_list-header_section'>
+                                            {!IsEmpty(pageEpisodesInfo) && (
+                                                <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.episode_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
+                                                    onClick={() => {setPageListView(() => {
+                                                        if (pageListViewFocus.episode_list === false) {
+                                                            return {
+                                                                episode_list: true, 
+                                                                track_list: (pageListViewFocus.track_list === true) ? false : null,
+                                                            };
+                                                        }
+                                                    })}}>
+
+                                                    Episode List
+                                                </h4>
+                                            )}
+                                            {!IsEmpty(ftoAnimeInfo['track_list']) && (
+                                                <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.track_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
+                                                    onClick={() => {setPageListView(() => {
+                                                        if (pageListViewFocus.track_list === false) {
+                                                            return {
+                                                                episode_list: (pageListViewFocus.episode_list === true) ? false : null, 
+                                                                track_list: true,
+                                                            };
+                                                        }
+                                                    })}}>
+                                                    Track List
+                                                </h4>
+                                            )}
+                                        </div>
                                         <hr />
 
-                                        {pageEpisodesInfo.map((episodeInfo, it) => {
-                                            return (
-                                                <div className='fto__page__anime-main_content_episode_list-row' key={it}>
-                                                    <h3 className='fto__page__anime-main_content_episode_heading' onClick={() => {HandleEpisodeRowOnClick(episodeInfo)}}>
-                                                        Episode {episodeInfo.episode_no}
-                                                    </h3>
-                                                </div>
-                                            )
-                                        })}
-                                        
-                                        {ShowPagination(malAnimeInfo, aniListEpisodeCountInfo, pageEpisodesInfo, spEpisodePageNum)}
+                                        {// Show Anime Episode List
+                                        pageListViewFocus.episode_list && (
+                                            <>
+                                                {pageEpisodesInfo.map((episodeInfo, it) => {
+                                                    return (
+                                                        <div className='fto__page__anime-main_content_info_list-row' key={it}>
+                                                            <a href={`/anime/${id}/episode/${episodeInfo.episode_no}`}>
+                                                                <h3 className='fto__page__anime-main_content_episode_heading'>
+                                                                    Episode {episodeInfo.episode_no}
+                                                                </h3>
+                                                            </a>
+                                                        </div>
+                                                    )
+                                                })}
+                                                
+                                                {ShowPagination(malAnimeInfo, aniListEpisodeCountInfo, pageEpisodesInfo, spEpisodePageNum)}
+                                            </>
+                                        )}
+                                        {// Show Anime Track List
+                                        pageListViewFocus.track_list && (
+                                            <>
+                                                {(Object.keys(ftoAnimeInfo.track_list).length > 0) ? (
+                                                    <>
+                                                        {ftoAnimeInfo.track_list.map((trackInfo, it) => {
+                                                            return (
+                                                                <div className='fto__page__anime-main_content_info_list-row' key={it}>
+                                                                    <a href={`/track/${trackInfo.track_id}`}>
+                                                                        <h3 className='fto__page__anime-main_content_episode_heading'>
+                                                                            {trackInfo.track_name}
+                                                                        </h3>
+                                                                    </a>
+                                                                    <div className='fto__page__anime-main_content_info_list-row_right'>
+                                                                        {(!IsEmpty(trackInfo.streaming_platform_links) && typeof(JSON.parse(trackInfo.streaming_platform_links)) === 'object') && 
+                                                                            (!IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify']) || !IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['apple_music'])) && (      
+                                                                            <FaPlayCircle 
+                                                                                className='fto__page__anime-main_content_info_list--track_item-play_icon' 
+                                                                                onClick={() => {
+                                                                                    setEmbeddedTrackModalVisibility(true); 
+                                                                                    setCurrentTrackData(JSON.parse(trackInfo.streaming_platform_links)['data']);
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </>
+                                                ) : (
+                                                    <p className='fto__page__anime-main_content-no_soundtracks'>
+                                                        No Soundtracks Added yet.
+                                                    </p>
+                                                )}
+                                                <br />
+                                            </>
+                                        )}
                                     </div>
                                 )}
 

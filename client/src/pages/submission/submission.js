@@ -15,7 +15,7 @@ import { IsFandomImageUrl, IsFandomCommunityWebsiteUrl, IsYoutubeVideoUrl, GetUr
  * @returns {boolean} 
  * 
  */
-const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions, pageInputs, submitPreExistingTrack = false) => {
+const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions, pageInputs, submitToAnime = false, submitPreExistingTrack = false) => {
     const { setUserSubmission, setPlatformItems, setPageInputs } = stateSetterFunctions;
     let strElemIdFirstInvalidInput = '';
     let inputElement = HTMLElement;
@@ -29,11 +29,13 @@ const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions
         }
     }
 
-    // Validate Song Type
-    inputElement = formElements[`submit_songType`];
-    if (IsEmpty(inputElement.value)) {
-        AddErrorToFtoInput(inputElement);
-        strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
+    if (!submitToAnime) {
+        // Validate Song Type
+        inputElement = formElements[`submit_songType`];
+        if (IsEmpty(inputElement.value)) {
+            AddErrorToFtoInput(inputElement);
+            strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
+        }
     }
 
     //Only validate inputs if adding a pre-existing track
@@ -121,9 +123,19 @@ const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions
                 strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
             }
         }
+
     }
- 
-    // Validate Track Name
+
+    if (!submitToAnime) {
+        // Validate Scene Description
+        inputElement = formElements[`submit_sceneDesc`];
+        if (IsEmpty(inputElement.value)) {
+            AddErrorToFtoInput(inputElement);
+            strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
+        }
+    }
+
+    // Validate Edit Reason
     if (formElements.hasOwnProperty('submit_editReason')) {
         inputElement = formElements[`submit_editReason`];
         if (IsEmpty(inputElement.value)) {

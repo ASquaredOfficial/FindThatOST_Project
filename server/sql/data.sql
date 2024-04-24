@@ -13,7 +13,8 @@ ALTER TABLE `fto_users`
 --
 INSERT INTO `fto_anime` (`anime_id`, `parent_anime_id`, `mal_id`, `kitsu_id`, `canonical_title`) 
 VALUES
-    (1, NULL, 31964, 11469, 'Boku no Hero Academia')
+    (1, NULL, 31964, 11469, 'Boku no Hero Academia'),
+    (2, 1, 33486, 12268, 'Boku no Hero Academia 2nd Season')
 ;
 ALTER TABLE `fto_anime`
     MODIFY `anime_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
@@ -25,10 +26,24 @@ INSERT INTO `fto_episode` (`episode_id`, `fto_anime_id`, `episode_no`, `mal_epis
 VALUES
     (1, 1, 12, 12, 184533, 'All Might'),
     (2, 1, 13, 13, 184534, 'In Each of Our Hearts'),
-    (3, 1, 7, 7, 184528, 'Deku vs. Kacchan')
+    (3, 1, 7, 7, 184528, 'Deku vs. Kacchan'),
+    (4, 2, 17, 17, 199279, 'Climax')
 ;
 ALTER TABLE `fto_episode`
     MODIFY `episode_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Dumping data for table `fto_episode_comments`
+--
+INSERT INTO `fto_episode_comments` (`comment_id`, `fto_user_id`, `fto_episode_id`, `comment_parent_id`, `comment_date`, `comment_content`, `comment_likes`) 
+VALUES
+    (1, 1, 2, NULL, '2024-04-18 21:52:50', 'I\'m pretty sure the song by the names [Anguish Of The Quirkless (無個性の苦悩 Mukosei no kunō?)] plays when Cementos hides All Might\'s weakened state from the rest of the students.', '[{\"user_id\":3,\"is_like\":true},{\"user_id\":1,\"is_like\":true}]'),
+    (2, 1, 2, NULL, '2024-04-18 22:43:34', 'I myself am pretty sure the song by the names [I Will Become a Hero! (ヒーローになるんだっ! Hīrō ni narunda!?)] while the students discuss standing outside the USJ what just happened in the USJ.', '[{\"user_id\":1,\"is_like\":true}]'),
+    (3, 1, 2, 1, '2024-04-18 22:43:34', 'I agree', NULL),
+    (4, 1, 2, NULL, '2024-04-18 22:43:34', 'I think this application will benefit greatly from having multiple languages for track type.', NULL)
+;
+ALTER TABLE `fto_episode_comments`
+    MODIFY `comment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Dumping data for table `fto_track`
@@ -45,7 +60,8 @@ VALUES
     (8, 1, 'Plus Ultra', 'Yûki Hayashi', 'Toho Animation Records', '2016-07-13', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'FvPWLLzHrSA'),
     (9, 1, 'The Day', 'Porno Graffitti', 'Sony Music Entertainment Japan', '2016-05-26', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'yu0HjPzFYnY'),
     (10, 1, 'HEROES!', 'Brian the Sun', 'Epic Records Japan', '2016-06-01', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'YRU7MZWDmgg'),
-    (11, 1, 'You Can Become A Hero', 'Yûki Hayashi', 'Toho Animation Records', '2016-07-13', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'ZAukL8dyh6I')
+    (11, 1, 'You Can Become A Hero', 'Yûki Hayashi', 'Toho Animation Records', '2016-07-13', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'ZAukL8dyh6I'),
+    (12, 2, 'Just Another Hero', 'Yūki Hayashi', 'Toho Animation Records', '2017-09-06', '{\"data\":{\"spotify\":\"5MVgPvxtIi1OQTguhaHqVf\"}}', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_2nd_Original_Soundtrack', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/3/30/My_Hero_Academia_2nd_Soundtrack.png', NULL)
 ;
 ALTER TABLE `fto_track`
     MODIFY `track_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
@@ -68,7 +84,8 @@ VALUES
     (11, 2, 7, 'BGM', 'Shigaraki escapes with the help of Kurogiri and Class 1A students reflect on the event\'s that just occurred at the USJ.'),
     (12, 2, 11, 'BGM', 'All Might and Izuku lay in the hospital after the events that occurred at the USJ.'),
     (13, 2, 9, 'OP', 'Opening for My Hero Academia Episode 13'),
-    (14, 2, 10, 'ED', 'Ending for My Hero Academia Episode 13')
+    (14, 2, 10, 'ED', 'Ending for My Hero Academia Episode 13'),
+    (15, 4, 12, 'BGM', 'Endeavour arrives in time to save heroes from nomu attack, and proceeds to incinerate its head\'s cells to prevent regeneration.')
 ;
 ALTER TABLE `fto_occurrence`
     MODIFY `occurrence_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
@@ -91,7 +108,8 @@ VALUES
     (11, '2024-03-21 21:53:01', 'TRACK_ADD_PRE', 1, 1, 1, 2),
     (12, '2024-03-21 21:53:02', 'TRACK_ADD_PRE', 2, 1, 7, 2),
     (13, '2024-03-21 21:53:03', 'TRACK_ADD_PRE', 3, 1, 9, 2),
-    (14, '2024-03-21 21:53:04', 'TRACK_ADD_PRE', 4, 1, 10, 2)
+    (14, '2024-03-21 21:53:04', 'TRACK_ADD_PRE', 4, 1, 10, 2),
+    (15, '2024-04-21 23:55:25', 'TRACK_ADD', 11, 1, 12, 15)
 ;
 ALTER TABLE `fto_request_submissions`
     MODIFY `request_submission_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
@@ -110,7 +128,9 @@ VALUES
     (7, '2024-03-21 21:52:57', 'ACCEPTED', NULL, 1, 1, 1, 'BGM', 'After All Might arrives he begins to beat up all of the common thugs the League of Villains hired to attack UA.', 'My Hero Academia', 'Yûki Hayashi', 'Toho Animation Records', '2016-07-13', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', '4jIXcSxBP7U'),
     (8, '2024-03-21 21:52:57', 'ACCEPTED', NULL, 1, 1, 1, 'BGM', 'All might arrives at the U.S.J. to stop the League of Villains.', 'Plus Ultra', 'Yûki Hayashi', 'Toho Animation Records', '2016-07-13', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'FvPWLLzHrSA'),
     (9, '2024-03-21 21:52:57', 'ACCEPTED', NULL, 1, 1, 1, 'OP', 'Opening for My Hero Academia Episode 12', 'The Day', 'Porno Graffitti', 'Sony Music Entertainment Japan', '2016-05-26', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'yu0HjPzFYnY'),
-    (10, '2024-03-21 21:52:57', 'ACCEPTED', NULL, 1, 1, 1, 'ED', 'Ending for My Hero Academia Episode 12', 'HEROES!', 'Brian the Sun', 'Epic Records Japan', '2016-06-01', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'YRU7MZWDmgg')
+    (10, '2024-03-21 21:52:57', 'ACCEPTED', NULL, 1, 1, 1, 'ED', 'Ending for My Hero Academia Episode 12', 'HEROES!', 'Brian the Sun', 'Epic Records Japan', '2016-06-01', '', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_Original_Soundtrack?file=My_Hero_Academia_Soundtrack.png', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/c/c6/My_Hero_Academia_Soundtrack.png', 'YRU7MZWDmgg'),
+    (11, '2024-04-21 23:55:25', 'ACCEPTED', NULL, 1, 2, 4, 'BGM', 'Endeavour arrives in time to save heroes from nomu attack, and proceeds to incinerate its head\'s cells to prevent regeneration.', 'Just Another Hero', 'Yūki Hayashi', 'Toho Animation Records', '2017-09-06', '{\"data\":{\"spotify\":\"5MVgPvxtIi1OQTguhaHqVf\"}}', 'https://static.wikia.nocookie.net/bokunoheroacademia/images/3/30/My_Hero_Academia_2nd_Soundtrack.png', 'https://myheroacademia.fandom.com/wiki/My_Hero_Academia_2nd_Original_Soundtrack', NULL)
+
 ;
 ALTER TABLE `fto_request_track_add`
     MODIFY `request_track_add_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;

@@ -12,7 +12,14 @@ import { ConvertTrackTypeToValue } from '../../utils/FTOApiUtils';
 import SubmitTrackRemoveModal from './SubmitTrackRemoveModal';
 import { toast } from 'react-toastify';
 
-const SubmitTrackEdit = () => {
+const SubmitTrackEdit = ({
+    SignInFunction,
+    SignOutFunction,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
+}) => {
     const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
     const { track_id } = useParams();
     const { occurrence_id } = useParams();
@@ -58,15 +65,15 @@ const SubmitTrackEdit = () => {
         let listOfClassNames = ftoPageElem.className.split(" ");
         if (pageLoading === true) {
             // if page doesn't have the class, add loading class
-            if (listOfClassNames.indexOf('fto_loading-cursor') === -1) {
-                listOfClassNames.unshift('fto_loading-cursor');
+            if (listOfClassNames.indexOf('fto__page__loading-cursor') === -1) {
+                listOfClassNames.unshift('fto__page__loading-cursor');
                 ftoPageElem.className =  listOfClassNames.join(' ').trim();
             }
         }
         else {
             // if page does have the class, remove loading
-            if (listOfClassNames.indexOf('fto_loading-cursor') !== -1) {
-                let classNameIndex = Number(listOfClassNames.findIndex(item => item === "fto_loading-cursor"));
+            if (listOfClassNames.indexOf('fto__page__loading-cursor') !== -1) {
+                let classNameIndex = Number(listOfClassNames.findIndex(item => item === "fto__page__loading-cursor"));
                 listOfClassNames.splice(classNameIndex, 1);
                 ftoPageElem.className = listOfClassNames.join(' ').trim();
             }
@@ -133,15 +140,16 @@ const SubmitTrackEdit = () => {
      */
     const FetchSubmissionContextDetails_FTO = async (nTrackID, nOccurrenceID) => {
         try {
-            let apiUrl_fto = `/findthatost_api/getSubmissionContext/track_edit/${Number(nTrackID)}`;
+            let apiUrl_fto = `/findthatost_api/submission/context_info/track_edit/${Number(nTrackID)}`;
             if (nOccurrenceID !== -1) {
                 apiUrl_fto += `/occurrence_id/${Number(nOccurrenceID)}`
             }
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
             if (response.status === 204) {
-                // TODO - Page doesn't exist, redirect to page doesnt exist page
-                console.error("Response status:", response.status, "\nLikely page doesn't exist. Redirecting to page.")
+                console.error("Response status:", response.status, "\nLikely page doesn't exist. Redirecting to Home page.")
+                toast("The Submission Details does not exist. Redirecting to home page") ;
+                navigateToHome();
             }
             const data = await response.json();
             return data;
@@ -369,9 +377,13 @@ const SubmitTrackEdit = () => {
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackEdit_FTO = async (nTrackID, nFtoOccurrenceID, objUserSubmission, nUserId = 1) => {
+    const FetchPostSubmissionTrackEdit_FTO = async (nTrackID, nFtoOccurrenceID, objUserSubmission, nUserId) => {
+        if (IsEmpty(nUserId)) {
+            toast("You must sign in to make a submission.");
+            return;
+        }
         objUserSubmission['user_id'] = nUserId;
-        let apiUrl_fto = `/findthatost_api/postSubmission/track_edit/${Number(nTrackID)}`;
+        let apiUrl_fto = `/findthatost_api/submission/submit/track_edit/${Number(nTrackID)}`;
         if (nFtoOccurrenceID !== -1) {
             apiUrl_fto += `/occurrence_id/${nFtoOccurrenceID}`;
         }
@@ -538,7 +550,7 @@ const SubmitTrackEdit = () => {
             console.log(`Fetch data:`, updatedSubmission); 
             if (bChangesPresent) { 
                 await new Promise(resolve => setTimeout(resolve, 1000));  
-                FetchPostSubmissionTrackEdit_FTO(track_id, occurrence_id, updatedSubmission);
+                FetchPostSubmissionTrackEdit_FTO(track_id, occurrence_id, updatedSubmission, user_properties.userId);
             }
             else {
                 alert("No changes have been made");
@@ -560,7 +572,6 @@ const SubmitTrackEdit = () => {
             setSuccessfulSubmitQuery();
         }
     }
-    
 
     return (
         <div id='fto__page' className='fto__page__submission'>
@@ -569,7 +580,10 @@ const SubmitTrackEdit = () => {
             )}
 
             <div className='gradient__bg'>
-                <Navbar />
+                <Navbar 
+                    SignInFunction={SignInFunction} 
+                    SignOutFunction={SignOutFunction} 
+                    user_properties={user_properties} />
 
                 {pageRemoveTrackModalVisibility && (
                     <SubmitTrackRemoveModal 
@@ -578,6 +592,7 @@ const SubmitTrackEdit = () => {
                         setSuccessfulSubmitQuery={setSuccessfulSubmitQuery}
                         trackID={track_id}
                         occurrenceID={occurrence_id}
+                        episodeID={ftoEpisodeID}
                         setFtoEpisodeID={setFtoEpisodeID}
                         setPageToEditMode={setPageToEditMode}
                     />
@@ -590,12 +605,23 @@ const SubmitTrackEdit = () => {
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Edit Track
                             {(ftoEpisodeContext.episode_no !== -1) ? (
-                                ' in Episode ' + ftoEpisodeContext.episode_no
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}>
+                                    {` in Episode ${ftoEpisodeContext.episode_no}`}
+                                </a>
                             ) : (
-                                ' in Series'
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id}>
+                                    {` in Series`}
+                                </a>
                             )}
                         </h1>
-                        <h4 className='fto__page__submission-content_header_subtitle'><strong>{ftoEpisodeContext.episode_title}</strong></h4>
+                        
+                        {(ftoEpisodeContext.episode_no !== -1) && (
+                            <h4 className='fto__page__submission-content_header_subtitle'>
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}>
+                                    <strong>{ftoEpisodeContext.episode_title}</strong>
+                                </a>
+                            </h4>
+                        )}
                         <hr className='fto__page__submission-horizontal_hr' />
                     </div>
                     
@@ -752,7 +778,7 @@ const SubmitTrackEdit = () => {
                                 <button className='fto__button__pink' type='submit' disabled={pageLoading}>
                                     Submit
                                 </button>
-                                <p className='fto__pointer'>Add to drafts</p>
+                                <p className='fto__page__submission-main_content-add_to_drafts fto__pointer'>Add to drafts</p>
                             </div>
                             )}
                         </form>
@@ -760,8 +786,8 @@ const SubmitTrackEdit = () => {
                     
                     {(successfulSubmitQuery !== undefined) && (
                     <div className='fto__page__submission-pop_up'>
-                        <div className="fto_modal">
-                            <div className="fto_modal-content">
+                        <div className="fto__modal">
+                            <div className="fto__modal-content">
                                 {(successfulSubmitQuery === true) ? (
                                     <>
                                         <h3 className='fto__page__submission-content_header_subtitle'>

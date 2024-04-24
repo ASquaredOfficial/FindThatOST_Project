@@ -36,6 +36,20 @@ CREATE TABLE `fto_episode` (
     FOREIGN KEY (`fto_anime_id`) REFERENCES `fto_anime` (`anime_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `fto_episode_comments` (
+    `comment_id` int(11) NOT NULL AUTO_INCREMENT,
+    `fto_user_id` int(11) NOT NULL,
+    `fto_episode_id` int(11) NOT NULL,
+    `comment_parent_id` int(11) DEFAULT NULL,
+    `comment_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `comment_content` text NOT NULL,
+    `comment_likes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+    PRIMARY KEY (`comment_id`),
+    FOREIGN KEY (`comment_parent_id`) REFERENCES `fto_episode_comments` (`comment_id`),
+    FOREIGN KEY (`fto_episode_id`) REFERENCES `fto_episode` (`episode_id`),
+    FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `fto_track` (
     `track_id` int(11) NOT NULL AUTO_INCREMENT,
     `fto_anime_id` int(11) NOT NULL,
@@ -72,10 +86,26 @@ CREATE TABLE `fto_request_submissions` (
     `fto_user_id` int(11) NOT NULL,
     `fto_track_id` int(11) NOT NULL,
     `fto_occurrence_id` int(11) NOT NULL,
+    `request_upvotes` LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
     PRIMARY KEY (`request_submission_id`),
     FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`),
     FOREIGN KEY (`fto_track_id`) REFERENCES `fto_track` (`track_id`),
     FOREIGN KEY (`fto_occurrence_id`) REFERENCES `fto_occurrence` (`occurrence_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `fto_request_submissions_comments` (
+    /*Only request that have been accepted are added to this table*/
+    `request_comment_id` int(11) NOT NULL AUTO_INCREMENT,
+    `fto_user_id` int(11) NOT NULL,
+    `fto_request_submission_id` int(11) NOT NULL,
+    `comment_parent_id` int(11) DEFAULT NULL,
+    `comment_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `comment_content` text NOT NULL,
+    `comment_likes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+    PRIMARY KEY (`request_comment_id`),
+    FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`),
+    FOREIGN KEY (`fto_request_submission_id`) REFERENCES `fto_request_submissions` (`request_submission_id`),
+    FOREIGN KEY (`comment_parent_id`) REFERENCES `fto_request_submissions_comments` (`request_comment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `fto_request_track_add` (
@@ -135,6 +165,7 @@ CREATE TABLE `fto_request_track_remove_from_episode` (
     `fto_user_id` int(11) NOT NULL,
     `fto_track_id` int(11) NOT NULL,
     `fto_occurrence_id` int(11) NOT NULL,
+    `fto_episode_id` int(11) NOT NULL,
     `track_remove_reason` varchar(200) NOT NULL,
     PRIMARY KEY (`request_track_remove_id`),
     FOREIGN KEY (`fto_user_id`) REFERENCES `fto_users` (`user_id`),

@@ -85,26 +85,32 @@ const GetShorthandDateFromString = (dateString) => {
 const FindObjectDifferenceWithArrays = (obj1, obj2) => {
     const diff1 = {};
     const diff2 = {};
+    obj1 = IsEmpty(obj1) ? {} : obj1;
+    obj2 = IsEmpty(obj2) ? {} : obj2;
 
     // Find differences in obj1
-    for (const key in obj1) {
-        if (_.isArray(obj1[key])) {
-            if (!_.isEqual(obj1[key], obj2[key])) {
+    if (!IsEmpty(obj1)) {
+        for (const key in obj1) {
+            if (_.isArray(obj1[key])) {
+                if (!_.isEqual(obj1[key], obj2[key])) {
+                    diff1[key] = obj1[key];
+                }
+            } else if (!_.isEqual(obj1[key], obj2[key])) {
                 diff1[key] = obj1[key];
             }
-        } else if (!_.isEqual(obj1[key], obj2[key])) {
-            diff1[key] = obj1[key];
         }
     }
 
     // Find differences in obj2
-    for (const key in obj2) {
-        if (_.isArray(obj2[key])) {
-            if (!_.isEqual(obj2[key], obj1[key])) {
+    if (!IsEmpty(obj2)) {
+        for (const key in obj2) {
+            if (_.isArray(obj2[key])) {
+                if (!_.isEqual(obj2[key], obj1[key])) {
+                    diff2[key] = obj2[key];
+                }
+                } else if (!_.isEqual(obj2[key], obj1[key])) {
                 diff2[key] = obj2[key];
             }
-            } else if (!_.isEqual(obj2[key], obj1[key])) {
-            diff2[key] = obj2[key];
         }
     }
 
@@ -278,6 +284,142 @@ const FormatStreamingPlatformsToList = (trackPlatformData, strSetValuesToPlaceho
 const AreObjectsEqual = (obj1, obj2) => {
     return _.isEqual(obj1, obj2);
 }
+
+/**
+ * Renames a key in the given object.
+ * @function RenameObjectKey
+ * @param {object} obj - The object in which the key will be renamed.
+ * @param {string} oldKey - The current key to be renamed.
+ * @param {string} newKey - The new key name.
+ */
+const RenameObjectKey = (obj, oldKey, newKey) => {
+    obj[newKey] = obj[oldKey];
+    delete obj[oldKey];
+}
+
+/**
+ * Calculates the difference in months between two dates.
+ * @param {Date} startDate - The start date.
+ * @param {Date} endDate - The end date.
+ * @returns {number} - The difference in months.
+ */
+function CalculateMonthsDifference(startDate, endDate) {
+    const startYear = startDate.getFullYear();
+    const startMonth = startDate.getMonth() + 1;
+    const startDay = startDate.getDate();
+
+    const endYear = endDate.getFullYear();
+    const endMonth = endDate.getMonth() + 1;
+    const endDay = endDate.getDate();
+
+    let monthsDifference = (endYear - startYear) * 12 + (endMonth - startMonth);
+
+    if (endDay < startDay) {
+        monthsDifference--;
+    }
+
+    return monthsDifference;
+}
+
+/**
+ * Calculates the time difference between two dates and returns a human-readable string indicating how long ago the old date occurred compared to the current date.
+ * @function GetTimeAgoBetweenDates
+ * @param {Date} oldDate - The old date.
+ * @param {Date} dateNow - The current date.
+ * @returns {string} - A string indicating the time difference in a human-readable format (e.g., "2 days ago", "1 month ago").
+ * 
+ */
+const GetTimeAgoBetweenDates = (oldDate, dateNow) => {
+    let strDateAgoValue = 0;
+    let strDateUnit = "";
+    let nRequestDate = oldDate.getTime();
+    let nDifferenceInTime = dateNow.getTime() - nRequestDate;
+
+    let nDifferenceInTimeYears = (nDifferenceInTime / (1000 * 60 * 60 * 24 * 365)) % 60;
+    if (nDifferenceInTimeYears <= 1) {
+        // Less than a year ago
+        let nDifferenceInTimeDays = (nDifferenceInTime / (1000 * 60 * 60 * 24)) % 365;
+        if (nDifferenceInTimeDays === 1) {
+            // 1 day ago
+            strDateAgoValue = nDifferenceInTimeDays;
+            strDateUnit = "day ago";
+        }
+        else if (nDifferenceInTimeDays >= 1) {
+            // More than 1 day ago
+            if (nDifferenceInTimeDays === 7) {
+                // 1 week ago
+                strDateAgoValue = nDifferenceInTimeDays/7;
+                strDateUnit = "wk ago";
+            }
+            else if (nDifferenceInTimeDays >= 7) {
+                // More than a week ago
+                let nMonthDiff = CalculateMonthsDifference(oldDate, dateNow);
+                if (nMonthDiff === 1) {
+                    strDateAgoValue = nMonthDiff/7;
+                    strDateUnit = "month ago";
+                }
+                else if (nMonthDiff > 0) {
+                    strDateAgoValue = nMonthDiff;
+                    strDateUnit = "months ago";
+                }
+                else {
+                    strDateAgoValue = nDifferenceInTimeDays/7;
+                    strDateUnit = "wks ago";
+                }
+            }
+            else {
+                // Less than a week ago
+                strDateAgoValue = nDifferenceInTimeDays;
+                strDateUnit = "days ago";
+            }
+        }
+        else {
+            // Less than a day ago
+            let nDifferenceInTimeHours = Math.floor((nDifferenceInTime / (1000 * 60 * 60)) % 24);
+            if (nDifferenceInTimeHours === 1) {
+                // 1 hour ago ( between 60mins and 120 mins)
+                strDateAgoValue = nDifferenceInTimeHours;
+                strDateUnit = "hour ago";
+            }
+            else if (nDifferenceInTimeHours > 1) {
+                // More than 2 hours ago
+                strDateAgoValue = nDifferenceInTimeHours;
+                strDateUnit = "hours ago";
+            }
+            else {
+                // Less than 1 hours ago
+                let nDifferenceInTimeMinutes = (nDifferenceInTime / (1000 * 60)) % 60;
+                if (nDifferenceInTimeMinutes === 1) {
+                    strDateAgoValue = nDifferenceInTimeMinutes;
+                    strDateUnit = "minute ago";
+                }
+                else if (nDifferenceInTimeMinutes > 1) {
+                    strDateAgoValue = nDifferenceInTimeMinutes;
+                    strDateUnit = "minutes ago";
+                }
+                else {
+                    // Less than 1 minute ago
+                    let nDifferenceInTimeSeconds = (nDifferenceInTime / 1000) % 60;
+                    if (nDifferenceInTimeSeconds <= 1) {
+                        strDateAgoValue = nDifferenceInTimeSeconds;
+                        strDateUnit = "second ago";
+                    }
+                    else if (nDifferenceInTimeSeconds > 1) {
+                        strDateAgoValue = nDifferenceInTimeSeconds;
+                        strDateUnit = "seconds ago";
+                    }
+                }
+            }
+        }
+    }
+    else {
+        strDateAgoValue = nDifferenceInTimeYears;
+        strDateUnit = "years ago";
+    }
+    let strTimeAgo = Math.ceil(strDateAgoValue) + ' ' + strDateUnit;
+    return strTimeAgo;
+}
+
 export { 
     ParseClassName, 
     IsEmpty, 
@@ -287,4 +429,7 @@ export {
     FormatStreamingPlatformsToJson,
     FormatStreamingPlatformsToList,
     AreObjectsEqual,
+    GetTimeAgoBetweenDates,
+    CalculateMonthsDifference,
+    RenameObjectKey,
 };
