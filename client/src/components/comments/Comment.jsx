@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GetTimeAgoBetweenDates, IsEmpty } from "../../utils/RegularUtils";
+import { GetTimeAgoBetweenDates } from "../../utils/RegularUtils";
 import userIcon from "./../../assets/user-icon.png"
 import CommentForm from "./CommentForm";
 

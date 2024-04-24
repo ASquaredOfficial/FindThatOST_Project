@@ -7,12 +7,15 @@ import Comment from './Comment';
 
 const Comments = ({ 
 	ftoPageId, //ftoEpisodeId or ftoSubmissionId
-	user_props = {userId: 1, username: "Admin1012",}, 
 	getCommentsApi,
 	createCommentApi,
 	deleteCommentApi,
 	updateCommentApi,
 	updateCommentLikesApi,
+    user_properties = {
+        userId: null, 
+        username: null
+    }
 }) => {
 
     const [ backendComments, setBackendComments ] = useState([]);
@@ -45,7 +48,7 @@ const Comments = ({
 
 	const addComment = (text, parentId = null) => {
 		if (text !== null) {
-			createCommentApi(ftoPageId, text, parentId, user_props, { setActiveComment });
+			createCommentApi(ftoPageId, text, parentId, user_properties, { setActiveComment });
 			FetchCommentsData(ftoPageId); // refresh comments after
 		}
 		else {
@@ -56,13 +59,13 @@ const Comments = ({
 
 	const deleteComment = (commentId) => {
 		if (window.confirm(`Delete the comment?`)) {
-			deleteCommentApi(commentId, user_props.userId, {setBackendComments})
+			deleteCommentApi(commentId, user_properties.userId, {setBackendComments})
 		}
 	}
 
 	const updateComment = (text, commentId) => {
 		if (text !== null) {
-			updateCommentApi(commentId, text, user_props.userId, {setBackendComments, setActiveComment})
+			updateCommentApi(commentId, text, user_properties.userId, {setBackendComments, setActiveComment})
 		}
 		else {
 			// Cancel Add Comment
@@ -87,10 +90,10 @@ const Comments = ({
 			if (bLikeComment === undefined) {
 				// Remove user's like entry from state, if the user state exists
 				if (Array.isArray(arrCommentLikesDislikes)) {
-					let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_props.userId);
+					let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
 					if (objExistingLikesDislikeEntry !== undefined) {
 						// User entry exists
-						const filteredArray = arrCommentLikesDislikes.filter(likeEntry => likeEntry['user_id'] !== user_props.userId);
+						const filteredArray = arrCommentLikesDislikes.filter(likeEntry => likeEntry['user_id'] !== user_properties.userId);
 						arrCommentLikesDislikes = filteredArray;
 					}
 					else { return }
@@ -100,14 +103,14 @@ const Comments = ({
 				// Set user's entry to like or add like entry to state
 				if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
 					// Create new array object, then add new user
-					arrCommentLikesDislikes = [{user_id: user_props.userId, is_like: true}]
+					arrCommentLikesDislikes = [{user_id: user_properties.userId, is_like: true}]
 				}
 				else {
 					if (Array.isArray(arrCommentLikesDislikes)) {
-						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_props.userId);
+						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
 						if (objExistingLikesDislikeEntry === undefined) {
 							// User entry does not exist
-							objExistingLikesDislikeEntry = { user_id: user_props.userId, is_like: true };
+							objExistingLikesDislikeEntry = { user_id: user_properties.userId, is_like: true };
 							arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
 						}
 						else {
@@ -121,7 +124,7 @@ const Comments = ({
 						}
 						// Update the array with the modified entry
 						arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
-							if (entry.user_id === user_props.userId) {
+							if (entry.user_id === user_properties.userId) {
 								return objExistingLikesDislikeEntry;
 							}
 							return entry;
@@ -134,14 +137,14 @@ const Comments = ({
 				// Set user's entry to dislike or add dislike entry to state
 				if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
 					// Create new array object, then add new user
-					arrCommentLikesDislikes = [{user_id: user_props.userId, is_like: false}]
+					arrCommentLikesDislikes = [{user_id: user_properties.userId, is_like: false}]
 				}
 				else {
 					if (Array.isArray(arrCommentLikesDislikes)) {
-						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_props.userId);
+						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
 						if (objExistingLikesDislikeEntry === undefined) {
 							// User entry does not exist
-							objExistingLikesDislikeEntry = { user_id: user_props.userId, is_like: false };
+							objExistingLikesDislikeEntry = { user_id: user_properties.userId, is_like: false };
 							arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
 						}
 						else {
@@ -155,7 +158,7 @@ const Comments = ({
 						}
 						// Update the array with the modified entry
 						arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
-							if (entry.user_id === user_props.userId) {
+							if (entry.user_id === user_properties.userId) {
 								return objExistingLikesDislikeEntry;
 							}
 							return entry;
@@ -166,7 +169,7 @@ const Comments = ({
 			} 
 
 			// Update Comment Likes
-			updateCommentLikesApi(nFtoCommentId, arrCommentLikesDislikes, user_props.userId);
+			updateCommentLikesApi(nFtoCommentId, arrCommentLikesDislikes, user_properties.userId);
 			FetchCommentsData();
 		}
 	}
@@ -187,7 +190,7 @@ const Comments = ({
 								key={rootComment.id} 
 								comment={rootComment} 
 								replies={getReplies(rootComment.id)}
-								currentUserId={user_props.userId}
+								currentUserId={user_properties.userId}
 								deleteComment = {deleteComment}
 								addComment={addComment}
 								updateComment={updateComment}

@@ -22,6 +22,7 @@ const Search = ({
     const searchParams = new URLSearchParams(location.search);
     const [spQuery, setQuery] = useState(searchParams.get('query') || '');
     const [spPage, setPage] = useState(parseInt(searchParams.get('page'), 10) || 1);
+    const nNumberOfItemsPerPage = 25;
 
     const [pageSearchData, setPageSearchData] = useState([]);
     const [paginationData, setPagignationData] = useState({});
@@ -218,7 +219,7 @@ const Search = ({
             q: (query),
             unnaproved: false,
             sfw: true,
-            limit: 25,
+            limit: nNumberOfItemsPerPage,
             page: pgNum,
             // type: (animeTypesToSearch.join(',')),
         }).toString()}`;
@@ -236,29 +237,6 @@ const Search = ({
             console.log("Response Status", responseJson.status);
             console.error("An errror occurred with the Jikan API fetch request.")
             // Jikan API failed, use different API
-            /* This API needs the use of a redirect to get an Access token, perhaps use KITSU API as a backup
-            * 
-            console.debug(`Fetch (Jikan API) Failed. Reattempting using offial MAL API`);
-            apiUrl_mal = `https://api.myanimelist.net/v2/anime?${createSearchParams({
-                q: (query),
-                fields: 'start_date, main_picture, num_episodes, media_type, status',
-                limit: 25,
-                offset: (pgNum-1) * 25,
-            })}`;
-            console.debug(`Fetch url:, '${apiUrl_mal}'`);
-
-            const response = await fetch(apiUrl_mal, {
-                method: 'post',
-                mode: 'no-cors',
-                headers: new Headers({
-                    'Content-Type': 'application/json',
-                    'X-MAL-CLIENT-ID': 'e09bf7d461e98e3280ae4b21b093f4af',
-                }), 
-            });
-            console.log("Response", response);
-            //const responseJson = await response.json();
-            //console.log("Response", responseJson);
-            */
         }
     }
 

@@ -12,6 +12,10 @@ const SubmitTrackRemoveModal = (
         trackID,
         occurrenceID,
         episodeID,
+        user_properties = {
+            userId: null, 
+            username: null
+        }
     }) => {
 
     const [ charCount_removeReasons, setCharCount_removeReasons] = useState('');
@@ -50,7 +54,7 @@ const SubmitTrackRemoveModal = (
         const currentFormValues = document.getElementById('track_remove_form');
         let bIsValid = ValidateInputs(currentFormValues);
         if (bIsValid) {
-            FetchPostSubmissionTrackRemove_FTO(trackID, occurrenceID, episodeID);
+            FetchPostSubmissionTrackRemove_FTO(trackID, occurrenceID, episodeID, user_properties.userId);
         }
         setPageLoading(false);
     }
@@ -88,7 +92,11 @@ const SubmitTrackRemoveModal = (
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackRemove_FTO = async (nTrackID, nFtoOccurrenceID, nFtoEpisodeID, nUserId = 1) => {
+    const FetchPostSubmissionTrackRemove_FTO = async (nTrackID, nFtoOccurrenceID, nFtoEpisodeID, nUserId) => {
+        if (IsEmpty(nUserId)) {
+            toast("You must sign in to make a submission.");
+            return;
+        }
         const objUserSubmission = {};
         objUserSubmission['user_id'] = nUserId;
         objUserSubmission['submit_removeReason'] = charCount_removeReasons;

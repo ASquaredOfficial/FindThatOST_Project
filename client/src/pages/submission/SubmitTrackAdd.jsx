@@ -19,7 +19,7 @@ const SubmitTrackAdd = ({
         username: null
     }
 }) => {
-    const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
+    const { navigateToHome, navigateToAnime, navigateToEpisode } = useCustomNavigate();
     const location = useLocation();
     const { anime_id } = useParams();
 
@@ -133,8 +133,9 @@ const SubmitTrackAdd = ({
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
             if (response.status === 204) {
-                // TODO - Page doesn't exist, redirect to page doesnt exist page
-                console.error("Response status:", response.status, "\nLikely page doesn't exist. Redirecting to page.")
+                console.error("Response status:", response.status, "\nLikely page doesn't exist. Redirecting to Home page.")
+                toast("The Submission Details does not exist. Redirecting to home page") ;
+                navigateToHome();
             }
             const data = await response.json();
             return data;

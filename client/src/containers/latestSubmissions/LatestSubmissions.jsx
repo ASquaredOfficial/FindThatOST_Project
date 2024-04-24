@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import './latestsubmissions.css';
 import { IsEmpty } from '../../utils/RegularUtils';
 import SubmissionVotes from '../../components/submissionvotes/submissionvotes';
+import { toast } from "react-toastify";
 
 const LatestSubmissions = ({
     user_properties = {
@@ -29,7 +30,7 @@ const LatestSubmissions = ({
         try {
             // Fetch data from the backend
             const dataFromBackend = await FetchLatestSubmissionData_FTO(latestSubmissionsCount);
-            console.log('Data from backend:', dataFromBackend);
+            console.debug('Latest Submissions Data from backend:', dataFromBackend);
             setFTOLatestSubmissions(dataFromBackend);
         } catch (error) {
             console.error('Error:', error.message);
@@ -50,6 +51,9 @@ const LatestSubmissions = ({
         console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
         try {
             const response = await fetch(apiUrl_fto);
+            if (response.status === 204) {
+                return [];
+            }
             const data = await response.json();
             return data;
         } catch (error) {
@@ -89,9 +93,7 @@ const LatestSubmissions = ({
                         return (
                             <div className='fto__latest__submissions-main_content--list_item' key={it}>
                                 <div className='fto__latest__submissions-main_content--track_item-header'>
-                                    <a href={'/request/' + submissionInfo.request_submission_id} onClick={(e) => {
-                                        nav
-                                    }}
+                                    <a href={'/request/' + submissionInfo.request_submission_id}
                                         key={it} style={{flex: '1'}}>
                                         <div className='fto__latest__submissions-main_content--track_item-header_left'>
                                             <h4>{ConvertSubmissionTypeToString(submissionInfo.submission_type)}</h4>

@@ -147,8 +147,9 @@ const SubmitTrackEdit = ({
             console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto);
             if (response.status === 204) {
-                // TODO - Page doesn't exist, redirect to page doesnt exist page
-                console.error("Response status:", response.status, "\nLikely page doesn't exist. Redirecting to page.")
+                console.error("Response status:", response.status, "\nLikely page doesn't exist. Redirecting to Home page.")
+                toast("The Submission Details does not exist. Redirecting to home page") ;
+                navigateToHome();
             }
             const data = await response.json();
             return data;
@@ -376,7 +377,11 @@ const SubmitTrackEdit = ({
      * @param {number|string}  nUserId - UserId of logged in user.
      * 
      */
-    const FetchPostSubmissionTrackEdit_FTO = async (nTrackID, nFtoOccurrenceID, objUserSubmission, nUserId = 1) => {
+    const FetchPostSubmissionTrackEdit_FTO = async (nTrackID, nFtoOccurrenceID, objUserSubmission, nUserId) => {
+        if (IsEmpty(nUserId)) {
+            toast("You must sign in to make a submission.");
+            return;
+        }
         objUserSubmission['user_id'] = nUserId;
         let apiUrl_fto = `/findthatost_api/submission/submit/track_edit/${Number(nTrackID)}`;
         if (nFtoOccurrenceID !== -1) {
@@ -545,7 +550,7 @@ const SubmitTrackEdit = ({
             console.log(`Fetch data:`, updatedSubmission); 
             if (bChangesPresent) { 
                 await new Promise(resolve => setTimeout(resolve, 1000));  
-                FetchPostSubmissionTrackEdit_FTO(track_id, occurrence_id, updatedSubmission);
+                FetchPostSubmissionTrackEdit_FTO(track_id, occurrence_id, updatedSubmission, user_properties.userId);
             }
             else {
                 alert("No changes have been made");

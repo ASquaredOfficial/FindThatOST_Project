@@ -56,12 +56,14 @@ const SubmitTrackAddPreExistingModal = (
             });
 
             if (response.status === 204) {
-                alert("This anime has no tracks yet");
-                console.error("Response status:", response.status, "\nLikely page doesn't exist. Redirecting to page.")
+                CloseModal();
+                toast("This anime has no tracks yet");
+                console.error("Response status:", response.status, "\nNo Anime Tracks Availabale.")
             }
             const data = await response.json();
             return data;
         } catch (error) {
+            CloseModal();
             toast('An internal error has occurred with the FindThatOST server. Please try again later.');
             throw new Error('Error fetching data from backend.');
         }

@@ -24,10 +24,10 @@ const App = () => {
 			toast("Successfully Signed In");
 		}
 		else if (responseStatus === 204) {
-			toast("User does not exit!");
+			toast("Failed to sign in. User does not exit!");
 		}
 		else {
-			toast("An unexpected error has occurred.");
+			toast("Failed to sign in. An unexpected error has occurred.");
 		}
 	}
 

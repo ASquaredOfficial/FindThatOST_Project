@@ -85,26 +85,32 @@ const GetShorthandDateFromString = (dateString) => {
 const FindObjectDifferenceWithArrays = (obj1, obj2) => {
     const diff1 = {};
     const diff2 = {};
+    obj1 = IsEmpty(obj1) ? {} : obj1;
+    obj2 = IsEmpty(obj2) ? {} : obj2;
 
     // Find differences in obj1
-    for (const key in obj1) {
-        if (_.isArray(obj1[key])) {
-            if (!_.isEqual(obj1[key], obj2[key])) {
+    if (!IsEmpty(obj1)) {
+        for (const key in obj1) {
+            if (_.isArray(obj1[key])) {
+                if (!_.isEqual(obj1[key], obj2[key])) {
+                    diff1[key] = obj1[key];
+                }
+            } else if (!_.isEqual(obj1[key], obj2[key])) {
                 diff1[key] = obj1[key];
             }
-        } else if (!_.isEqual(obj1[key], obj2[key])) {
-            diff1[key] = obj1[key];
         }
     }
 
     // Find differences in obj2
-    for (const key in obj2) {
-        if (_.isArray(obj2[key])) {
-            if (!_.isEqual(obj2[key], obj1[key])) {
+    if (!IsEmpty(obj2)) {
+        for (const key in obj2) {
+            if (_.isArray(obj2[key])) {
+                if (!_.isEqual(obj2[key], obj1[key])) {
+                    diff2[key] = obj2[key];
+                }
+                } else if (!_.isEqual(obj2[key], obj1[key])) {
                 diff2[key] = obj2[key];
             }
-            } else if (!_.isEqual(obj2[key], obj1[key])) {
-            diff2[key] = obj2[key];
         }
     }
 

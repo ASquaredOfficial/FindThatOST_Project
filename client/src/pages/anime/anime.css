@@ -74,6 +74,7 @@
 }
 
 .fto__page__anime-main_content_right {
+    flex: 1 1;
     color: #fff;
     padding: 1rem;
 

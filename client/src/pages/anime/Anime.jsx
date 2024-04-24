@@ -201,10 +201,17 @@ const Anime = ({
         // Get All MAL Episodes
         let allMALAnimeEpisodes = [];
         let malQueryPage = 1;
+        // {status: '429', type: 'RateLimitException', message: 'You are being rate-limited. Please follow Rate Lim….api.jikan.moe/#section/Information/Rate-Limiting', error: null}
         while (malQueryPage > 0) {
             const malPageEipsodes = await FetchEpisodeData_MAL(malAnimeInfo.mal_id, malQueryPage);
+            if (malPageEipsodes.status === 429) {
+                console.warn("We are being Rate-Limited");
+                toast("Anime Size is too big. We are being rate limited");
+                await new Promise(resolve => setTimeout(resolve, 5000));  
+                continue;
+            }
             
-            console.log("MAL episodes:", malPageEipsodes);
+            console.debug("MAL episodes:", malPageEipsodes);
             allMALAnimeEpisodes.push(...malPageEipsodes.data);
             malQueryPage = (malPageEipsodes.pagination.has_next_page === true) ? malQueryPage + 1 : 0;
         }
@@ -275,20 +282,35 @@ const Anime = ({
         );
 
         // Add missing episodes to episode database.
-        let data = listOfMissingEpisodesDetails;
+        let dataArray = listOfMissingEpisodesDetails;
         if (listOfMissingEpisodesDetails.length > 0) {
             let apiUrl_fto = `/findthatost_api/anime/${id}/post_missing_episodes`;
             try {
-                    const response = await fetch(apiUrl_fto, 
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ data }),
-                    });
-                    const responseStatus = response.status;
-                    await response.json();
+                    let bCompletedAllInsert = false;
+                    let responseStatus = 0;
+                    let nInsertIndex = 0
+                    const nSliceSize = 50;
+                    while (!bCompletedAllInsert) {
+                        console.debug(`Getting data between [${nInsertIndex},${Math.min(nInsertIndex + nSliceSize, Object.keys(dataArray).length)}]`);
+                        let data = dataArray.slice(nInsertIndex, Math.min(nInsertIndex + nSliceSize, Object.keys(dataArray).length));
+                        console.debug(`Length of data ${Object.keys(data).length}:`, data);
+                        const response = await fetch(apiUrl_fto, 
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ data }),
+                        });
+                        responseStatus = response.status;
+                        await response.json();
+                        nInsertIndex = nInsertIndex + nSliceSize;
+
+                        if (nInsertIndex >= Object.keys(dataArray).length) {
+                            bCompletedAllInsert = true;
+                            console.debug('All Missing Episodes Inserted');
+                        }
+                    }
                     return responseStatus;
             }
             catch (error) {

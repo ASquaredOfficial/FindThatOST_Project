@@ -80,22 +80,22 @@ const Episode = ({
 
             if (kitsuEpisodeInfo !== undefined) {
                 // Use kitsu episode details as back up
-                if (!episodeInfo.hasOwnProperty('title_en_us') || IsEmpty(episodeInfo.title_en_us)) {
+                if ((!episodeInfo.hasOwnProperty('title_en_us') || IsEmpty(episodeInfo.title_en_us)) && !IsEmpty(kitsuEpisodeInfo.titles.en_us)) {
                     episodeInfo.title_en_us = kitsuEpisodeInfo.titles.en_us;
                 }
-                if (!episodeInfo.hasOwnProperty('title_en_jp') || IsEmpty(episodeInfo.title_en_jp)) {
+                if ((!episodeInfo.hasOwnProperty('title_en_jp') || IsEmpty(episodeInfo.title_en_jp)) && !IsEmpty(kitsuEpisodeInfo.titles.en_jp)) {
                     episodeInfo.title_en_jp = kitsuEpisodeInfo.titles.en_jp;
                 }
-                if (!episodeInfo.hasOwnProperty('title_ja_jp') || IsEmpty(episodeInfo.title_ja_jp)) {
+                if ((!episodeInfo.hasOwnProperty('title_ja_jp') || IsEmpty(episodeInfo.title_ja_jp)) && !IsEmpty(kitsuEpisodeInfo.titles.ja_jp)) {
                     episodeInfo.title_ja_jp = kitsuEpisodeInfo.titles.ja_jp;
                 }
-                if (!episodeInfo.hasOwnProperty('synopsis') || IsEmpty(episodeInfo.synopsis)) {
+                if ((!episodeInfo.hasOwnProperty('synopsis') || IsEmpty(episodeInfo.synopsis)) && !IsEmpty(kitsuEpisodeInfo.synopsis)) {
                     episodeInfo.synopsis = kitsuEpisodeInfo.synopsis;
                 }
-                if (!episodeInfo.hasOwnProperty('aired') || IsEmpty(episodeInfo.aired)) {
+                if ((!episodeInfo.hasOwnProperty('aired') || IsEmpty(episodeInfo.aired)) && !IsEmpty(kitsuEpisodeInfo.airdate)) {
                     episodeInfo.aired = kitsuEpisodeInfo.airdate;
                 }
-                if (!episodeInfo.hasOwnProperty('image_url') || IsEmpty(episodeInfo.image_url)) {
+                if ((!episodeInfo.hasOwnProperty('image_url') || IsEmpty(episodeInfo.image_url)) && !IsEmpty(kitsuEpisodeInfo.thumbnail)) {
                     episodeInfo.image_url = kitsuEpisodeInfo.thumbnail.original;
                 }
             }
@@ -634,12 +634,12 @@ const Episode = ({
                         {ftoEpisodeInfo && (
                             <Comments 
                                 ftoPageId={ftoEpisodeInfo.episode_id}
-                                currentUserId={user_properties}
                                 getCommentsApi={getCommentsApi}  
                                 createCommentApi={createCommentApi} 
                                 deleteCommentApi={deleteCommentApi} 
                                 updateCommentApi={updateCommentApi} 
-                                updateCommentLikesApi={updateCommentLikesApi} />
+                                updateCommentLikesApi={updateCommentLikesApi}
+                                currentUserId={user_properties} />
                         )}  
                     </div>
                 )}
