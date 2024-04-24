@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import './home.css';
 
 import { Navbar, Footer, } from "../../components";
-import { Header, AskChatGPT} from "../../containers";
+import { Header, AskChatGPT, LatestSubmissions} from "../../containers";
 
 const Home = ({
     SignInFunction,
@@ -28,6 +28,8 @@ const Home = ({
                 <div className='fto__page__home-content'>
                     <Header/>
                     <AskChatGPT />
+                    <LatestSubmissions 
+                        user_properties={user_properties}/>
                 </div>
             </div>
 		    <Footer />

@@ -434,7 +434,6 @@ const DeleteCommentFromEpisode = (nFtoCommentID, nUserId) => {
 
 const PatchCommentLikesOnEpisode = (nFtoCommentID, objLikesDislikes, nUserId) => {
 	return new Promise((resolve, reject) => {
-		console.log("LikesDislikes:", (IsEmpty(objLikesDislikes)))
 		let post_data = {
 			comment_likes: JSON.stringify(objLikesDislikes),
 		}
@@ -1140,6 +1139,7 @@ const PostSubmission_TrackRemove = (nFtoTrackID, nFtoOccurrenceID, nFtoEpisodeID
 						const postData2 = {
 							fto_user_id: nUserID,
 							fto_track_id: nFtoTrackID,
+							fto_occurrence_id: nFtoOccurrenceID,
 							fto_episode_id: nFtoEpisodeID,
 							track_remove_reason: String(objUserSubmission.submit_removeReason),
 						};
@@ -1238,6 +1238,29 @@ const GetSubmissionDetails = (nSubmissionID, bIncludeMalID = false) => {
 	});
 }
 
+const GetLatestSubmissions = (nLatestLimit) => {
+	return new Promise((resolve, reject) => {
+		let sqlQuery = [
+			"SELECT fto_anime_id, canonical_title, user_username, request_submission_id, submission_type, request_id, request_upvotes",
+			"FROM `fto_request_submissions`",
+			"INNER JOIN `fto_track` ON `fto_track`.`track_id` = fto_track_id",
+			"INNER JOIN `fto_users` ON `fto_users`.`user_id` = `fto_user_id`",
+			"INNER JOIN `fto_anime` ON `fto_anime`.`anime_id` = `fto_anime_id`",
+			`ORDER BY request_submission_id DESC LIMIT ${nLatestLimit}`,
+		];
+		const handler = new SQLArrayHandler(sqlQuery);
+		const sqlQueryString = handler.CombineStringsToQuery();
+		FtoConnection.query(sqlQueryString, (error, results) => {
+			if (error) {
+				LogError('GetLatestSubmissions', `SQL Query:\n"${handler.CombineStringsToPrintableFormat()}"\nError Message: ${error.sqlMessage}`);
+				reject(error);
+			} else {
+				resolve(results);
+			}
+		});
+	});
+}
+
 const GetSubmissionDetailsTrackAdd = (nTrackAddSubmissionID) => {
 	return new Promise((resolve, reject) => {
 		let sqlQuery = [
@@ -1268,9 +1291,10 @@ const GetSubmissionDetailsTrackAdd = (nTrackAddSubmissionID) => {
 const GetSubmissionDetailsTrackAddPreExisting = (nTrackAddSubmissionID) => {
 	return new Promise((resolve, reject) => {
 		let sqlQuery = [
-			"SELECT episode_no, `fto_request_track_add_preexisting`.*",
+			"SELECT episode_no, track_name, `fto_request_track_add_preexisting`.*",
 			"FROM `fto_request_track_add_preexisting`",
 			"INNER JOIN `fto_episode` ON `fto_episode`.`episode_id` = fto_episode_id",
+			"INNER JOIN `fto_track` ON `fto_track`.`track_id` = fto_track_id",
 			`WHERE request_track_add_id = ${nTrackAddSubmissionID}`,
 		];
 		
@@ -1314,9 +1338,10 @@ const GetSubmissionDetailsTrackRemove = (nTrackRemoveSubmissionID) => {
 	return new Promise((resolve, reject) => {
 		// return reject("No reason");
 		let sqlQuery = [
-			"SELECT episode_no, `fto_request_track_remove_from_episode`.*",
+			"SELECT episode_no, track_name, `fto_request_track_remove_from_episode`.*",
 			"FROM `fto_request_track_remove_from_episode`",
 			"INNER JOIN `fto_episode` ON `fto_episode`.`episode_id` = fto_episode_id",
+			"INNER JOIN `fto_track` ON `fto_track`.`track_id` = fto_track_id",
 			`WHERE request_track_remove_id = ${nTrackRemoveSubmissionID}`,
 		];
 		
@@ -1555,6 +1580,7 @@ module.exports = {
 	GetTrackOccurrences,
 
 	GetSubmissionDetails,
+	GetLatestSubmissions,
 	GetSubmissionDetailsTrackAdd,
 	GetSubmissionDetailsTrackAddPreExisting,
 	GetSubmissionDetailsTrackEdit,

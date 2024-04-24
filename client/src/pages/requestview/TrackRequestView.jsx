@@ -2,10 +2,11 @@ import React, {useEffect, useState} from 'react';
 import { useParams } from "react-router-dom";
 import './requestview.css';
 
+import { toast } from 'react-toastify';
 import { Navbar, Footer, Comments, } from "../../components";
 import { ParseAnimePosterImage } from '../../utils/MalApiUtils';
 import { MapTrackType } from '../../utils/FTOApiUtils';
-import { FormatStreamingPlatformsToList, GetTimeAgoBetweenDates, IsEmpty, RenameObjectKey } from '../../utils/RegularUtils';
+import { FormatStreamingPlatformsToList, GetTimeAgoBetweenDates, IsEmpty } from '../../utils/RegularUtils';
 import StreamingPlatformLinksList from '../../components/streamingplatformlinkslist/StreamingPlatformLinksList';
 import {
 	Fetch_FTO_GetRequestComments as getCommentsApi,
@@ -29,50 +30,11 @@ const TrackRequestView = ({
     const [ ftoSubmissionInfo, setFTOSubmissionInfo] = useState();
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
-    const [ isSubmissionUpVoted, setSubmissionVote ] = useState();
-    const [ upDownVoteCount, setUpDownVoteCount ] = useState({ upvote_count: 0, downvote_count: 0});
 
     useEffect(() => {
         document.title = `Submission ${request_id} View | FindThatOST`;
         FetchPageData(request_id);
     }, []);
-
-    useEffect(() => {
-        if (!IsEmpty(ftoSubmissionInfo)) {
-            RenameObjectKey( ftoSubmissionInfo, 'request_upvotes', 'likesDislikes' );
-            console.debug("Episode Comments:", ftoSubmissionInfo)
-            
-            if (typeof (ftoSubmissionInfo.likesDislikes) == 'string') {
-                const objCommentLikesDislikes = JSON.parse(ftoSubmissionInfo.likesDislikes);
-                if (Array.isArray(objCommentLikesDislikes) && Object.keys(objCommentLikesDislikes).length >= 0) {
-                    let nNoOfUpVotes = 0;
-                    let nNoOfDownVotes = 0;
-                    let bIsSubmissionUpVoted = undefined;
-                    for (let it = 0; it < Object.keys(objCommentLikesDislikes).length; it++ ) {
-                        if (objCommentLikesDislikes[it]['is_upvote'] === true) {
-                            nNoOfUpVotes++;
-    
-                            // Check if Comment is liked
-                            if (objCommentLikesDislikes[it]['user_id'] === user_properties.userId) {
-                                bIsSubmissionUpVoted = true;
-                            }
-                        }
-                        else if (objCommentLikesDislikes[it]['is_upvote'] === false) {
-                            nNoOfDownVotes++;
-    
-                            // Check if Comment is disliked
-                            if (objCommentLikesDislikes[it]['user_id'] === user_properties.userId) {
-                                bIsSubmissionUpVoted = false;
-                            }
-                        }
-                    }
-                    setSubmissionVote(bIsSubmissionUpVoted);
-                    setUpDownVoteCount({upvote_count: nNoOfUpVotes, downvote_count: nNoOfDownVotes})
-                }
-            }
-        }
-        
-    }, [ftoSubmissionInfo])
 
     /**
      * Perform all fetches to set up the webpage.
@@ -85,20 +47,7 @@ const TrackRequestView = ({
     const FetchPageData = async (pageId) => {
         try {
             // Fetch data from the backend
-            const dataFromBackend = await FetchSubmissionData_FTO(pageId);
-            if (dataFromBackend.submission_type === 'TRACK_ADD'  && !IsEmpty(dataFromBackend.submission_details.streaming_platform_links)) {
-                let streamingPlatformsLinks = FormatStreamingPlatformsToList(dataFromBackend.submission_details.streaming_platform_links.data);
-                const updatedStreamingLinksArray = streamingPlatformsLinks.map(obj => {
-                    // Destructure the object to keep existing keys and rename 'abc' to 'xyz'
-                    const { inputString: link_url, ...rest } = obj;
-                    
-                    // Create a new object with updated key name and other existing keys
-                    return { link_url, ...rest };
-                });
-                dataFromBackend.submission_details.streaming_platform_links = updatedStreamingLinksArray;
-            }
-            console.log('Data from backend:', dataFromBackend);
-            setFTOSubmissionInfo(dataFromBackend);
+            const dataFromBackend = await FetchSubmissionData(pageId);
             
             // Fetch data from the backend
             const animeDataFromBackend = await FetchAnimeData_FTO(dataFromBackend.fto_anime_id);
@@ -114,6 +63,24 @@ const TrackRequestView = ({
         } catch (error) {
             console.error('Error:', error.message);
         }
+    }
+
+    const FetchSubmissionData = async (requestId) => {
+        const dataFromBackend = await FetchSubmissionData_FTO(requestId);
+        if (dataFromBackend.submission_type === 'TRACK_ADD'  && !IsEmpty(dataFromBackend.submission_details.streaming_platform_links)) {
+            let streamingPlatformsLinks = FormatStreamingPlatformsToList(dataFromBackend.submission_details.streaming_platform_links.data);
+            const updatedStreamingLinksArray = streamingPlatformsLinks.map(obj => {
+                // Destructure the object to keep existing keys and rename 'abc' to 'xyz'
+                const { inputString: link_url, ...rest } = obj;
+                
+                // Create a new object with updated key name and other existing keys
+                return { link_url, ...rest };
+            });
+            dataFromBackend.submission_details.streaming_platform_links = updatedStreamingLinksArray;
+        }
+        console.log('Data from backend:', dataFromBackend);
+        setFTOSubmissionInfo(dataFromBackend);
+        return dataFromBackend;
     }
 
     /**
@@ -134,7 +101,7 @@ const TrackRequestView = ({
             return data;
         } catch (error) {
             toast('An internal error has occurred in FindThatOST Server. Please try again later.');
-            throw new Error('Error fetching data from backend');
+            throw new Error('Error fetching data from backend:', error);
         }
     }
 
@@ -178,153 +145,6 @@ const TrackRequestView = ({
             return externalData;
         } catch (error) {
             throw new Error('Error fetching data from external API (MyAnimeList)');
-        }
-    }
-
-    /**
-	 * Updates the like status of a submission and sends a PATCH request to the backend.
-	 * @function likeSubmission
-	 * @param {number} nFtoSubmissionId - The ID of the submission to update.
-	 * @param {boolean|undefined} bUpVoteSubmission - The like status of the submission. 
-	 *                                           If true, sets the submission as liked. 
-	 *                                           If false, sets the submission as disliked. 
-	 *                                           If undefined, removes the like/dislike of the user.
-	 * @returns {undefined}
-	 */
-	const likeSubmission = (nFtoSubmissionId, bUpVoteSubmission) => {
-		let backendSubmission  = ftoSubmissionInfo;
-		if (backendSubmission.hasOwnProperty('likesDislikes')) {
-            let arrSubmissionUpDownVotes = JSON.parse(backendSubmission['likesDislikes']);
-			if (bUpVoteSubmission === undefined) {
-				// Remove user's like entry from state, if the user state exists
-				if (Array.isArray(arrSubmissionUpDownVotes)) {
-					let objExistingUpDownVoteEntry = arrSubmissionUpDownVotes.find(voteEntry => voteEntry['user_id'] === user_properties.userId);
-					if (objExistingUpDownVoteEntry !== undefined) {
-						// User entry exists
-						const filteredArray = arrSubmissionUpDownVotes.filter(voteEntry => voteEntry['user_id'] !== user_properties.userId);
-						arrSubmissionUpDownVotes = filteredArray;
-					}
-					else { return }
-				}
-			} 
-			else if (bUpVoteSubmission === true) {
-				// Set user's entry to like or add like entry to state
-				if (IsEmpty(arrSubmissionUpDownVotes) || !Array.isArray(arrSubmissionUpDownVotes)) {
-					// Create new array object, then add new user
-					arrSubmissionUpDownVotes = [{user_id: user_properties.userId, is_upvote: true}]
-				}
-				else {
-					if (Array.isArray(arrSubmissionUpDownVotes)) {
-						let objExistingUpDownVoteEntry = arrSubmissionUpDownVotes.find(voteEntry => voteEntry['user_id'] === user_properties.userId);
-						if (objExistingUpDownVoteEntry === undefined) {
-							// User entry does not exist
-							objExistingUpDownVoteEntry = { user_id: user_properties.userId, is_upvote: true };
-							arrSubmissionUpDownVotes.push(objExistingUpDownVoteEntry); // Add new entry to array
-						}
-						else {
-							// User entry exists
-							if (objExistingUpDownVoteEntry['is_upvote'] !== true) {
-								objExistingUpDownVoteEntry['is_upvote'] = true;	// Change existing dislike to a like
-							}
-							else {
-								console.debug("Value already set to true");
-							}
-						}
-						// Update the array with the modified entry
-						arrSubmissionUpDownVotes = arrSubmissionUpDownVotes.map(entry => {
-							if (entry.user_id === user_properties.userId) {
-								return objExistingUpDownVoteEntry;
-							}
-							return entry;
-						});
-					}
-					else { return }
-				}
-			} 
-			else if (bUpVoteSubmission === false) {
-				// Set user's entry to dislike or add dislike entry to state
-				if (IsEmpty(arrSubmissionUpDownVotes) || !Array.isArray(arrSubmissionUpDownVotes)) {
-					// Create new array object, then add new user
-					arrSubmissionUpDownVotes = [{user_id: user_properties.userId, is_upvote: false}]
-				}
-				else {
-					if (Array.isArray(arrSubmissionUpDownVotes)) {
-						let objExistingUpDownVoteEntry = arrSubmissionUpDownVotes.find(voteEntry => voteEntry['user_id'] === user_properties.userId);
-						if (objExistingUpDownVoteEntry === undefined) {
-							// User entry does not exist
-							objExistingUpDownVoteEntry = { user_id: user_properties.userId, is_upvote: false };
-							arrSubmissionUpDownVotes.push(objExistingUpDownVoteEntry); // Add new entry to array
-						}
-						else {
-							// User entry exists
-							if (objExistingUpDownVoteEntry['is_upvote'] !== false) {
-								objExistingUpDownVoteEntry['is_upvote'] = false; // Change existing dislike to a like
-							}
-							else {
-								console.debug("Value already set to false");
-							}
-						}
-						// Update the array with the modified entry
-						arrSubmissionUpDownVotes = arrSubmissionUpDownVotes.map(entry => {
-							if (entry.user_id === user_properties.userId) {
-								return objExistingUpDownVoteEntry;
-							}
-							return entry;
-						});
-					}
-					else { return }
-				}
-			} 
-
-			// Update Comment Likes
-			Fetch_FTO_PatchRequestUpVotes(nFtoSubmissionId, arrSubmissionUpDownVotes, user_properties.userId);
-			FetchPageData(nFtoSubmissionId);
-		}
-	}
-
-    /**
-     * Perform post request to update episode comment.
-     * @async
-     * @function Fetch_FTO_PatchEpisodeCommentLikes
-     * @param {number|string}  nFtoSubmissionId - Comment ID corresponds to FindThatOST comment ID.
-     * @param {Array}  likesDislikesObject - Updated Comment.
-     * @param {number|string}  nUserId - UserId of logged in user.
-     * @returns {undefined}
-     * 
-     */
-    const Fetch_FTO_PatchRequestUpVotes = async (nFtoSubmissionId, arrUpvotesDownvotes, nUserId) => {
-        if (IsEmpty(nUserId)) {
-            toast("You must sign in to perform this operation.");
-            return;
-        }
-        const objUserSubmission = {
-            userId: nUserId,
-            arrUpvotesDownvotes: arrUpvotesDownvotes,
-        };
-        let apiUrl_fto = `/findthatost_api/submission/comment_likes/${Number(nFtoSubmissionId)}`;
-        console.debug(`Fetch data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
-        const response = await fetch(apiUrl_fto, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ objUserSubmission }),
-        });
-    
-        const responseStatus = response.status;
-        const responseData = await response.json();
-        if (responseStatus === 500) {
-            console.error("Response status:", responseStatus);
-            toast('An internal error has occurred with the FindThatOST server. Please try again later.');
-            throw new Error('Error fetching data from backend:', responseData);
-        }
-        else if (responseStatus === 400) {
-            toast('Failed to update message.\nInvalid parameters detected.');
-            console.warn("Response status:", responseStatus);
-            console.warn("Error fetching data from backend:", responseData);
-        }
-        else {
-            console.debug("Response Data:", responseData);
         }
     }
 
@@ -522,10 +342,10 @@ const TrackRequestView = ({
                             </div>
 
                             <SubmissionVotes
-                                isSubmissionUpVoted={isSubmissionUpVoted}
-                                likeSubmission={likeSubmission}
-                                upDownVoteCount={upDownVoteCount}
-                                request_id={request_id}/>
+                                ftoSubmissionInfo={ftoSubmissionInfo}
+                                request_id={request_id}
+                                RefreshPageFunction={FetchSubmissionData}
+                                user_properties={user_properties}/>
                             
                     </div>
                     </div>

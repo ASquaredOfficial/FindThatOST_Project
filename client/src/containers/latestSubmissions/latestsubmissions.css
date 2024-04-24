@@ -1,0 +1,80 @@
+
+
+.fto__latest__submissions-info_list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    color: #fff;
+
+    margin-top: 1rem;
+    border-radius: 5px;
+    background: var(--color-bg-navbar_search_border);
+    font-family: var(--font-family-manrope);
+
+    .fto__latest__submissions-info_list-header_section {
+        margin-bottom: 0.25rem;
+        padding: 10px 10px 5px;
+        display: flex;
+        gap: 20px;
+        
+        .fto__latest__submissions-main_content-header {
+            display: inline-block;
+            padding: 5px 10px;
+        }
+    }
+
+    .fto__latest__submissions-main_content--list_items {
+        border-radius: 5px;
+        background: var(--color-bg-navbar_search_border);
+
+        .fto__latest__submissions-main_content--list_item {
+            background-color: #1b1b1b;
+            padding: 1rem;
+            border-bottom: 0.5px solid grey;
+
+            .fto__latest__submissions-main_content--track_item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .fto__latest__submissions-main_content--track_item-header_left {
+                    flex-grow: 1;
+
+                    .fto__latest__submissions-subheader_color {
+                        color: var(--color-pink_medium);
+                    }
+                }
+                .fto__latest__submissions-main_content--track_item-header_left:hover {
+                    text-decoration: underline;
+                    opacity: 0.9;
+                }
+
+                .fto__latest__submissions-main_content--track_item-header_right {
+                    display: flex;
+                    align-items: center;
+                }
+            }
+
+            .fto__latest__submissions-main_content--track_item-submission_description {
+                display: flex;
+                flex-direction: column;
+                margin-top: 0.5rem;
+                padding: 0.5rem;
+
+                border-radius: 5px ;
+                background-color: #fff;
+                color: #000;
+                font-size: 0.8rem;
+
+                .fto__latest__submissions-main_content--track_item-submission_description_text {
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2; /* number of lines to show */
+                            line-clamp: 2; 
+                    -webkit-box-orient: vertical;
+                }
+            }
+        }
+    }
+
+}

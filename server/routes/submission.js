@@ -7,13 +7,14 @@ const {
     PostSubmission_TrackAddPreExisting,
     PostSubmission_TrackEdit,
     PostSubmission_TrackRemove,
-    GetSubmissionComments,
     GetSubmissionDetails,
     GetSubmissionDetailsTrackAdd,
     GetSubmissionDetailsTrackAddPreExisting,
     GetSubmissionDetailsTrackEdit,
     GetSubmissionDetailsTrackRemove,
     PatchUpVotesOnSubmission,
+    GetLatestSubmissions,
+    GetSubmissionComments,
 } = require('../sql/database');
 const { IsEmpty } = require("../utils/BackendUtils");
 
@@ -315,6 +316,48 @@ router.get("/details/:nFtoSubmissionID/full", async (req, res) => {
                 submission_comments: (IsEmpty(ftoSubmissionComments) ? null : ftoSubmissionComments),
             };
             return res.status(200).json(ftoFullSubmissionDetails);
+        }
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
+router.get("/details/latest/:nLatestCount", async (req, res) => {
+    //Get Submission Details for the submission with corresponding FTO Submission ID
+    const nLatestCount = req.params.nLatestCount;
+    try {
+        const ftoLatestSubmissions = await GetLatestSubmissions(nLatestCount);
+        if (ftoLatestSubmissions.length == 0) {
+            return res.status(204).json({ error: 'No Results found', data: ftoLatestSubmissions }).end(); 
+        }
+        else {
+            const ftoLatestSubmissionsFullDetails = []
+            for (let i = 0; i < ftoLatestSubmissions.length; i++) {
+                // Get User Edits
+                let ftoTrackAddSubmissionExtraDetails;
+                if (ftoLatestSubmissions[i]['submission_type'] == 'TRACK_ADD') {
+                    ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackAdd(ftoLatestSubmissions[i].request_id);
+                }
+                else if (ftoLatestSubmissions[i]['submission_type'] == 'TRACK_ADD_PRE') {
+                    ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackAddPreExisting(ftoLatestSubmissions[i].request_id);
+                }
+                else if (ftoLatestSubmissions[i]['submission_type'] == 'TRACK_EDIT') {
+                    ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackEdit(ftoLatestSubmissions[i].request_id);
+                }
+                else if (ftoLatestSubmissions[i]['submission_type'] == 'TRACK_REMOVE') {
+                    ftoTrackAddSubmissionExtraDetails = await GetSubmissionDetailsTrackRemove(ftoLatestSubmissions[i].request_id);
+                }
+                const ftoFullSubmissionDetails = { 
+                    ...ftoLatestSubmissions[i], 
+                    submission_details: (IsEmpty(ftoTrackAddSubmissionExtraDetails) ? null : ftoTrackAddSubmissionExtraDetails[0]),
+                };
+                ftoLatestSubmissionsFullDetails.push(ftoFullSubmissionDetails);
+            }
+            return res.status(200).json(ftoLatestSubmissionsFullDetails);
         }
     }
     catch (error) {
