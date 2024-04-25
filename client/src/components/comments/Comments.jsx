@@ -31,6 +31,10 @@ const Comments = ({
 		// Get comments from the server
 		FetchCommentsData();
     }, []);
+	
+    useEffect(() => {
+		FetchCommentsData();
+    }, [user_properties]);
 
 	const FetchCommentsData = async () => {
 		const episodeComments = await getCommentsApi(ftoPageId);

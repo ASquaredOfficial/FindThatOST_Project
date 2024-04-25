@@ -1,7 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import './latestsubmissions.css';
-import { IsEmpty } from '../../utils/RegularUtils';
+
 import SubmissionVotes from '../../components/submissionvotes/submissionvotes';
+import { useCustomNavigate } from './../../routing/navigation';
+import { IsEmpty } from '../../utils/RegularUtils';
 import { toast } from "react-toastify";
 
 const LatestSubmissions = ({
@@ -10,6 +12,7 @@ const LatestSubmissions = ({
         username: null
     }
 }) => {
+    const { navigateToTrackRequest } = useCustomNavigate();
 
     const [ ftoLatestSubmissions, setFTOLatestSubmissions ] = useState();
     const latestSubmissionsCount = 5;
@@ -93,7 +96,7 @@ const LatestSubmissions = ({
                         return (
                             <div className='fto__latest__submissions-main_content--list_item' key={it}>
                                 <div className='fto__latest__submissions-main_content--track_item-header'>
-                                    <a href={'/request/' + submissionInfo.request_submission_id}
+                                    <a href={'/request/' + submissionInfo.request_submission_id} onClick={(e) => { e.preventDefault(), navigateToTrackRequest(submissionInfo.request_submission_id)}}
                                         key={it} style={{flex: '1'}}>
                                         <div className='fto__latest__submissions-main_content--track_item-header_left'>
                                             <h4>{ConvertSubmissionTypeToString(submissionInfo.submission_type)}</h4>

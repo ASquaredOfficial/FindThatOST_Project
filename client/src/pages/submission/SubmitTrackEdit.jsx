@@ -20,7 +20,7 @@ const SubmitTrackEdit = ({
         username: null
     }
 }) => {
-    const { navigateToEpisode, navigateToTrack } = useCustomNavigate();
+    const { navigateToAnime, navigateToEpisode, navigateToTrack } = useCustomNavigate();
     const { track_id } = useParams();
     const { occurrence_id } = useParams();
 
@@ -605,11 +605,13 @@ const SubmitTrackEdit = ({
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Edit Track
                             {(ftoEpisodeContext.episode_no !== -1) ? (
-                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}>
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}
+                                    onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no)}} >
                                     {` in Episode ${ftoEpisodeContext.episode_no}`}
                                 </a>
                             ) : (
-                                <a href={'/anime/' + ftoEpisodeContext.anime_id}>
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id}
+                                    onClick={(e) => { e.preventDefault(), navigateToAnime(ftoEpisodeContext.anime_id)}} >
                                     {` in Series`}
                                 </a>
                             )}
@@ -617,7 +619,8 @@ const SubmitTrackEdit = ({
                         
                         {(ftoEpisodeContext.episode_no !== -1) && (
                             <h4 className='fto__page__submission-content_header_subtitle'>
-                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}>
+                                <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}
+                                    onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no)}} >
                                     <strong>{ftoEpisodeContext.episode_title}</strong>
                                 </a>
                             </h4>

@@ -22,10 +22,7 @@ const Navbar = ({
     const [toggleMenu, setToggleMenu] = useState(false);
     const [bMobileSearchbarVisible, setMobileSearchbarVisiblity] = useState(false);
     const [formData, setFormData] = useState(''); //handle navbar searchbar submit
-    const [backendData, setBackendData] = useState({
-        userId: null, 
-        username: null
-    });
+    const [backendData, setBackendData] = useState(user_properties);
   
     useEffect(() => {
         // Render (onMount)
@@ -36,7 +33,9 @@ const Navbar = ({
     }, []);
     
     useEffect(() => {
-        setBackendData(user_properties);
+        if (JSON.stringify(backendData) !== JSON.stringify(user_properties)) {
+            setBackendData(user_properties);
+        }
     }, [user_properties]);
 
     const HandleSearchbarSubmit = (e) => {

@@ -4,9 +4,10 @@ import './track.css';
 
 import { Navbar, Footer, } from "../../components";
 
-import default_img_square from '../../assets/default_image_square.svg'
-import { FormatStreamingPlatformsToList, IsEmpty } from '../../utils/RegularUtils'
-import { MapTrackType } from '../../utils/FTOApiUtils'
+import default_img_square from '../../assets/default_image_square.svg';
+import { FormatStreamingPlatformsToList, IsEmpty } from '../../utils/RegularUtils';
+import { MapTrackType } from '../../utils/FTOApiUtils';
+import { useCustomNavigate } from '../../routing/navigation';
 import { GetPlatformIcon, GetPlatformNameString, IsFandomImageUrl } from '../../utils/HyperlinkUtils';
 import { toast } from 'react-toastify';
 
@@ -18,6 +19,7 @@ const Track = ({
         username: null
     }
 }) => {
+    const { navigateToAnime, navigateToEpisode, navigateToSubmitTrackEdit } = useCustomNavigate();
     const { track_id } = useParams();
     const location = useLocation();
 
@@ -149,14 +151,16 @@ const Track = ({
                             <hr className='fto__page__track-horizontal_hr' />
                             <div className='fto__page__track-content_subheading_section'>
                                 <h4 className='fto__page__track-content_header_subtitle'>
-                                    <a href={'/anime/' + ftoTrackInfo.fto_anime_id}>
-                                        <strong>{ftoTrackInfo.canonical_title}</strong>
+                                    <a href={'/anime/' + ftoTrackInfo.fto_anime_id}
+                                        onClick={(e) => { e.preventDefault(), navigateToAnime(ftoTrackInfo.fto_anime_id)}} >
+                                    <strong>{ftoTrackInfo.canonical_title}</strong>
                                     </a>
                                 </h4>
                                 {spOccurrenceID !== -1 && (
                                     <h4 className='subheader_color'>
-                                        <a href={'/anime/' + ftoTrackInfo.fto_anime_id + '/episode/' + ftoTrackInfo.episode_no}>
-                                            Episode {spOccurrenceID}
+                                        <a href={'/anime/' + ftoTrackInfo.fto_anime_id + '/episode/' + ftoTrackInfo.episode_no}
+                                            onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoTrackInfo.fto_anime_id, ftoTrackInfo.episode_no)}} >
+                                            Episode {ftoTrackInfo.episode_no}
                                         </a>
                                     </h4>
                                 )}
@@ -201,7 +205,8 @@ const Track = ({
                                         {ftoTrackInfo.episode_occurrences.map((episodeNum, it) => {
                                             return (
                                                 <a key={it} className='fto__page__track-main_content--episode_occurrence'
-                                                    href={`/anime/${ftoTrackInfo.fto_anime_id}/episode/${episodeNum}`} >
+                                                    href={`/anime/${ftoTrackInfo.fto_anime_id}/episode/${episodeNum}`} 
+                                                    onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoTrackInfo.fto_anime_id, episodeNum)}} >
                                                     {episodeNum}
                                                 </a>
                                             )
@@ -213,7 +218,11 @@ const Track = ({
 
                             {(spOccurrenceID !== -1 ) && (
                                 <div className='fto__page__track-main_content--edit_track_section'>
-                                    <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '/context_id/' + spOccurrenceID}>Edit Track</a>
+                                    <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '/context_id/' + spOccurrenceID}
+                                        onClick={(e) => { e.preventDefault(), navigateToSubmitTrackEdit(track_id, spOccurrenceID)}} >
+                                        
+                                        Edit Track
+                                    </a>
                                 </div>
                             )}
 

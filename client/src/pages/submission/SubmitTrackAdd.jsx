@@ -689,17 +689,20 @@ const SubmitTrackAdd = ({
                         <h1 className='fto__page__submission-content_header_title gradient__text'>
                             Add Track
                             {(ftoEpisodeID !== -1) ? (
-                                    <a href={'/anime/' + anime_id + '/episode/' + spEpisodeNo}>
+                                    <a href={'/anime/' + anime_id + '/episode/' + spEpisodeNo}
+                                        onClick={(e) => { e.preventDefault(), navigateToEpisode(anime_id, spEpisodeNo)}} >
                                         {' to Episode ' + spEpisodeNo}
                                     </a>
                             ) : (
-                                <a href={'/anime/' + anime_id}>
+                                <a href={'/anime/' + anime_id}
+                                    onClick={(e) => { e.preventDefault(), navigateToAnime(anime_id)}} >
                                     {' to Series'}
                                 </a>
                             )}
                         </h1>
                         <h4 className='fto__page__submission-content_header_subtitle'>
-                            <a href={'/anime/' + anime_id}>
+                            <a href={'/anime/' + anime_id}
+                                onClick={(e) => { e.preventDefault(), navigateToAnime(anime_id)}} >
                                 <strong>{submissionContextInfo.canonical_title}</strong>
                             </a>
                         </h4>

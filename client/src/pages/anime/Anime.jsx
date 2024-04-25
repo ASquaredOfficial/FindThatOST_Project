@@ -19,7 +19,7 @@ const Anime = ({
 }) => {
     const location = useLocation();
     const { id } = useParams();
-    const { navigateToAnime } = useCustomNavigate();
+    const { navigateToAnime, navigateToEpisode, navigateToTrack } = useCustomNavigate();
 
     const searchParams = new URLSearchParams(location.search);
     const [ spEpisodePageNum, setEpisodePageNum ] = useState(parseInt(searchParams.get('episode_page_no'), 10) || 1);
@@ -881,7 +881,7 @@ const Anime = ({
                                                 {pageEpisodesInfo.map((episodeInfo, it) => {
                                                     return (
                                                         <div className='fto__page__anime-main_content_info_list-row' key={it}>
-                                                            <a href={`/anime/${id}/episode/${episodeInfo.episode_no}`}>
+                                                            <a href={`/anime/${id}/episode/${episodeInfo.episode_no}`} onClick={(e) => { e.preventDefault(), navigateToEpisode(id, episodeInfo.episode_no)}}>
                                                                 <h3 className='fto__page__anime-main_content_episode_heading'>
                                                                     Episode {episodeInfo.episode_no}
                                                                 </h3>
@@ -901,7 +901,7 @@ const Anime = ({
                                                         {ftoAnimeInfo.track_list.map((trackInfo, it) => {
                                                             return (
                                                                 <div className='fto__page__anime-main_content_info_list-row' key={it}>
-                                                                    <a href={`/track/${trackInfo.track_id}`}>
+                                                                    <a href={`/track/${trackInfo.track_id}`} onClick={(e) => { e.preventDefault(), navigateToTrack(trackInfo.track_id)}}>
                                                                         <h3 className='fto__page__anime-main_content_episode_heading'>
                                                                             {trackInfo.track_name}
                                                                         </h3>

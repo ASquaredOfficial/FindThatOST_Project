@@ -545,9 +545,9 @@ const GetTrack = (nTrackID, nOccurrenceID = -1) => {
 			`WHERE track_id = ${nTrackID}`,
 		];
 		if (nOccurrenceID !== -1) {
-			sqlQuery.splice(1, 0, " occurrence_id, fto_occurrence.track_type, fto_occurrence.scene_description,");
-			sqlQuery.splice(3, 1, "FROM (`fto_track`");
-			sqlQuery.splice(4, 0, "INNER JOIN fto_occurrence ON fto_occurrence.fto_track_id = fto_track.track_id)");
+			sqlQuery.splice(1, 0, " occurrence_id, fto_occurrence.track_type, fto_occurrence.scene_description, episode_no,");
+			sqlQuery.splice(4, 0, "INNER JOIN fto_occurrence ON fto_occurrence.fto_track_id = fto_track.track_id");
+			sqlQuery.splice(5, 0, "INNER JOIN fto_episode ON fto_episode.episode_id = fto_episode_id");
 			sqlQuery.push(`AND occurrence_id = ${nOccurrenceID}`);
 		}
 		const handler = new SQLArrayHandler(sqlQuery);
