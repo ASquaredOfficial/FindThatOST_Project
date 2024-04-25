@@ -20,7 +20,7 @@ export const useCustomNavigate = () => {
       }
   };
 
-  const navigateToAnime = (nFtoID = -1, pageNum = 1) => {
+  const navigateToAnime = (nFtoID = -1) => {
     if (!process.env.REACT_APP_DEBUG_MODE && nFtoID  === -1) {
       alert('Operation failed');
       console.error(`Unable to navigate to page (Anime) because variable 'nFtoID' is an invalid value '${nFtoID}'`);
@@ -40,14 +40,52 @@ export const useCustomNavigate = () => {
     navigate(`/anime/${nFtoAnimeID}/episode/${nEpisodeNo}`);
   };
 
-  const navigateToTrack = (nFtoAnimeID = -1, nFtoEpisodeID = -1) => {
-    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoAnimeID  === -1 || nFtoEpisodeID  === -1)) {
+  const navigateToTrack = (nFtoTrackID = -1, nFtoEpisodeID = -1) => {
+    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoTrackID  === -1 || nFtoEpisodeID  === -1)) {
       alert('Operation failed');
       console.error(`Unable to navigate to page (Track) because parameters contain an invalid value`);
       return;
     }
+
+    if (nFtoEpisodeID !== -1) {
+      navigate(`/track/${nFtoTrackID}?context_id=${nFtoEpisodeID}`);
+    }
+    else {
+      navigate(`/track/${nFtoTrackID}`);
+    }
     
-    navigate(`/track/${nFtoAnimeID}?context_id=${nFtoEpisodeID}`);
+  };
+  
+  const navigateToSubmitTrackAdd = (nFtoAnimeID = -1, nEpisodeNo = -1) => {
+    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoAnimeID  === -1 || nEpisodeNo  === -1)) {
+      alert('Operation failed');
+      console.error(`Unable to navigate to page (Track) because parameters contain an invalid value`);
+      return;
+    }
+
+    if (nEpisodeNo !== -1) {
+      navigate(`/submission/track_add/${nFtoAnimeID}?episode_no=${nEpisodeNo}`);
+    }
+    else {
+      navigate(`/submission/track_add/${nFtoAnimeID}`);
+    }
+    
+  };
+  
+  const navigateToSubmitTrackEdit = (nFtoTrackID = -1, nOccurrenceID = -1) => {
+    if (!process.env.REACT_APP_DEBUG_MODE && (nFtoTrackID  === -1 || nOccurrenceID  === -1)) {
+      alert('Operation failed');
+      console.error(`Unable to navigate to page (Track) because parameters contain an invalid value`);
+      return;
+    }
+
+    if (nOccurrenceID !== -1) {
+      navigate(`/submission/track_edit/${nFtoTrackID}/context_id/${nOccurrenceID}`);
+    }
+    else {
+      navigate(`/submission/track_add/${nFtoTrackID}`);
+    }
+    
   };
 
   const navigateToChatBot = (strChatbotQuery = '') => {
@@ -59,6 +97,16 @@ export const useCustomNavigate = () => {
       });
   }
 
+  const navigateToTrackRequest = (nFtoRequestID = -1) => {
+    if (!process.env.REACT_APP_DEBUG_MODE && nFtoRequestID  === -1) {
+      alert('Operation failed');
+      console.error(`Unable to navigate to page (Anime) because variable 'nFtoID' is an invalid value '${nFtoID}'`);
+      return;
+    }
+    
+    navigate(`/request/${nFtoRequestID}`);
+  };
+
 
   return {
     navigateToHome,
@@ -67,5 +115,8 @@ export const useCustomNavigate = () => {
     navigateToEpisode,
     navigateToTrack,
     navigateToChatBot,
+    navigateToSubmitTrackAdd,
+    navigateToSubmitTrackEdit,
+    navigateToTrackRequest,
   };
 };

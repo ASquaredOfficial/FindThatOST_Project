@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { useParams } from "react-router-dom";
 import './episode.css';
 
+import { useCustomNavigate } from './../../routing/navigation';
 import { Navbar, Footer, Comments, ModalEmbeddedTrack} from "../../components";
 import { ParsePosterImage_Horzontal } from "../../utils/MalApiUtils"
 import { IsEmpty } from "../../utils/RegularUtils"
@@ -25,6 +26,7 @@ const Episode = ({
     }
 }) => {
     const { anime_id, episode_no } = useParams();
+    const { navigateToAnime, navigateToTrack, navigateToSubmitTrackAdd } = useCustomNavigate();
     
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
@@ -38,12 +40,19 @@ const Episode = ({
 
     const [ embeddedTrackModalVisibility, setEmbeddedTrackModalVisibility ] = useState(false);
     const [ currentTrackData, setCurrentTrackData ] = useState()
+    const [ pageUserProperties, setPageUserProperties ] = useState(user_properties);
 
     useEffect(() => {
         document.title = `Episode ${episode_no} Tracks | AnimeID(${anime_id})`;
         console.log(`Render-Episode (onMount): ${window.location.href}\nAnimeID:${anime_id}\nEpisodeNo:${episode_no}`)
         FetchPageData(anime_id, episode_no);
     }, []);
+	
+    useEffect(() => {
+        if (JSON.stringify(pageUserProperties) !== JSON.stringify(user_properties)) {
+            setPageUserProperties(user_properties);
+        }
+    }, [user_properties]);
 
     useEffect(() => {
         if (malAnimeInfo !== undefined) {
@@ -531,7 +540,7 @@ const Episode = ({
                                 Episode {episode_no}
                             </h1>
                             <h4 className='fto__page__episode-content_header_subtitle'>
-                                <a href={'/anime/' + anime_id}>
+                                <a href={'/anime/' + anime_id} onClick={(e) => { e.preventDefault(), navigateToAnime(anime_id)}}>
                                     <strong>{malAnimeInfo.titles[0].title}</strong>
                                 </a>
                             </h4>
@@ -577,7 +586,8 @@ const Episode = ({
                             {malAnimeInfo !== undefined && (
                                 <div className='fto__page__episode-main_content--soundtrack_section'>
                                     <div className='fto__page__episode-main_content--add_track_section'>
-                                        <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + episode_no}>Add New Track</a>
+                                        <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + episode_no}
+                                            onClick={(e) => { e.preventDefault(), navigateToSubmitTrackAdd(anime_id, episode_no.episode_no)}}>Add New Track</a>
                                     </div>
 
                                     <div className='fto__page__episode-main_content--soundtrack_list_section'>
@@ -595,6 +605,7 @@ const Episode = ({
                                                     <div className='fto__page__episode-main_content--track_item' key={it}>
                                                         <div className='fto__page__episode-main_content--track_item-header'>
                                                             <a href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}
+                                                                onClick={(e) => { e.preventDefault(), navigateToTrack(trackInfo.track_id, trackInfo.occurrence_id)}}
                                                                 key={it} style={{flex: '1'}}>
                                                                 <div className='fto__page__episode-main_content--track_item-header_left'>
                                                                     <h4>{trackInfo.track_name}</h4>
@@ -639,7 +650,7 @@ const Episode = ({
                                 deleteCommentApi={deleteCommentApi} 
                                 updateCommentApi={updateCommentApi} 
                                 updateCommentLikesApi={updateCommentLikesApi}
-                                currentUserId={user_properties} />
+                                user_properties={pageUserProperties} />
                         )}  
                     </div>
                 )}

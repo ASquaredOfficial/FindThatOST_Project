@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import './requestview.css';
 
 import { toast } from 'react-toastify';
+import { useCustomNavigate } from './../../routing/navigation';
 import { Navbar, Footer, Comments, } from "../../components";
 import { ParseAnimePosterImage } from '../../utils/MalApiUtils';
 import { MapTrackType } from '../../utils/FTOApiUtils';
@@ -26,6 +27,7 @@ const TrackRequestView = ({
     }
 }) => {
     const { request_id } = useParams();
+    const { navigateToAnime, navigateToEpisode } = useCustomNavigate();
     
     const [ ftoSubmissionInfo, setFTOSubmissionInfo] = useState();
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
@@ -172,7 +174,8 @@ const TrackRequestView = ({
                         <hr className='fto__page__episode-horizontal_hr' />
                         {malAnimeInfo !== undefined && (
                             <h4 className='fto__page__requestview-content_header_subheading'>
-                                <a href={'/anime/' + ftoSubmissionInfo.fto_anime_id}>
+                                <a href={'/anime/' + ftoSubmissionInfo.fto_anime_id}
+                                    onClick={(e) => { e.preventDefault(), navigateToAnime(ftoSubmissionInfo.fto_anime_id)}} >
                                     <strong>{malAnimeInfo.titles[0].title}</strong>
                                 </a>
                             </h4>
@@ -202,7 +205,9 @@ const TrackRequestView = ({
                                     <h2><u>Added New Track Details</u></h2>
                                     <h4 style={{color: 'gray'}}>Added Track to {(!IsEmpty(ftoSubmissionInfo.fto_occurrence_id) && !IsEmpty(ftoSubmissionInfo.submission_details.episode_no)) ? 
                                         (
-                                            <a className='fto_text_hyperlink fto__pointer' href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}>
+                                            <a className='fto_text_hyperlink fto__pointer' 
+                                                href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
+                                                onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                                 Episode {ftoSubmissionInfo.submission_details.episode_no}
                                             </a>
                                             
@@ -245,7 +250,9 @@ const TrackRequestView = ({
                                     <h2><u>Added Pre-Existing Track Details</u></h2>
                                     <h4 style={{color: 'gray'}}>Added Track to {(!IsEmpty(ftoSubmissionInfo.fto_occurrence_id) && !IsEmpty(ftoSubmissionInfo.submission_details.episode_no)) ? 
                                         (
-                                            <a className='fto_text_hyperlink fto__pointer' href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}>
+                                            <a className='fto_text_hyperlink fto__pointer' 
+                                                href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
+                                                onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                                 Episode {ftoSubmissionInfo.submission_details.episode_no}
                                             </a>
                                             
@@ -270,7 +277,9 @@ const TrackRequestView = ({
                                 <>
                                     <h2><u>Remove Track Details</u></h2>
                                     <h4 style={{color: 'gray'}}>Removed Track from 
-                                        <a className='fto_text_hyperlink fto__pointer' href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}>
+                                        <a className='fto_text_hyperlink fto__pointer' 
+                                            href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
+                                            onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                             {` Episode ` + ftoSubmissionInfo.submission_details.episode_no}
                                         </a>
                                     </h4>
@@ -289,7 +298,9 @@ const TrackRequestView = ({
                                     <h2><u>Edit Track Details</u></h2>
                                     <h4 style={{color: 'gray'}}>Edited Track {(!IsEmpty(ftoSubmissionInfo.fto_occurrence_id) && !IsEmpty(ftoSubmissionInfo.submission_details.episode_no)) ? 
                                         (
-                                            <a className='fto_text_hyperlink fto__pointer' href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}>
+                                            <a className='fto_text_hyperlink fto__pointer'  
+                                                href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
+                                                onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                                 in Episode {ftoSubmissionInfo.submission_details.episode_no}
                                             </a>
                                             
@@ -353,7 +364,7 @@ const TrackRequestView = ({
                     
                     <Comments 
                         ftoPageId={ftoSubmissionInfo.request_submission_id}
-                        currentUserId={user_properties}
+                        user_properties={user_properties}
                         getCommentsApi={getCommentsApi}  
                         createCommentApi={createCommentApi} 
                         deleteCommentApi={deleteCommentApi} 
