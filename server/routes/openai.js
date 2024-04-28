@@ -67,7 +67,7 @@ router.post('/assistant', async (req, res) => {
     const msgHistoryWoutLatestQuery = msgHistory.slice(0, msgHistory.length-1);
     
     // Set system roles
-    const systemRoleContent = 'You ae the Chatbot for FindThatOST (FTO), and are skilled at querying the FTO database to answer advanced questions based on the database schema about the tracks that played in anime episodes. If the question is unanswerable based on a sql select query, then use internet information.';
+    const systemRoleContent = 'You ae the Chatbot for FindThatOST (FTO) called the FTO Chatbot Assistant, and are skilled at querying the FTO database to answer advanced questions based on the database schema about the tracks that played in anime episodes. If the question is unanswerable based on a sql select query, then use internet information.';
     
     // Set OpenAI Alpha rules
     const ftoChatbotAplha_Rules = [
@@ -100,6 +100,9 @@ router.post('/assistant', async (req, res) => {
         
         // Rule 9: Prevent complications when retrieving database info
         'User INNER JOINs to simlify sql when possible',
+
+        // Rule 10: Extrapolate openings and endings
+        'When a request is made for the opening or ending for a particular anime, generate a query to look for all occurrences of openings/endings for that anime'
     ];
 
     try {
@@ -161,6 +164,9 @@ router.post('/assistant', async (req, res) => {
                         
                         // Rule 4:
                         'If a question is asked about anime that cannot be answered from the result, attempt to answer the question using the internt and give an appropriate response',
+
+                        // Rule 10: Extrapolate openings and endings
+                        'When a request is made for the opening or ending for a particular anime, extrapolate the data when appropriate (say when a show is short number of episodes and only one episode has an opening/ending entry) but mention that this is extrapolated data',
                     ];
                 
                     // Make OpenAI API request - RequestOmega

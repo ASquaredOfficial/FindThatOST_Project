@@ -42,8 +42,8 @@ const ValidateInputs = (formElements, listOfPlatformInputs, stateSetterFunctions
     if (!submitPreExistingTrack) {
         // Validate Release Date
         inputElement = formElements[`submit_releaseDate`];
-        if (IsEmpty(inputElement.value) || (new Date(inputElement.value).getTime() > new Date().getTime())) {
-            //Handle when input is empty or date is bigger than current date
+        if ((new Date(inputElement.value).getTime() > new Date().getTime())) {
+            //Handle when input date is bigger than current date
             AddErrorToFtoInput(inputElement);
             strElemIdFirstInvalidInput = (!IsEmpty(strElemIdFirstInvalidInput)) ? strElemIdFirstInvalidInput : inputElement.name;
         }

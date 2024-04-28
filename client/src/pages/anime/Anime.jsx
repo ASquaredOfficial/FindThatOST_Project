@@ -24,6 +24,7 @@ const Anime = ({
     const searchParams = new URLSearchParams(location.search);
     const [ spEpisodePageNum, setEpisodePageNum ] = useState(parseInt(searchParams.get('episode_page_no'), 10) || 1);
 
+    const nNumberOfEpisodesPerPage = 20;
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ ftoAnimeEpisodesInfo, setFTOAnimeEpisodesInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
@@ -159,7 +160,7 @@ const Anime = ({
             }
         }
         else {
-            console.info(`All Episodes for Anime are present`);
+            console.info(`All Episodes for Anime are present, no new episodes to add to backend.`);
             setFTOAnimeEpisodesInfo(animeEpisodesData);
         }
     }
@@ -220,10 +221,10 @@ const Anime = ({
         let allKitsuAnimeEpisodes = [];
         if (!IsEmpty(ftoAnimeInfo.kitsu_id)) {
             console.log("Anime Kitsu ID:", ftoAnimeInfo.kitsu_id)
-            let nLastOffset = Math.ceil(nLatestAnimeEpisode / 20);
+            let nLastOffset = Math.ceil(nLatestAnimeEpisode / nNumberOfEpisodesPerPage);
             let kitsuQueryOffset = 0;
             let iter = 0;
-            while (kitsuQueryOffset <= ((nLastOffset * 20) - 20) && iter < nLastOffset) {
+            while (kitsuQueryOffset <= ((nLastOffset * nNumberOfEpisodesPerPage) - nNumberOfEpisodesPerPage) && iter < nLastOffset) {
                 const kitsuPageEpisodes = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, kitsuQueryOffset);
                 allKitsuAnimeEpisodes.push(...kitsuPageEpisodes.data);
     
@@ -232,7 +233,7 @@ const Anime = ({
                     break;
                 }
     
-                kitsuQueryOffset = kitsuQueryOffset + 20;
+                kitsuQueryOffset = kitsuQueryOffset + nNumberOfEpisodesPerPage;
                 iter++;
             }
         }
@@ -425,7 +426,7 @@ const Anime = ({
      */
     const FetchEpisodeData = async (malAnimeDetails, ftoEpisodePageNum = 1) => {
         //Asuming each page on FTO anime page has 20 episodes
-        let episodeCount = malAnimeDetails.episodes;
+        let episodeCount = malAnimeDetails.episodes; // Number of total episodes in MAL Anime details (Not no of aired. So could be misleading)
         let latestEpisodeNumber = episodeCount;
         let airStatus = malAnimeDetails.status;
 
@@ -449,13 +450,13 @@ const Anime = ({
             const malPageEpisodesResponse = await FetchEpisodeData_MAL(malAnimeDetails.mal_id, malEpisodeQueryPage);
             const malPageEpisodes = malPageEpisodesResponse.data;
 
-            let startEpisode = 1 + ((ftoEpisodePageNum - 1) * 20);
+            let startEpisode = 1 + ((ftoEpisodePageNum - 1) * nNumberOfEpisodesPerPage);
             const kitsuPageEpisodesResponse = await FetchEpisodeData_KITSU(ftoAnimeInfo.kitsu_id, startEpisode-1 );
             const kitsuPageEpisodes = (Object.keys(kitsuPageEpisodesResponse).length > 0 && Array.isArray(kitsuPageEpisodesResponse.data)) ? kitsuPageEpisodesResponse.data : [];
 
             const episodesInfo = [];
-            let endEpisode = (ftoEpisodePageNum * 20 < latestEpisodeNumber) ? ftoEpisodePageNum * 20 : latestEpisodeNumber;
-            let loopEnd = (endEpisode%20 === 0) ? 20 : endEpisode%20;
+            let endEpisode = (ftoEpisodePageNum * nNumberOfEpisodesPerPage < latestEpisodeNumber) ? ftoEpisodePageNum * nNumberOfEpisodesPerPage : latestEpisodeNumber;
+            let loopEnd = (endEpisode%nNumberOfEpisodesPerPage === 0) ? nNumberOfEpisodesPerPage : endEpisode%nNumberOfEpisodesPerPage;
             for (let it = 0; it < loopEnd; it++) {
                 let epInfo = {};
                 let episodeTitleEn = '';
@@ -480,6 +481,9 @@ const Anime = ({
                 episodesInfo.push(epInfo);
             }
             setPageEpisodesInfo(episodesInfo);
+        }
+        else {
+            toast("This application does not support anime that have not aired yet!");
         }
     }
     
@@ -668,7 +672,7 @@ const Anime = ({
 
         let nFirstPage = 1;
         let nCurrentPage = ftoEpisodePageNum;
-        let nLastPage = Math.ceil(latestEpisodeNumber / 20);
+        let nLastPage = Math.ceil(latestEpisodeNumber / nNumberOfEpisodesPerPage);
         let pageList = [];
 
         if (nCurrentPage - 3  >= nFirstPage) {
@@ -796,6 +800,17 @@ const Anime = ({
 
                                     <div className='fto__page__anime-main_content_left-more_info'>
                                         <h3 className='fto__page__anime-main_content-header'>Information</h3>
+                                        {(aniListEpisodeCountInfo !== undefined) ? (
+                                            <p className='fto__page__anime-main_content-text'>
+                                                <strong>Episodes: </strong>
+                                                {`${aniListEpisodeCountInfo.data.Media.nextAiringEpisode.episode - 1}/${malAnimeInfo.episodes}`}
+                                            </p>
+                                        ) : (
+                                            <p className='fto__page__anime-main_content-text'>
+                                                <strong>Episodes: </strong>
+                                                {malAnimeInfo.episodes}
+                                            </p>
+                                        )}
                                         <p className='fto__page__anime-main_content-text'><strong>Air Date: </strong>{malAnimeInfo.aired.string}</p>
                                         <p className='fto__page__anime-main_content-text'><strong>Status: </strong>{malAnimeInfo.status}</p>
                                     </div>
@@ -846,7 +861,7 @@ const Anime = ({
                                     <div className='fto__page__anime-main_content_info_list'>
                                         <div className='fto__page__anime-main_content_info_list-header_section'>
                                             {!IsEmpty(pageEpisodesInfo) && (
-                                                <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.episode_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
+                                                <h4 className={`fto__page__anime-main_content-header ${(pageListViewFocus.episode_list === true) ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
                                                     onClick={() => {setPageListView(() => {
                                                         if (pageListViewFocus.episode_list === false) {
                                                             return {
@@ -860,7 +875,7 @@ const Anime = ({
                                                 </h4>
                                             )}
                                             {!IsEmpty(ftoAnimeInfo['track_list']) && (
-                                                <h4 className={`fto__page__anime-main_content-header ${pageListViewFocus.track_list ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
+                                                <h4 className={`fto__page__anime-main_content-header ${(pageListViewFocus.track_list === true) ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
                                                     onClick={() => {setPageListView(() => {
                                                         if (pageListViewFocus.track_list === false) {
                                                             return {
@@ -881,7 +896,7 @@ const Anime = ({
                                                 {pageEpisodesInfo.map((episodeInfo, it) => {
                                                     return (
                                                         <div className='fto__page__anime-main_content_info_list-row' key={it}>
-                                                            <a href={`/anime/${id}/episode/${episodeInfo.episode_no}`} onClick={(e) => { e.preventDefault(), navigateToEpisode(id, episodeInfo.episode_no)}}>
+                                                            <a href={`/anime/${id}/episode/${episodeInfo.episode_no}`} onClick={(e) => { e.preventDefault(); navigateToEpisode(id, episodeInfo.episode_no)}}>
                                                                 <h3 className='fto__page__anime-main_content_episode_heading'>
                                                                     Episode {episodeInfo.episode_no}
                                                                 </h3>
@@ -901,7 +916,7 @@ const Anime = ({
                                                         {ftoAnimeInfo.track_list.map((trackInfo, it) => {
                                                             return (
                                                                 <div className='fto__page__anime-main_content_info_list-row' key={it}>
-                                                                    <a href={`/track/${trackInfo.track_id}`} onClick={(e) => { e.preventDefault(), navigateToTrack(trackInfo.track_id)}}>
+                                                                    <a href={`/track/${trackInfo.track_id}`} onClick={(e) => { e.preventDefault(); navigateToTrack(trackInfo.track_id)}}>
                                                                         <h3 className='fto__page__anime-main_content_episode_heading'>
                                                                             {trackInfo.track_name}
                                                                         </h3>
@@ -910,6 +925,7 @@ const Anime = ({
                                                                         {(!IsEmpty(trackInfo.streaming_platform_links) && typeof(JSON.parse(trackInfo.streaming_platform_links)) === 'object') && 
                                                                             (!IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['spotify']) || !IsEmpty(JSON.parse(trackInfo.streaming_platform_links)['data']['apple_music'])) && (      
                                                                             <FaPlayCircle 
+                                                                                tabIndex={0}
                                                                                 className='fto__page__anime-main_content_info_list--track_item-play_icon' 
                                                                                 onClick={() => {
                                                                                     setEmbeddedTrackModalVisibility(true); 

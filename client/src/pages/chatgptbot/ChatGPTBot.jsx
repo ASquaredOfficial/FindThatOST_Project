@@ -24,7 +24,7 @@ const ChatGPTBot = ({
     const [ typing, setTyping ] = useState(false)
     const [ messages, setMessages ] = useState([
         { 
-            message: "Hello, I am ChatGPT!\nAsk me a question about any anime tracks?",
+            message: "Hello, I am the FindThatOST Chatbot Assistant!\nAsk me a question about any anime tracks?",
             sender: "ChatGPT",
             direction: 'incoming',
         },
@@ -124,10 +124,6 @@ const ChatGPTBot = ({
             body: JSON.stringify({ objChatGPTQuery }),
         });
     
-        // const responseStatus = response.status;
-        // const responseData = await response.json();
-        // console.log("Response status:", responseStatus);
-        // console.log("Response Data:", responseData);
         console.log("ChatGPT Response:", chatGptReponse)
         const responseJson = await chatGptReponse.json()
         if (chatGptReponse.status === 200) {
@@ -161,7 +157,7 @@ const ChatGPTBot = ({
 
             <div className='fto__page__chatgptbot-content section__padding' style={{paddingBottom: 0}}>
                 <h3 style={{ fontFamily: 'var(--font-family-manrope)', color: 'white'}}>
-                    FTO-ChatBOT
+                    FTO Chatbot Assistant
                 </h3>
                 <MainContainer className='fto__page__chatgptbot-content-main_container' 
                     style={{ borderTop: '0px', borderBottom: '0px', borderTopLeftRadius: '10px', borderTopRightRadius: '10px'}}>

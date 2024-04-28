@@ -19,6 +19,7 @@
 
     --color-bg-navbar: #222222;
     --color-bg-main: #040C18;
+    --color-bg-main2: #002853;
 
     --color-bg-navbar_search_border: #042c54;
     --color-bg-navbar_search: #1b1b1b;
@@ -26,6 +27,6 @@
     --color-footer : #031B34;
     --color-blog: #042c54;
     --color-text: #81AFDD;
-    --color-subtext: #FF8A71;
+    --color-subtext: #F49867;
 
 }

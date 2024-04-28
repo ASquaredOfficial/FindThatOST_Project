@@ -14,9 +14,9 @@ const Menu = ({FocusOnSearchBar}) => {
 
     return (
         <>
-        <p><a href={'/home/'} onClick={(e) => { e.preventDefault(), navigateToHome()}}>Home</a></p>
+        <p><a href={'/home/'} onClick={(e) => { e.preventDefault(); navigateToHome()}}>Home</a></p>
+        <p><a href={'/chatbot/'} onClick={(e) => { e.preventDefault(); navigateToChatBot()}}>Ask ChatGPT</a></p>
         <p className='fto__menu-search'><a onClick={FocusOnSearchBar}>Search</a></p>
-        <p><a href={'/chatbot/'} onClick={(e) => { e.preventDefault(), navigateToChatBot()}}>Ask ChatGPT</a></p> {/*href='#askchatgpt'*/}
         </>
     )
 }

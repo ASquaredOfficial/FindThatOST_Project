@@ -4,7 +4,7 @@ import { AddPlatformInputToPage, ListenToPlatformInput, RemovePlatformInputFomPa
 import './submission.css';
 
 import { Navbar, Footer, PageLoading} from "../../components";
-import { IoAdd, IoTrash } from "react-icons/io5";
+import { IoAdd, IoTrash, IoCopyOutline } from "react-icons/io5";
 import { FindObjectDifferenceWithArrays, FormatStreamingPlatformsToJson, FormatStreamingPlatformsToList, GetShorthandDateFromString, IsEmpty } from '../../utils/RegularUtils';
 import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl, GetPlatformTrackBaseUrl } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from '../../routing/navigation'
@@ -170,13 +170,40 @@ const SubmitTrackEdit = ({
     }
 
     /**
-     * Handle Add Platform Input onClick.
+     * Handle Remove Platform Input onClick.
      * @function handleRemovePlatform
+     * @param {number|string}  itemId - Item Id of item in Platform Items.
      * @returns {undefined} 
      * 
      */
     const handleRemovePlatform = (itemId) => {
         RemovePlatformInputFomPage(itemId, {setPlatformItems, setUserSubmission})
+    }
+
+    /**
+     * Handle Copy Platform Input onClick.
+     * @function handleCopyPlatform
+     * @param {number}  itemId - Item Id of item in Platform Items.
+     * @param {string}  itemPlaceholder - Item placeholder value inside the input element.
+     * @returns {undefined} 
+     * 
+     */
+    const handleCopyPlatform = (itemId, itemPlaceholder) => {
+        let inputElem = document.getElementById(`submit_streamPlat_item_${itemId}`);
+        let textToCopy = inputElem.value;
+        if (!IsEmpty(itemPlaceholder)) {
+            // If there is a placeholder value for this platform field, use it instead of the current value in the input element.
+            textToCopy = itemPlaceholder;
+        }
+
+        if (!IsEmpty(textToCopy)) {
+            navigator.clipboard.writeText(textToCopy);
+            console.debug(`Text copied for item ${itemId}:`, textToCopy);
+            toast(`Platform url has been copied!`);
+        }
+        else {
+            toast("No url has been entered.");
+        }
     }
 
     const handleChange_TrackEdit = (event) => {
@@ -606,12 +633,12 @@ const SubmitTrackEdit = ({
                             Edit Track
                             {(ftoEpisodeContext.episode_no !== -1) ? (
                                 <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}
-                                    onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no)}} >
+                                    onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no)}} >
                                     {` in Episode ${ftoEpisodeContext.episode_no}`}
                                 </a>
                             ) : (
                                 <a href={'/anime/' + ftoEpisodeContext.anime_id}
-                                    onClick={(e) => { e.preventDefault(), navigateToAnime(ftoEpisodeContext.anime_id)}} >
+                                    onClick={(e) => { e.preventDefault(); navigateToAnime(ftoEpisodeContext.anime_id)}} >
                                     {` in Series`}
                                 </a>
                             )}
@@ -620,7 +647,7 @@ const SubmitTrackEdit = ({
                         {(ftoEpisodeContext.episode_no !== -1) && (
                             <h4 className='fto__page__submission-content_header_subtitle'>
                                 <a href={'/anime/' + ftoEpisodeContext.anime_id + '/episode/' + ftoEpisodeContext.episode_no}
-                                    onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no)}} >
+                                    onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoEpisodeContext.anime_id, ftoEpisodeContext.episode_no)}} >
                                     <strong>{ftoEpisodeContext.episode_title}</strong>
                                 </a>
                             </h4>
@@ -693,6 +720,9 @@ const SubmitTrackEdit = ({
                                             className='fto__page__submission-main_content-streamPlat_item'>
                                                 <div className='delete_streamPlat_item' tabIndex='0'>
                                                     <IoTrash id={`delete_streamPlat_item_`+ item.id} onClick={() => handleRemovePlatform(item.id)}/>
+                                                </div>
+                                                <div className='copy_streamPlat_item' tabIndex='0'>
+                                                    <IoCopyOutline id={`copy_streamPlat_item_`+ item.id} onClick={() => {handleCopyPlatform(item.id, item.placeholder)}}/>
                                                 </div>
                                                 <label className='fto-input-drawableIconStart_label'>
                                                     <img src={ GetPlatformIcon( (IsEmpty(item.inputString) && !IsEmpty(item.placeholder)) ? GetUrlPlatform(item.placeholder) : item.platform_type ) } 

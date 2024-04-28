@@ -17,11 +17,11 @@ const Fetch_FTO_GetEpisodeComments = async (ftoEpisodeId) => {
         const response = await fetch(apiUrl_fto); // Replace with your actual backend endpoint
         const episodeCommentsData = await response.json();
         episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_id', 'id' ) );
-        episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_content', 'body' ) );
-        episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'user_username', 'username' ) );
         episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'fto_user_id', 'userId' ) );
+        episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'user_username', 'username' ) );
         episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_parent_id', 'parentId' ) );
         episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_date', 'createdAt' ) );
+        episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_content', 'body' ) );
         episodeCommentsData.forEach( episodeComment => RenameObjectKey( episodeComment, 'comment_likes', 'likesDislikes' ) );
         console.debug("Episode Comments:", episodeCommentsData)
         return episodeCommentsData;
@@ -45,6 +45,10 @@ const Fetch_FTO_GetEpisodeComments = async (ftoEpisodeId) => {
  * 
  */
 const Fetch_FTO_PostEpisodeComment = async (nFtoEpisodeId, strCommentBody, nCommentParentId = null, user_props, stateSetterFunctions) => {
+    if (IsEmpty(user_props.userId)) {
+        toast("You must sign in to perform this operation.");
+        return;
+    }
     const { setActiveComment } = stateSetterFunctions;
     const objUserSubmission = {
         userId: user_props.userId,
@@ -70,14 +74,14 @@ const Fetch_FTO_PostEpisodeComment = async (nFtoEpisodeId, strCommentBody, nComm
     }
     else {
         console.debug("Response Data:", responseData);
-        let newComment = {
-            id: responseData.insertId,
-            body: strCommentBody,
-            parentId: nCommentParentId,
-            userId: user_props.userId,
-            username: user_props.username,
-            createdAt: new Date().toISOString(),
-        };
+        // let newComment = {
+        //     id: responseData.insertId,
+        //     body: strCommentBody,
+        //     parentId: nCommentParentId,
+        //     userId: user_props.userId,
+        //     username: user_props.username,
+        //     createdAt: new Date().toISOString(),
+        // };
         // await FetchCommentsData(nFtoEpisodeId); // refresh comments after
         // setBackendComments((backendComments) => [ ...backendComments, newComment ])
         setActiveComment(null); // Hide the reply textbox after success
@@ -96,6 +100,10 @@ const Fetch_FTO_PostEpisodeComment = async (nFtoEpisodeId, strCommentBody, nComm
  * 
  */
 const Fetch_FTO_DeleteEpisodeComment = async (nFtoCommentId, nUserId, stateSetterFunctions) => {
+    if (IsEmpty(nUserId)) {
+        toast("You must sign in to perform this operation.");
+        return;
+    }
     const {setBackendComments} = stateSetterFunctions;
     const objUserSubmission = {
         userId: nUserId,
@@ -148,6 +156,10 @@ const Fetch_FTO_DeleteEpisodeComment = async (nFtoCommentId, nUserId, stateSette
  * 
  */
 const Fetch_FTO_PatchEpisodeComment = async (nFtoCommentId, strCommentBody, nUserId, stateSetterFunctions) => {
+    if (IsEmpty(nUserId)) {
+        toast("You must sign in to perform this operation.");
+        return;
+    }
     const {setBackendComments, setActiveComment} = stateSetterFunctions;
     const objUserSubmission = {
         userId: nUserId,

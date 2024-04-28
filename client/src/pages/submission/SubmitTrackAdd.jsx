@@ -4,7 +4,7 @@ import { ValidateInputs, AddPlatformInputToPage, RemovePlatformInputFomPage, Lis
 import './submission.css';
 
 import { Navbar, Footer, PageLoading} from "../../components";
-import { IoAdd, IoClose , IoTrash } from "react-icons/io5";
+import { IoAdd, IoClose , IoTrash, IoCopyOutline  } from "react-icons/io5";
 import { FormatStreamingPlatformsToJson, IsEmpty } from '../../utils/RegularUtils';
 import { GetUrlPlatform, GetPlatformIcon, IsFandomImageUrl, IsFandomCommunityWebsiteUrl, GetFandomImageUrlFromFullUrl, IsYoutubeVideoUrl, GetFandomWikiaIcon, GetIdFromYoutubeUrl } from '../../utils/HyperlinkUtils';
 import { useCustomNavigate } from '../../routing/navigation'
@@ -156,13 +156,35 @@ const SubmitTrackAdd = ({
     }
 
     /**
-     * Handle Add Platform Input onClick.
+     * Handle Remove Platform Input onClick.
      * @function handleRemovePlatform
+     * @param {number}  itemId - Item Id of item in Platform Items.
      * @returns {undefined} 
      * 
      */
     const handleRemovePlatform = (itemId) => {
         RemovePlatformInputFomPage(itemId, {setPlatformItems, setUserSubmission})
+    }
+
+    /**
+     * Handle Copy Platform Input onClick.
+     * @function handleCopyPlatform
+     * @param {number}  itemId - Item Id of item in Platform Items.
+     * @param {string}  itemPlaceholder - Item placeholder value inside the input element.
+     * @returns {undefined} 
+     * 
+     */
+    const handleCopyPlatform = (itemId) => {
+        let inputElem = document.getElementById(`submit_streamPlat_item_${itemId}`);
+        let textToCopy = inputElem.value;
+        if (!IsEmpty(textToCopy)) {
+            navigator.clipboard.writeText(textToCopy);
+            console.debug(`Text copied for item ${itemId}:`, textToCopy);
+            toast(`Platform url has been copied!`);
+        }
+        else {
+            toast("No url has been entered.");
+        }
     }
 
     const handleChange_TrackAdd = (event) => {
@@ -690,19 +712,19 @@ const SubmitTrackAdd = ({
                             Add Track
                             {(ftoEpisodeID !== -1) ? (
                                     <a href={'/anime/' + anime_id + '/episode/' + spEpisodeNo}
-                                        onClick={(e) => { e.preventDefault(), navigateToEpisode(anime_id, spEpisodeNo)}} >
+                                        onClick={(e) => { e.preventDefault(); navigateToEpisode(anime_id, spEpisodeNo)}} >
                                         {' to Episode ' + spEpisodeNo}
                                     </a>
                             ) : (
                                 <a href={'/anime/' + anime_id}
-                                    onClick={(e) => { e.preventDefault(), navigateToAnime(anime_id)}} >
+                                    onClick={(e) => { e.preventDefault(); navigateToAnime(anime_id)}} >
                                     {' to Series'}
                                 </a>
                             )}
                         </h1>
                         <h4 className='fto__page__submission-content_header_subtitle'>
                             <a href={'/anime/' + anime_id}
-                                onClick={(e) => { e.preventDefault(), navigateToAnime(anime_id)}} >
+                                onClick={(e) => { e.preventDefault(); navigateToAnime(anime_id)}} >
                                 <strong>{submissionContextInfo.canonical_title}</strong>
                             </a>
                         </h4>
@@ -792,6 +814,9 @@ const SubmitTrackAdd = ({
                                                 className='fto__page__submission-main_content-streamPlat_item fto_gap'>
                                                     <div className='delete_streamPlat_item' tabIndex='0'>
                                                         <IoTrash id={`delete_streamPlat_item_`+ item.id} onClick={() => handleRemovePlatform(item.id)}/>
+                                                    </div>
+                                                    <div className='copy_streamPlat_item' tabIndex='0'>
+                                                        <IoCopyOutline id={`copy_streamPlat_item_`+ item.id} onClick={() => {handleCopyPlatform(item.id)}}/>
                                                     </div>
                                                     <label className='fto-input-drawableIconStart_label'>
                                                         <img src={ GetPlatformIcon( item.platform_type ) } className='fto-input-drawableIconStart_img' alt='platform_img'/>

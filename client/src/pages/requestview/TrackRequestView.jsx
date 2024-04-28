@@ -5,7 +5,7 @@ import './requestview.css';
 import { toast } from 'react-toastify';
 import { useCustomNavigate } from './../../routing/navigation';
 import { Navbar, Footer, Comments, } from "../../components";
-import { ParseAnimePosterImage } from '../../utils/MalApiUtils';
+import { FormatDateToMidDateString, ParseAnimePosterImage } from '../../utils/MalApiUtils';
 import { MapTrackType } from '../../utils/FTOApiUtils';
 import { FormatStreamingPlatformsToList, GetTimeAgoBetweenDates, IsEmpty } from '../../utils/RegularUtils';
 import StreamingPlatformLinksList from '../../components/streamingplatformlinkslist/StreamingPlatformLinksList';
@@ -32,11 +32,18 @@ const TrackRequestView = ({
     const [ ftoSubmissionInfo, setFTOSubmissionInfo] = useState();
     const [ ftoAnimeInfo, setFTOAnimeInfo ] = useState();
     const [ malAnimeInfo, setMALAnimeInfo ] = useState();
+    const [ pageUserProperties, setPageUserProperties ] = useState(user_properties);
 
     useEffect(() => {
         document.title = `Submission ${request_id} View | FindThatOST`;
         FetchPageData(request_id);
     }, []);
+	
+    useEffect(() => {
+        if (JSON.stringify(pageUserProperties) !== JSON.stringify(user_properties)) {
+            setPageUserProperties(user_properties);
+        }
+    }, [user_properties]);
 
     /**
      * Perform all fetches to set up the webpage.
@@ -175,7 +182,7 @@ const TrackRequestView = ({
                         {malAnimeInfo !== undefined && (
                             <h4 className='fto__page__requestview-content_header_subheading'>
                                 <a href={'/anime/' + ftoSubmissionInfo.fto_anime_id}
-                                    onClick={(e) => { e.preventDefault(), navigateToAnime(ftoSubmissionInfo.fto_anime_id)}} >
+                                    onClick={(e) => { e.preventDefault(); navigateToAnime(ftoSubmissionInfo.fto_anime_id)}} >
                                     <strong>{malAnimeInfo.titles[0].title}</strong>
                                 </a>
                             </h4>
@@ -207,7 +214,7 @@ const TrackRequestView = ({
                                         (
                                             <a className='fto_text_hyperlink fto__pointer' 
                                                 href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
-                                                onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
+                                                onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                                 Episode {ftoSubmissionInfo.submission_details.episode_no}
                                             </a>
                                             
@@ -218,6 +225,9 @@ const TrackRequestView = ({
                                     <br />
                                     
                                     <h3><u>Track Information</u></h3>
+                                    {!IsEmpty(ftoSubmissionInfo.submission_details.track_name) && (
+                                        <p className='fto__page__requestview-main_content-text'><b>Track Name: </b>{ftoSubmissionInfo.submission_details.track_name}</p>
+                                    )}
                                     {!IsEmpty(ftoSubmissionInfo.submission_details.artist_name) && (
                                         <p className='fto__page__requestview-main_content-text'><b>Artist(s): </b>{ftoSubmissionInfo.submission_details.artist_name}</p>
                                     )}
@@ -225,7 +235,7 @@ const TrackRequestView = ({
                                         <p className='fto__page__requestview-main_content-text'><b>Label: </b>{ftoSubmissionInfo.submission_details.label_name}</p>
                                     )}
                                     {!IsEmpty(ftoSubmissionInfo.submission_details.release_date) && (
-                                        <p className='fto__page__requestview-main_content-text'><b>Release Date: </b>{ftoSubmissionInfo.submission_details.release_date}</p>
+                                        <p className='fto__page__requestview-main_content-text'><b>Release Date: </b>{FormatDateToMidDateString(ftoSubmissionInfo.submission_details.release_date)}</p>
                                     )}
                                     {!IsEmpty(ftoSubmissionInfo.submission_details.track_type) && (
                                         <p className='fto__page__requestview-main_content-text'><b>Track Type: </b>{MapTrackType(ftoSubmissionInfo.submission_details.track_type)}</p>
@@ -252,7 +262,7 @@ const TrackRequestView = ({
                                         (
                                             <a className='fto_text_hyperlink fto__pointer' 
                                                 href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
-                                                onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
+                                                onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                                 Episode {ftoSubmissionInfo.submission_details.episode_no}
                                             </a>
                                             
@@ -279,7 +289,7 @@ const TrackRequestView = ({
                                     <h4 style={{color: 'gray'}}>Removed Track from 
                                         <a className='fto_text_hyperlink fto__pointer' 
                                             href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
-                                            onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
+                                            onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                             {` Episode ` + ftoSubmissionInfo.submission_details.episode_no}
                                         </a>
                                     </h4>
@@ -300,10 +310,9 @@ const TrackRequestView = ({
                                         (
                                             <a className='fto_text_hyperlink fto__pointer'  
                                                 href={'/anime/' + ftoSubmissionInfo.fto_anime_id + '/episode/' + ftoSubmissionInfo.submission_details.episode_no}
-                                                onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
+                                                onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoSubmissionInfo.fto_anime_id, ftoSubmissionInfo.submission_details.episode_no)}} >
                                                 in Episode {ftoSubmissionInfo.submission_details.episode_no}
                                             </a>
-                                            
                                         ) : (
                                             'in Series'
                                         )}
@@ -311,6 +320,9 @@ const TrackRequestView = ({
                                     <br />
                                     
                                     <h3><u>Changed Track Information</u></h3>
+                                    {!IsEmpty(ftoSubmissionInfo.submission_details.track_name) && (
+                                        <p className='fto__page__requestview-main_content-text'><b>Track Name: </b>{ftoSubmissionInfo.submission_details.track_name}</p>
+                                    )}
                                     {!IsEmpty(ftoSubmissionInfo.submission_details.artist_name) && (
                                         <p className='fto__page__requestview-main_content-text'><b>Artist(s): </b>{ftoSubmissionInfo.submission_details.artist_name}</p>
                                     )}
@@ -318,9 +330,9 @@ const TrackRequestView = ({
                                         <p className='fto__page__requestview-main_content-text'><b>Label: </b>{ftoSubmissionInfo.submission_details.label_name}</p>
                                     )}
                                     {!IsEmpty(ftoSubmissionInfo.submission_details.release_date) && (
-                                        <p className='fto__page__requestview-main_content-text'><b>Release Date: </b>{ftoSubmissionInfo.submission_details.release_date}</p>
+                                        <p className='fto__page__requestview-main_content-text'><b>Release Date: </b>{FormatDateToMidDateString(ftoSubmissionInfo.submission_details.release_date)}</p>
                                     )}
-                                    {IsEmpty(ftoSubmissionInfo.submission_details.track_type) && (
+                                    {!IsEmpty(ftoSubmissionInfo.submission_details.track_type) && (
                                         <p className='fto__page__requestview-main_content-text'><b>Track Type: </b>{MapTrackType(ftoSubmissionInfo.submission_details.track_type)}</p>
                                     )}
                                     {!IsEmpty(ftoSubmissionInfo.submission_details.scene_description) && (
@@ -356,7 +368,7 @@ const TrackRequestView = ({
                                 ftoSubmissionInfo={ftoSubmissionInfo}
                                 request_id={request_id}
                                 RefreshPageFunction={FetchSubmissionData}
-                                user_properties={user_properties}/>
+                                user_properties={pageUserProperties}/>
                             
                     </div>
                     </div>
@@ -364,7 +376,7 @@ const TrackRequestView = ({
                     
                     <Comments 
                         ftoPageId={ftoSubmissionInfo.request_submission_id}
-                        user_properties={user_properties}
+                        user_properties={pageUserProperties}
                         getCommentsApi={getCommentsApi}  
                         createCommentApi={createCommentApi} 
                         deleteCommentApi={deleteCommentApi} 

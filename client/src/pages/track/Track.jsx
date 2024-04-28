@@ -10,6 +10,7 @@ import { MapTrackType } from '../../utils/FTOApiUtils';
 import { useCustomNavigate } from '../../routing/navigation';
 import { GetPlatformIcon, GetPlatformNameString, IsFandomImageUrl } from '../../utils/HyperlinkUtils';
 import { toast } from 'react-toastify';
+import { FormatDateToMidDateString } from '../../utils/MalApiUtils';
 
 const Track = ({
     SignInFunction,
@@ -81,6 +82,7 @@ const Track = ({
                     if (Number(trackInfo['episode_no']) > 0) {
                         return Number(trackInfo['episode_no']);
                     }
+                    return;
                 }).sort(function(a, b){return a-b});
             }
 
@@ -152,14 +154,14 @@ const Track = ({
                             <div className='fto__page__track-content_subheading_section'>
                                 <h4 className='fto__page__track-content_header_subtitle'>
                                     <a href={'/anime/' + ftoTrackInfo.fto_anime_id}
-                                        onClick={(e) => { e.preventDefault(), navigateToAnime(ftoTrackInfo.fto_anime_id)}} >
+                                        onClick={(e) => { e.preventDefault(); navigateToAnime(ftoTrackInfo.fto_anime_id)}} >
                                     <strong>{ftoTrackInfo.canonical_title}</strong>
                                     </a>
                                 </h4>
                                 {spOccurrenceID !== -1 && (
                                     <h4 className='subheader_color'>
                                         <a href={'/anime/' + ftoTrackInfo.fto_anime_id + '/episode/' + ftoTrackInfo.episode_no}
-                                            onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoTrackInfo.fto_anime_id, ftoTrackInfo.episode_no)}} >
+                                            onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoTrackInfo.fto_anime_id, ftoTrackInfo.episode_no)}} >
                                             Episode {ftoTrackInfo.episode_no}
                                         </a>
                                     </h4>
@@ -174,19 +176,35 @@ const Track = ({
                                 </div>
                                 <div className='fto__page__track-main_content--track_details-right'>
                                     <h3>Track Information</h3>
-                                    <p className='fto__page__track-main_content-text'><b>Artist(s): </b>{ftoTrackInfo.artist_name}</p>
-                                    <p className='fto__page__track-main_content-text'><b>Label: </b>{ftoTrackInfo.label_name}</p>
-                                    <p className='fto__page__track-main_content-text'><b>Release Date: </b>{ftoTrackInfo.release_date}</p>
+                                    {!IsEmpty(ftoTrackInfo.artist_name) && (
+                                        <p className='fto__page__track-main_content-text'><b>Artist(s): </b>{ftoTrackInfo.artist_name}</p>
+                                    )}
+                                    {!IsEmpty(ftoTrackInfo.label_name) && (
+                                        <p className='fto__page__track-main_content-text'><b>Label: </b>{ftoTrackInfo.label_name}</p>
+                                    )}
+                                    {!IsEmpty(ftoTrackInfo.release_date) && (
+                                    <p className='fto__page__track-main_content-text'><b>Release Date: </b>{FormatDateToMidDateString(ftoTrackInfo.release_date)}</p>
+                                    )}
                                     
                                     {spOccurrenceID !== -1 && (
                                         <div className='fto__page__track-main_content--track_details-context_info'>
                                             <br />
                                             <h3>More Track Context Information</h3>
-                                            <p className='fto__page__track-main_content-text'><b>Episode No: </b>{ftoTrackInfo.episode_no}</p>
-                                            <p className='fto__page__track-main_content-text'><b>Episode Title: </b>{ftoTrackInfo.episode_title}</p>
-                                            <p className='fto__page__track-main_content-text'><b>Track Type: </b>{MapTrackType(ftoTrackInfo.track_type)}</p>
-                                            <p className='fto__page__track-main_content-text' style={{marginTop : '8px'}}><u>Scene Description</u></p>
-                                            <p className='fto__page__track-main_content-text'>{ftoTrackInfo.scene_description}</p>
+                                            {!IsEmpty(ftoTrackInfo.episode_no) && (
+                                                <p className='fto__page__track-main_content-text'><b>Episode No: </b>{ftoTrackInfo.episode_no}</p>
+                                            )}
+                                            {!IsEmpty(ftoTrackInfo.episode_title) && (
+                                                <p className='fto__page__track-main_content-text'><b>Episode Title: </b>{ftoTrackInfo.episode_title}</p>
+                                            )}
+                                            {!IsEmpty(ftoTrackInfo.track_type) && (
+                                                <p className='fto__page__track-main_content-text'><b>Track Type: </b>{MapTrackType(ftoTrackInfo.track_type)}</p>
+                                            )}
+                                            {!IsEmpty(ftoTrackInfo.scene_description) && (
+                                                <>
+                                                    <p className='fto__page__track-main_content-text' style={{marginTop : '8px'}}><u>Scene Description</u></p>
+                                                    <p className='fto__page__track-main_content-text'>{ftoTrackInfo.scene_description}</p>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -206,7 +224,7 @@ const Track = ({
                                             return (
                                                 <a key={it} className='fto__page__track-main_content--episode_occurrence'
                                                     href={`/anime/${ftoTrackInfo.fto_anime_id}/episode/${episodeNum}`} 
-                                                    onClick={(e) => { e.preventDefault(), navigateToEpisode(ftoTrackInfo.fto_anime_id, episodeNum)}} >
+                                                    onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoTrackInfo.fto_anime_id, episodeNum)}} >
                                                     {episodeNum}
                                                 </a>
                                             )
@@ -219,7 +237,7 @@ const Track = ({
                             {(spOccurrenceID !== -1 ) && (
                                 <div className='fto__page__track-main_content--edit_track_section'>
                                     <a className='fto__button__pink' href={'/submission/track_edit/' + track_id + '/context_id/' + spOccurrenceID}
-                                        onClick={(e) => { e.preventDefault(), navigateToSubmitTrackEdit(track_id, spOccurrenceID)}} >
+                                        onClick={(e) => { e.preventDefault(); navigateToSubmitTrackEdit(track_id, spOccurrenceID)}} >
                                         
                                         Edit Track
                                     </a>

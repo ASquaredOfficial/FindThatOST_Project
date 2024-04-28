@@ -3,7 +3,7 @@
 --
 INSERT INTO `fto_users` (`user_id`, `user_username`, `user_email`, `user_join_date`, `user_contribution_score`, `user_type`, `user_active`) 
 VALUES
-    (1, 'Admin101', 'doradi3xplorer@gmail.com', '2023-07-29 15:06:05', 0, 'BASIC', b'1')
+    (1, 'Admin101', 'doradi3xplorer@gmail.com', '2023-12-23 09:45:41', 0, 'BASIC', b'1')
 ;
 ALTER TABLE `fto_users`
     MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;

@@ -294,6 +294,10 @@ const GetIdFromShazamUrl = (shazamUrl) => {
         Possibile Shazam sample.
         https://www.shazam.com/gb/track/323892435/you-say-run
         https://www.shazam.com/track/5933774/dont-speak
+        
+        TODO - This is no longer valid. The track urls are now 'song/121321312312312312'
+        For example
+        https://www.shazam.com/song/1440845557/dont-speak
     */
     const pattern = /(?:shazam\.com\/?(?:[A-z]{2}\/)track\/|track\/)([^#&?\n/]*)/;
     const match = shazamUrl.match(pattern);

@@ -180,13 +180,6 @@
     }
 }
 
-/*Tablet Screens or smaller*/
-@media screen and (max-width: 1440px) {
-    /* Resize navigation App Icon */
-    .fto__navbar-links_logo img {
-        width: 75px;
-    }
-}
 @media screen and (max-width: 1050px) {
     .fto__navbar-links_container {
         display: none;
@@ -199,8 +192,14 @@
     .fto__navbar-links {
         justify-content: space-between;
     }
+
+    /* Resize navigation App Icon */
+    .fto__navbar-links_logo img {
+        width: 75px;
+    }
 }
 
+/*Tablet Screens or smaller*/
 @media screen and (max-width: 850px) {
     .fto__navbar-sign {
         display: none;

@@ -36,16 +36,16 @@ const ModalEmbeddedTrack = ({
     return (
         <div className='fto__modal'>
             <div className='fto__modal-embedded_track_content' style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
-                {IsEmpty(embeddedTrackData['apple_music']) ? (
+                {!IsEmpty(embeddedTrackData['apple_music']) ? (
                     <>
-                        <iframe
+                        <iframe className='fto__modal-embedded_track_content-apple_music'
                             title="Apple Music Track Player"
                             src={`https://embed.music.apple.com/song/${embeddedTrackData['apple_music']}?theme=light`}
                             height="100%" width="100%" 
-                            style={{ overflow: 'hidden', borderRadius: '10px', border: '0', paddingTop: '20px', width: '100%', maxWidth: '660px', minHeight: '225px'}}
+                            style={{ overflow: 'hidden', borderRadius: '10px', border: '0', width: '100%', minWidth: '400px', maxWidth: '660px', minHeight: '185px'}}
                             sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" 
                             allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" />
-                        <button className="fto__button__pink" style={{ position: 'absolute', top: '85px', right: '15px', zIndex: '1'}} 
+                        <button className="fto__button__pink" style={{ position: 'absolute', top: '65px', right: '15px', zIndex: '1'}} 
                             onClick={onClose}>
                             Close
                         </button>
