@@ -44,7 +44,7 @@ const SubmitTrackAddPreExistingModal = (
 
     const FetchAllAnimeTracks_FTO = async (nFtoAnimeID, nExcludedFtoEpisodeId = -1) => {
         try {
-            let apiUrl_fto = `/findthatost_api/anime/${Number(nFtoAnimeID)}/tracks`;
+            let apiUrl_fto = `/findthatost_api/anime/${Number(nFtoAnimeID)}/tracks/including_all_parent_anime`;
             console.debug(`Fetch anime tracks data from the backend, url: '${process.env.REACT_APP_FTO_BACKEND_URL}${apiUrl_fto}'`);
             const response = await fetch(apiUrl_fto, 
             {
@@ -59,6 +59,7 @@ const SubmitTrackAddPreExistingModal = (
                 CloseModal();
                 toast("This anime has no tracks yet");
                 console.error("Response status:", response.status, "\nNo Anime Tracks Availabale.")
+                return
             }
             const data = await response.json();
             return data;
@@ -101,9 +102,9 @@ const SubmitTrackAddPreExistingModal = (
                 <div className='body' style={{width: '90%', display: 'flex', flexDirection: 'column'}}>
                     <br />
                     
-                    {!IsEmpty(ftoTrackInfoList) && (
+                    {!IsEmpty(ftoTrackInfoList) && (Object.keys(ftoTrackInfoList).length > 0) && (Array.isArray(ftoTrackInfoList)) && (
                         <>
-                        <h4>List of Soundtracks:</h4>
+                        <h4>{`List of Soundtracks(${Object.keys(ftoTrackInfoList).length}):`}</h4>
                         <hr className='fto_horizontal_hr' />
 
                         <div className=''>

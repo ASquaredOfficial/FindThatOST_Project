@@ -199,6 +199,50 @@ router.post("/:nFtoAnimeID/tracks", async (req, res) => {
     }
 });
 
+router.post("/:nFtoAnimeID/tracks/including_all_parent_anime", async (req, res) => {
+    //Get List of Tracks for the anime with corresponding FTO Anime ID including parent anime
+    const nFtoAnimeID = req.params.nFtoAnimeID;
+    const { nExcludedFtoEpisodeId } = req.body;
+    try {
+        let checkParentId = true;
+        const arrAnimeIDs = [nFtoAnimeID];
+        while (checkParentId){
+            const ftoAnimeDetails = await GetAnime(arrAnimeIDs[arrAnimeIDs.length - 1]);
+            if (!ftoAnimeDetails || ftoAnimeDetails.length == 0) {
+                return res.status(204).json({ error: 'No Results found' }).end(); 
+            }
+            else {
+                if (ftoAnimeDetails[0].hasOwnProperty('parent_anime_id') && !IsEmpty(ftoAnimeDetails[0].parent_anime_id)) {
+                    arrAnimeIDs.push(ftoAnimeDetails[0].parent_anime_id);
+                }
+                else {
+                    checkParentId = false;
+                }
+            }
+        }
+
+        let arrayOfAnimeTracks = [];
+        for (let animeIdIterator = 0; animeIdIterator < arrAnimeIDs.length; animeIdIterator++) {
+            const ftoAnimeTracksDetails = await GetTracksForAnime(arrAnimeIDs[animeIdIterator], nExcludedFtoEpisodeId);
+            if (IsEmpty(ftoAnimeTracksDetails)) {
+                return; 
+            }
+            arrayOfAnimeTracks = arrayOfAnimeTracks.concat(ftoAnimeTracksDetails);
+        }
+        
+        if (IsEmpty(arrayOfAnimeTracks)) {
+            return res.status(404).json({ error: 'Resource Not Found' }).end(); 
+        }
+        res.status(200).json(arrayOfAnimeTracks);
+    }
+    catch (error) {
+        let objError = {};
+        objError.error = 'Internal Server Error';
+        objError.details = error;
+        res.status(500).json(objError);
+    }
+});
+
 router.patch("/:nFtoAnimeID/title/:strAnimeTitle/parent_id/:nAnimePrequel", async (req, res) => {
     // Update Anime title and prequel info
     try { 

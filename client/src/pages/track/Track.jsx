@@ -28,6 +28,7 @@ const Track = ({
     const spOccurrenceID = parseInt(searchParams.get('context_id'), 10) || -1;
 
     const [ ftoTrackInfo, setFTOTrackInfo ] = useState();
+    const [ pageEpisodeNum, setPageEpisodeNumber ] = useState(-1);
     const [ streamingPlatformsLinks, setStreamingPlatformsLinks ] = useState([]);
 
     useEffect(() => {
@@ -44,6 +45,7 @@ const Track = ({
             if (typeof (ftoTrackInfo.streaming_platform_links) == 'string' && !IsEmpty(ftoTrackInfo.streaming_platform_links)) {
                 let trackInfo = ftoTrackInfo;
                 trackInfo.streaming_platform_links = JSON.parse(ftoTrackInfo.streaming_platform_links);
+                console.log("New Track Details:", trackInfo);
                 setFTOTrackInfo(trackInfo);
 
                 // Set streaming platforms page variable
@@ -59,6 +61,10 @@ const Track = ({
                 console.debug("Track Info:", trackInfo.streaming_platform_links);
                 console.debug("Converted to New Streaming Links:", updatedStreamingLinksArray);
                 setStreamingPlatformsLinks(updatedStreamingLinksArray);
+
+                if (ftoTrackInfo.hasOwnProperty('episode_no') && Number(ftoTrackInfo['episode_no']) > 0) {
+                    setPageEpisodeNumber(ftoTrackInfo.episode_no)
+                }
             }
         }
     }, [ftoTrackInfo]);
@@ -90,6 +96,7 @@ const Track = ({
                 ...trackDataFromBackend, 
                 episode_occurrences: episodeOccurences,
             };
+            console.log("Full Track Details:", ftoFullTrackAnimeDetails)
             setFTOTrackInfo(ftoFullTrackAnimeDetails);
 
         } catch (error) {
@@ -175,7 +182,7 @@ const Track = ({
                                     <img alt='Album Thumbnail' className='fto__page__track-main_content--album_thumbnail' src={ParsePosterImage_Square(ftoTrackInfo.fandom_image_link)}/>
                                 </div>
                                 <div className='fto__page__track-main_content--track_details-right'>
-                                    <h3>Track Information</h3>
+                                    <h2><u>Track Information</u></h2>
                                     {!IsEmpty(ftoTrackInfo.artist_name) && (
                                         <p className='fto__page__track-main_content-text'><b>Artist(s): </b>{ftoTrackInfo.artist_name}</p>
                                     )}
@@ -222,7 +229,7 @@ const Track = ({
                                     <div className='fto__page__track-main_content--episode_occurrences'>
                                         {ftoTrackInfo.episode_occurrences.map((episodeNum, it) => {
                                             return (
-                                                <a key={it} className='fto__page__track-main_content--episode_occurrence'
+                                                <a key={it} className={'fto__page__track-main_content--episode_occurrence' + ((pageEpisodeNum == episodeNum) ? ' fto__page__track-main_content--episode_occurrence--selected' : ' fto__page__track-main_content--episode_occurrence--unselected')}
                                                     href={`/anime/${ftoTrackInfo.fto_anime_id}/episode/${episodeNum}`} 
                                                     onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoTrackInfo.fto_anime_id, episodeNum)}} >
                                                     {episodeNum}

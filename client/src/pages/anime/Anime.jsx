@@ -33,7 +33,7 @@ const Anime = ({
     const [ malAnimeTitles, setAnimeTitles ] = useState();
     const [ malAnimeRelations, setAnimeRelations ] = useState();
     const [ pageEpisodesInfo, setPageEpisodesInfo ] = useState();
-    const [ pageListViewFocus, setPageListView ] = useState({episode_list: null, track_list: null});
+    const [ pageListViewFocus, setPageListViewFocus ] = useState({episode_list: null, track_list: null});
     
     const [ embeddedTrackModalVisibility, setEmbeddedTrackModalVisibility ] = useState(false);
     const [ currentTrackData, setCurrentTrackData ] = useState()
@@ -102,7 +102,7 @@ const Anime = ({
     
     useEffect(() => {
         if (pageEpisodesInfo !== undefined) {
-            setPageListView(() => {
+            setPageListViewFocus(() => {
                 return {
                     episode_list: true, 
                     track_list: (pageListViewFocus.track_list === true ) ? false : pageListViewFocus.track_list,
@@ -640,7 +640,7 @@ const Anime = ({
             setFTOAnimeInfo(dataFromBackend);
             document.title = `${dataFromBackend.canonical_title} | FindThatOST Anime`;
             setMALAnimeInfo(dataFromExternalAPI_MAL.data);
-            setPageListView(() => {
+            setPageListViewFocus(() => {
                 if (!IsEmpty(dataFromBackend['track_list'])) {
                     return {
                         episode_list: pageListViewFocus.episode_list, 
@@ -862,13 +862,14 @@ const Anime = ({
                                         <div className='fto__page__anime-main_content_info_list-header_section'>
                                             {!IsEmpty(pageEpisodesInfo) && (
                                                 <h4 className={`fto__page__anime-main_content-header ${(pageListViewFocus.episode_list === true) ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
-                                                    onClick={() => {setPageListView(() => {
+                                                    onClick={() => {setPageListViewFocus((pageListViewFocus) => {
                                                         if (pageListViewFocus.episode_list === false) {
                                                             return {
                                                                 episode_list: true, 
                                                                 track_list: (pageListViewFocus.track_list === true) ? false : null,
                                                             };
                                                         }
+                                                        return pageListViewFocus;
                                                     })}}>
 
                                                     Episode List
@@ -876,13 +877,14 @@ const Anime = ({
                                             )}
                                             {!IsEmpty(ftoAnimeInfo['track_list']) && (
                                                 <h4 className={`fto__page__anime-main_content-header ${(pageListViewFocus.track_list === true) ? 'fto__page__anime-main_content-selected_header' : 'fto__page__anime-main_content-unselected_header'}`}
-                                                    onClick={() => {setPageListView(() => {
+                                                    onClick={() => {setPageListViewFocus((pageListViewFocus) => {
                                                         if (pageListViewFocus.track_list === false) {
                                                             return {
                                                                 episode_list: (pageListViewFocus.episode_list === true) ? false : null, 
                                                                 track_list: true,
                                                             };
                                                         }
+                                                        return pageListViewFocus;
                                                     })}}>
                                                     Track List
                                                 </h4>

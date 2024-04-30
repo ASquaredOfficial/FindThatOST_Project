@@ -125,6 +125,9 @@
                 background: var(--color-bg-navbar_search_border);
                 border-radius: 5px;
             }
+            .fto__page__track-main_content--episode_occurrence--selected {
+                background-color: #001429;
+            }
             .fto__page__track-main_content--episode_occurrence:hover {
                 background-color: #1866b9;
                 cursor: pointer;
