@@ -1,4 +1,4 @@
-import { IsEmpty, RenameObjectKey } from '../../utils/RegularUtils';
+import { RenameObjectKey, IsEmpty } from "../../utils/RegularUtils";
 import { toast } from 'react-toastify';
 
 /**
@@ -45,6 +45,10 @@ const Fetch_FTO_GetRequestComments = async (ftoSubmissionId) => {
  * 
  */
 const Fetch_FTO_PostRequestComment = async (nFtoSubmissionId, strCommentBody, nCommentParentId = null, user_props, stateSetterFunctions) => {
+    if (IsEmpty(user_props.userId)) {
+        toast("You must sign in to perform this operation.");
+        return;
+    }
     const { setActiveComment } = stateSetterFunctions;
     const objUserSubmission = {
         userId: user_props.userId,
@@ -70,14 +74,14 @@ const Fetch_FTO_PostRequestComment = async (nFtoSubmissionId, strCommentBody, nC
     }
     else {
         console.debug("Response Data:", responseData);
-        let newComment = {
-            id: responseData.insertId,
-            body: strCommentBody,
-            parentId: nCommentParentId,
-            userId: user_props.userId,
-            username: user_props.username,
-            createdAt: new Date().toISOString(),
-        };
+        // let newComment = {
+        //     id: responseData.insertId,
+        //     body: strCommentBody,
+        //     parentId: nCommentParentId,
+        //     userId: user_props.userId,
+        //     username: user_props.username,
+        //     createdAt: new Date().toISOString(),
+        // };
         // await FetchCommentsData(nFtoSubmissionId); // refresh comments after
         // setBackendComments((backendComments) => [ ...backendComments, newComment ])
         setActiveComment(null); // Hide the reply textbox after success
@@ -96,6 +100,10 @@ const Fetch_FTO_PostRequestComment = async (nFtoSubmissionId, strCommentBody, nC
  * 
  */
 const Fetch_FTO_DeleteRequestComment = async (nFtoCommentId, nUserId, stateSetterFunctions) => {
+    if (IsEmpty(nUserId)) {
+        toast("You must sign in to perform this operation.");
+        return;
+    }
     const {setBackendComments} = stateSetterFunctions;
     const objUserSubmission = {
         userId: nUserId,
@@ -148,6 +156,10 @@ const Fetch_FTO_DeleteRequestComment = async (nFtoCommentId, nUserId, stateSette
  * 
  */
 const Fetch_FTO_PatchRequestComment = async (nFtoCommentId, strCommentBody, nUserId, stateSetterFunctions) => {
+    if (IsEmpty(nUserId)) {
+        toast("You must sign in to perform this operation.");
+        return;
+    }
     const {setBackendComments, setActiveComment} = stateSetterFunctions;
     const objUserSubmission = {
         userId: nUserId,

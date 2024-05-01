@@ -112,6 +112,13 @@
         padding: 1rem;
     }
 }
+@media screen and (max-width: 550px) {
+    .fto__header-image img {
+        width: 85%;
+        height: 85%;
+        padding: 0rem;
+    }
+}
 @media screen and (max-width: 450px) {
     .fto__header h1 {
         font-size: 36px;
@@ -128,4 +135,8 @@
         font-size: 12px;
         line-height: 16px;
     }   
+    .fto__header-image img {
+        width: 100%;
+        height: 100%;
+    }
 }

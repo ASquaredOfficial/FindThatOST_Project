@@ -108,21 +108,22 @@ const Navbar = ({
                         {toggleMenu && (
                         <div className='fto__navbar-menu_container sclae-up-center'>
                             <div className='fto__navbar-menu_container-links'>
-                            <Menu 
-                                FocusOnSearchBar={FocusOnSearchBar}/>
-                            {(IsEmpty(backendData.username)) ? (
-                                //If no username passed, load non signed in navbar
-                                <div className='fto__navbar-menu_container-links-sign'>
-                                    <p className='fto__navbar-login' onClick={SignInFunction} tabIndex='0'><strong>Log in</strong></p>
-                                    <button type='button'className='fto__button__pink'>Sign Up</button>
-                                </div>
-                            ): (
-                                //If username passed, load username to navbar
-                                <div className='fto__navbar-menu_container-links-sign'>
-                                    <p className='fto__navbar-loggedin'><strong>{backendData.username}</strong></p>
-                                    <button type='button' className='fto__button__pink' onClick={SignOutFunction}>Sign Out</button>
-                                </div>
-                            )}
+                                <Menu 
+                                    FocusOnSearchBar={FocusOnSearchBar}/>
+                                    
+                                {(IsEmpty(backendData.username)) ? (
+                                    //If no username passed, load non signed in navbar
+                                    <div className='fto__navbar-menu_container-links-sign'>
+                                        <p className='fto__navbar-login' onClick={() => {SignInFunction(); setToggleMenu(false); }} tabIndex='0'><strong>Log in</strong></p>
+                                        <button type='button'className='fto__button__pink'>Sign Up</button>
+                                    </div>
+                                ): (
+                                    //If username passed, load username to navbar
+                                    <div className='fto__navbar-menu_container-links-sign'>
+                                        <p className='fto__navbar-loggedin'><strong>{backendData.username}</strong></p>
+                                        <button type='button' className='fto__button__pink' onClick={() => {SignOutFunction(); setToggleMenu(false); }}>Sign Out</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

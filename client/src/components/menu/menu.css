@@ -1,6 +1,10 @@
-@media screen and (min-width: 700px) {
+.fto__menu-search {
+    display: none;
+}
+
+@media screen and (max-width: 700px) {
     /*Edit for slightly smaller tablet or smaller screens*/
     .fto__menu-search {
-        display: none;
+        display: block;
     }
 }

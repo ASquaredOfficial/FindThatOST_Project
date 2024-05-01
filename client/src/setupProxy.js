@@ -4,7 +4,7 @@ module.exports = function(app) {
   app.use(
     '/findthatost_api',
     createProxyMiddleware({
-      target: process.env.REACT_APP_FTO_BACKEND_URL || `http://localhost:${5000}`,
+      target: !IsEmpty(process.env.REACT_APP_FTO_BACKEND_URL) ? process.env.REACT_APP_FTO_BACKEND_URL : `http://localhost:${5000}`,
       changeOrigin: true,
     })
   );

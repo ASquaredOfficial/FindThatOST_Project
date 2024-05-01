@@ -420,6 +420,30 @@ const GetTimeAgoBetweenDates = (oldDate, dateNow) => {
     return strTimeAgo;
 }
 
+/**
+ * .
+ * @function ParseISOStringToDate
+ * @param {String} dateString - Date String.
+ * @returns {Date} - A date variable.
+ * 
+ */
+function ParseISOStringToDate(dateString) {
+    var b = dateString.split(/\D+/);
+    return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
+}
+
+/**
+ * .
+ * @function FormatDateToISO
+ * @param {Date} date - The date to format.
+ * @returns {String} - The date formatted in ISO8601 format.
+ * 
+ */
+function FormatDateToISO(date) {  
+    function pad(n) {return (n<10? '0' :  '') + n}
+    return pad(date.getUTCDate()) + '/' + pad(date.getUTCMonth() + 1) + '/' + date.getUTCFullYear();
+}
+
 export { 
     ParseClassName, 
     IsEmpty, 
@@ -432,4 +456,6 @@ export {
     GetTimeAgoBetweenDates,
     CalculateMonthsDifference,
     RenameObjectKey,
+    ParseISOStringToDate,
+    FormatDateToISO,
 };

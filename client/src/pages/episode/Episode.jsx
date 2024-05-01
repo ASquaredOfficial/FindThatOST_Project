@@ -4,8 +4,8 @@ import './episode.css';
 
 import { useCustomNavigate } from './../../routing/navigation';
 import { Navbar, Footer, Comments, ModalEmbeddedTrack} from "../../components";
-import { ParsePosterImage_Horzontal } from "../../utils/MalApiUtils"
-import { IsEmpty } from "../../utils/RegularUtils"
+import { FormatDateToMidDateString, ParsePosterImage_Horzontal } from "../../utils/MalApiUtils"
+import { IsEmpty, ParseISOStringToDate } from "../../utils/RegularUtils"
 
 import { FaPlayCircle } from "react-icons/fa";
 import { toast } from 'react-toastify';
@@ -540,7 +540,7 @@ const Episode = ({
                                 Episode {episode_no}
                             </h1>
                             <h4 className='fto__page__episode-content_header_subtitle'>
-                                <a href={'/anime/' + anime_id} onClick={(e) => { e.preventDefault(), navigateToAnime(anime_id)}}>
+                                <a href={'/anime/' + anime_id} onClick={(e) => { e.preventDefault(); navigateToAnime(anime_id)}}>
                                     <strong>{malAnimeInfo.titles[0].title}</strong>
                                 </a>
                             </h4>
@@ -567,7 +567,7 @@ const Episode = ({
 
                                     {pageEpisodeInfo.aired !== undefined && ( 
                                         <div className='fto__page__episode-main_content--episode_details-info_item'>
-                                            <p className='fto__page__episode-main_content-text'>Air Date: {pageEpisodeInfo.aired}</p>
+                                            <p className='fto__page__episode-main_content-text'>Air Date: {FormatDateToMidDateString(new Date(pageEpisodeInfo.aired).toISOString())}</p>
                                         </div>
                                     )}
 
@@ -587,7 +587,7 @@ const Episode = ({
                                 <div className='fto__page__episode-main_content--soundtrack_section'>
                                     <div className='fto__page__episode-main_content--add_track_section'>
                                         <a className='fto__button__pink' href={'/submission/track_add/' + anime_id + '?episode_no=' + episode_no}
-                                            onClick={(e) => { e.preventDefault(), navigateToSubmitTrackAdd(anime_id, episode_no.episode_no)}}>Add New Track</a>
+                                            onClick={(e) => { e.preventDefault(); navigateToSubmitTrackAdd(anime_id, episode_no)}}>Add New Track</a>
                                     </div>
 
                                     <div className='fto__page__episode-main_content--soundtrack_list_section'>
@@ -605,7 +605,7 @@ const Episode = ({
                                                     <div className='fto__page__episode-main_content--track_item' key={it}>
                                                         <div className='fto__page__episode-main_content--track_item-header'>
                                                             <a href={'/track/' + trackInfo.track_id + '?context_id=' + trackInfo.occurrence_id}
-                                                                onClick={(e) => { e.preventDefault(), navigateToTrack(trackInfo.track_id, trackInfo.occurrence_id)}}
+                                                                onClick={(e) => { e.preventDefault(); navigateToTrack(trackInfo.track_id, trackInfo.occurrence_id)}}
                                                                 key={it} style={{flex: '1'}}>
                                                                 <div className='fto__page__episode-main_content--track_item-header_left'>
                                                                     <h4>{trackInfo.track_name}</h4>

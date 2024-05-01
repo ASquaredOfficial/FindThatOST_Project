@@ -4,6 +4,7 @@ import './comments.css';
 import { IsEmpty } from '../../utils/RegularUtils';
 import CommentForm from './CommentForm';
 import Comment from './Comment';
+import { toast } from 'react-toastify';
 
 const Comments = ({ 
 	ftoPageId, //ftoEpisodeId or ftoSubmissionId
@@ -51,29 +52,44 @@ const Comments = ({
 	}
 
 	const addComment = (text, parentId = null) => {
-		if (text !== null) {
-			createCommentApi(ftoPageId, text, parentId, user_properties, { setActiveComment });
-			FetchCommentsData(ftoPageId); // refresh comments after
+		if (user_properties.userId < 1) {
+			toast('Please login to leave a comment');
 		}
 		else {
-			// Cancel Add Comment
-			setActiveComment(null); // Hide the reply textbox after success
+			if (text !== null) {
+				createCommentApi(ftoPageId, text, parentId, user_properties, { setActiveComment });
+				FetchCommentsData(ftoPageId); // refresh comments after
+			}
+			else {
+				// Cancel Add Comment
+				setActiveComment(null); // Hide the reply textbox after success
+			}
 		}
 	}
 
-	const deleteComment = (commentId) => {
-		if (window.confirm(`Delete the comment?`)) {
-			deleteCommentApi(commentId, user_properties.userId, {setBackendComments})
+	const deleteComment = (commentId) => {	
+		if (user_properties.userId < 1) {
+			toast('Please login to leave a comment');
+		}
+		else {
+			if (window.confirm(`Delete the comment?`)) {
+				deleteCommentApi(commentId, user_properties.userId, {setBackendComments})
+			}
 		}
 	}
 
 	const updateComment = (text, commentId) => {
-		if (text !== null) {
-			updateCommentApi(commentId, text, user_properties.userId, {setBackendComments, setActiveComment})
+		if (user_properties.userId < 1) {
+			toast('Please login to leave a comment');
 		}
 		else {
-			// Cancel Add Comment
-			setActiveComment(null); // Hide the reply textbox after success
+			if (text !== null) {
+				updateCommentApi(commentId, text, user_properties.userId, {setBackendComments, setActiveComment})
+			}
+			else {
+				// Cancel Add Comment
+				setActiveComment(null); // Hide the reply textbox after success
+			}
 		}
 	}
 	
@@ -88,93 +104,98 @@ const Comments = ({
 	 * @returns {undefined}
 	 */
 	const likeComment = (nFtoCommentId, bLikeComment) => {
-		let backendComment = backendComments.find(comment => comment.id === nFtoCommentId);
-		if (backendComment.hasOwnProperty('likesDislikes')) {
-            let arrCommentLikesDislikes = JSON.parse(backendComment['likesDislikes']);
-			if (bLikeComment === undefined) {
-				// Remove user's like entry from state, if the user state exists
-				if (Array.isArray(arrCommentLikesDislikes)) {
-					let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
-					if (objExistingLikesDislikeEntry !== undefined) {
-						// User entry exists
-						const filteredArray = arrCommentLikesDislikes.filter(likeEntry => likeEntry['user_id'] !== user_properties.userId);
-						arrCommentLikesDislikes = filteredArray;
-					}
-					else { return }
-				}
-			} 
-			else if (bLikeComment === true) {
-				// Set user's entry to like or add like entry to state
-				if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
-					// Create new array object, then add new user
-					arrCommentLikesDislikes = [{user_id: user_properties.userId, is_like: true}]
-				}
-				else {
+		if (user_properties.userId < 1) {
+			toast('Please login to leave a comment');
+		}
+		else {
+			let backendComment = backendComments.find(comment => comment.id === nFtoCommentId);
+			if (backendComment.hasOwnProperty('likesDislikes')) {
+				let arrCommentLikesDislikes = JSON.parse(backendComment['likesDislikes']);
+				if (bLikeComment === undefined) {
+					// Remove user's like entry from state, if the user state exists
 					if (Array.isArray(arrCommentLikesDislikes)) {
 						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
-						if (objExistingLikesDislikeEntry === undefined) {
-							// User entry does not exist
-							objExistingLikesDislikeEntry = { user_id: user_properties.userId, is_like: true };
-							arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
-						}
-						else {
+						if (objExistingLikesDislikeEntry !== undefined) {
 							// User entry exists
-							if (objExistingLikesDislikeEntry['is_like'] !== true) {
-								objExistingLikesDislikeEntry['is_like'] = true;	// Change existing dislike to a like
+							const filteredArray = arrCommentLikesDislikes.filter(likeEntry => likeEntry['user_id'] !== user_properties.userId);
+							arrCommentLikesDislikes = filteredArray;
+						}
+						else { return }
+					}
+				} 
+				else if (bLikeComment === true) {
+					// Set user's entry to like or add like entry to state
+					if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
+						// Create new array object, then add new user
+						arrCommentLikesDislikes = [{user_id: user_properties.userId, is_like: true}]
+					}
+					else {
+						if (Array.isArray(arrCommentLikesDislikes)) {
+							let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
+							if (objExistingLikesDislikeEntry === undefined) {
+								// User entry does not exist
+								objExistingLikesDislikeEntry = { user_id: user_properties.userId, is_like: true };
+								arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
 							}
 							else {
-								console.debug("Value already set to true");
+								// User entry exists
+								if (objExistingLikesDislikeEntry['is_like'] !== true) {
+									objExistingLikesDislikeEntry['is_like'] = true;	// Change existing dislike to a like
+								}
+								else {
+									console.debug("Value already set to true");
+								}
 							}
+							// Update the array with the modified entry
+							arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
+								if (entry.user_id === user_properties.userId) {
+									return objExistingLikesDislikeEntry;
+								}
+								return entry;
+							});
 						}
-						// Update the array with the modified entry
-						arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
-							if (entry.user_id === user_properties.userId) {
-								return objExistingLikesDislikeEntry;
-							}
-							return entry;
-						});
+						else { return }
 					}
-					else { return }
-				}
-			} 
-			else if (bLikeComment === false) {
-				// Set user's entry to dislike or add dislike entry to state
-				if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
-					// Create new array object, then add new user
-					arrCommentLikesDislikes = [{user_id: user_properties.userId, is_like: false}]
-				}
-				else {
-					if (Array.isArray(arrCommentLikesDislikes)) {
-						let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
-						if (objExistingLikesDislikeEntry === undefined) {
-							// User entry does not exist
-							objExistingLikesDislikeEntry = { user_id: user_properties.userId, is_like: false };
-							arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
-						}
-						else {
-							// User entry exists
-							if (objExistingLikesDislikeEntry['is_like'] !== false) {
-								objExistingLikesDislikeEntry['is_like'] = false; // Change existing dislike to a like
+				} 
+				else if (bLikeComment === false) {
+					// Set user's entry to dislike or add dislike entry to state
+					if (IsEmpty(arrCommentLikesDislikes) || !Array.isArray(arrCommentLikesDislikes)) {
+						// Create new array object, then add new user
+						arrCommentLikesDislikes = [{user_id: user_properties.userId, is_like: false}]
+					}
+					else {
+						if (Array.isArray(arrCommentLikesDislikes)) {
+							let objExistingLikesDislikeEntry = arrCommentLikesDislikes.find(likeEntry => likeEntry['user_id'] === user_properties.userId);
+							if (objExistingLikesDislikeEntry === undefined) {
+								// User entry does not exist
+								objExistingLikesDislikeEntry = { user_id: user_properties.userId, is_like: false };
+								arrCommentLikesDislikes.push(objExistingLikesDislikeEntry); // Add new entry to array
 							}
 							else {
-								console.debug("Value already set to false");
+								// User entry exists
+								if (objExistingLikesDislikeEntry['is_like'] !== false) {
+									objExistingLikesDislikeEntry['is_like'] = false; // Change existing dislike to a like
+								}
+								else {
+									console.debug("Value already set to false");
+								}
 							}
+							// Update the array with the modified entry
+							arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
+								if (entry.user_id === user_properties.userId) {
+									return objExistingLikesDislikeEntry;
+								}
+								return entry;
+							});
 						}
-						// Update the array with the modified entry
-						arrCommentLikesDislikes = arrCommentLikesDislikes.map(entry => {
-							if (entry.user_id === user_properties.userId) {
-								return objExistingLikesDislikeEntry;
-							}
-							return entry;
-						});
+						else { return }
 					}
-					else { return }
-				}
-			} 
+				} 
 
-			// Update Comment Likes
-			updateCommentLikesApi(nFtoCommentId, arrCommentLikesDislikes, user_properties.userId);
-			FetchCommentsData();
+				// Update Comment Likes
+				updateCommentLikesApi(nFtoCommentId, arrCommentLikesDislikes, user_properties.userId);
+				FetchCommentsData();
+			}
 		}
 	}
 

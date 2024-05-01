@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
+import { useLocation } from 'react-router-dom';
 import './chatgptbot.css';
 
 import { Navbar } from "../../components";
-import { useLocation } from 'react-router-dom';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
 import { MainContainer, ChatContainer, MessageList, MessageInput, TypingIndicator, Message} from '@chatscope/chat-ui-kit-react';
 import { IsEmpty } from '../../utils/RegularUtils';
@@ -24,7 +24,7 @@ const ChatGPTBot = ({
     const [ typing, setTyping ] = useState(false)
     const [ messages, setMessages ] = useState([
         { 
-            message: "Hello, I am ChatGPT!\nAsk me a question about any anime tracks?",
+            message: "Hello, I am the FindThatOST Chatbot Assistant!\nAsk me a question about any anime tracks?",
             sender: "ChatGPT",
             direction: 'incoming',
         },
@@ -68,7 +68,7 @@ const ChatGPTBot = ({
 
     const handleSendMessage = async (message) => {
         const newMessage = {
-            message: message,
+            message: String(message).trim(),
             sender: "user",
             direction: "outgoing"
         };
@@ -124,25 +124,38 @@ const ChatGPTBot = ({
             body: JSON.stringify({ objChatGPTQuery }),
         });
     
-        // const responseStatus = response.status;
-        // const responseData = await response.json();
-        // console.log("Response status:", responseStatus);
-        // console.log("Response Data:", responseData);
         console.log("ChatGPT Response:", chatGptReponse)
-        const responseJson = await chatGptReponse.json()
+        console.log("ChatGPT Status:", chatGptReponse.status)
         if (chatGptReponse.status === 200) {
-            const chatGptReponseMessage = {
-                message: responseJson.message,
-                sender: "ChatGPT",
-                direction: "incoming"
-            };
-            chatMessages.push(chatGptReponseMessage)
-            setMessages(chatMessages);
-        } else {
+            const responseJson = await chatGptReponse.json();
+            if (responseJson.hasOwnProperty('status') && Number(responseJson.status) !== 200) {
+                console.error('Error response:', responseJson)
+                toast("An internal error has occurred with the FindThatOST server. Please try again later.",{theme: 'dark'});
+                setTyping(false);
+            }
+            else {
+                const chatGptReponseMessage = {
+                    message: responseJson.message,
+                    sender: "ChatGPT",
+                    direction: "incoming"
+                };
+                chatMessages.push(chatGptReponseMessage)
+                setMessages(chatMessages);
+            }
+        } else if (chatGptReponse.status === 424) {
+            const responseJson = await chatGptReponse.json();
             console.error('Error response:', responseJson)
             toast("An internal error has occurred with the FindThatOST server. Please try again later.",{
                 theme: 'dark'
-            })
+            });
+            setTyping(false);
+        }
+        else {
+            console.error('Error response:', chatGptReponse.text())
+            toast("An internal error has occurred with the FindThatOST server. Please try again later.",{
+                theme: 'dark'
+            });
+            setTyping(false);
         }
     }
 
@@ -161,7 +174,7 @@ const ChatGPTBot = ({
 
             <div className='fto__page__chatgptbot-content section__padding' style={{paddingBottom: 0}}>
                 <h3 style={{ fontFamily: 'var(--font-family-manrope)', color: 'white'}}>
-                    FTO-ChatBOT
+                    FTO Chatbot Assistant
                 </h3>
                 <MainContainer className='fto__page__chatgptbot-content-main_container' 
                     style={{ borderTop: '0px', borderBottom: '0px', borderTopLeftRadius: '10px', borderTopRightRadius: '10px'}}>
@@ -181,7 +194,7 @@ const ChatGPTBot = ({
                         </MessageList>
                         
                         <MessageInput id='fto__page__chatgptbot-content-msg_input' placeholder='Type your message...' onSend={ handleSendMessage } disabled={typing} tabIndex={0}
-                            style={{ background: 'var(--color-bg-navbar_search_border)' }} attachDisabled={true} attachButton={false}/>
+                            style={{ background: 'var(--color-bg-navbar_search_border)' }} attachDisabled={true} attachButton={false} onPaste={(evt) => { evt.preventDefault(); document.execCommand('insertText', false, evt.clipboardData.getData("text")); }}/>
                     </ChatContainer>
                 </MainContainer>
             </div>
