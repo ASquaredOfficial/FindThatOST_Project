@@ -19,7 +19,6 @@ const LatestSubmissions = ({
     
     useEffect(() => {
         FetchComponentData();
-        user_properties
     }, []);
 
     /**

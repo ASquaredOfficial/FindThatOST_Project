@@ -100,7 +100,7 @@ export const useCustomNavigate = () => {
   const navigateToTrackRequest = (nFtoRequestID = -1) => {
     if (!process.env.REACT_APP_DEBUG_MODE && nFtoRequestID  === -1) {
       alert('Operation failed');
-      console.error(`Unable to navigate to page (Anime) because variable 'nFtoID' is an invalid value '${nFtoID}'`);
+      console.error(`Unable to navigate to page (Anime) because variable 'nFtoRequestID' is an invalid value '${nFtoRequestID}'`);
       return;
     }
     

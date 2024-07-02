@@ -518,6 +518,7 @@ const GetTracksForEpisode = (nEpisodeID, sortBy = '') => {
 		"INNER JOIN fto_track ON fto_occurrence.fto_track_id = fto_track.track_id)",
 		"INNER JOIN fto_anime ON fto_episode.fto_anime_id = fto_anime.anime_id", 
 		`WHERE fto_episode.episode_id = ${nEpisodeID}`,
+		"AND fto_occurrence.activity = 1",
     ];
     if (sortBy === 'track_type') {
 		sqlQuery.push(`ORDER BY CASE track_type WHEN 'OP' THEN 1 WHEN 'ED' THEN 2 ELSE 5 END`);
@@ -1114,98 +1115,91 @@ const PostSubmission_TrackRemove = (nFtoTrackID, nFtoOccurrenceID, nFtoEpisodeID
 				let bFailedRequestTrackRemoveTblQuery = false; 
 				let bFailedRequestSubmissionTblQuery = false; 
 				
-				// Disable foreign key checks
-				ftoConnectionPool.query('SET FOREIGN_KEY_CHECKS = 0', (err_a) => {
-					if (err_a) {
-						reject(GetSqlErrorObj(err_a, `${filename}:${LineNumber()}`));
+				// Perform deletion operation
+				const sqlQuery1 = "UPDATE `fto_occurrence` SET `activity` = '0' WHERE `occurrence_id` =" + nFtoOccurrenceID;
+				ftoConnectionPool.query(sqlQuery1, (err1, result1) => {
+					if (err1) {
+						ftoConnectionPool.rollback(() => {
+							// Failed to delete data from table
+							bFailedOccurrenceTblQuery = true;
+							reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
+						});
+						return;
 					}
-				
-					// Perform deletion operation
-					const sqlQuery1 = 'DELETE FROM `fto_occurrence` WHERE occurrence_id =' + nFtoOccurrenceID;
-					ftoConnectionPool.query(sqlQuery1, (err1, result1) => {
-						if (err1) {
+					submissionResults['fto_occurrence'] = result1;
+
+					// Remove Track details
+					const nUserID = Number(objUserSubmission['user_id']);
+					const sqlQuery2 = 'INSERT INTO `fto_request_track_remove_from_episode` SET ?';
+					const postData2 = {
+						fto_user_id: nUserID,
+						fto_track_id: nFtoTrackID,
+						fto_occurrence_id: nFtoOccurrenceID,
+						fto_episode_id: nFtoEpisodeID,
+						track_remove_reason: String(objUserSubmission.submit_removeReason),
+					};
+					ftoConnectionPool.query(sqlQuery2, postData2, (err2, result2) => {
+						if (err2) {
 							ftoConnectionPool.rollback(() => {
-								// Failed to delete data from table
-								bFailedOccurrenceTblQuery = true;
-								reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
+								// Failed to insert data into table
+								bFailedRequestTrackRemoveTblQuery = true;
+								reject(GetSqlErrorObj(err2, `${filename}:${LineNumber()}`));
 							});
 							return;
 						}
-						submissionResults['fto_occurrence'] = result1;
+						submissionResults['fto_request_track_remove_from_episode'] = result2;
 
-						// Remove Track details
-						const nUserID = Number(objUserSubmission['user_id']);
-						const sqlQuery2 = 'INSERT INTO `fto_request_track_remove_from_episode` SET ?';
-						const postData2 = {
+						// Retrieve the auto-incremented ID from the first insert and Prepare Third insert query using the retrieved ID
+						const insertedTrackEditRequestId = Number(result2.insertId);
+						const sqlQuery3 = 'INSERT INTO `fto_request_submissions` SET ?';
+						const postData3 = {
+							submission_type: 'TRACK_REMOVE',
+							request_id: insertedTrackEditRequestId,
 							fto_user_id: nUserID,
 							fto_track_id: nFtoTrackID,
 							fto_occurrence_id: nFtoOccurrenceID,
-							fto_episode_id: nFtoEpisodeID,
-							track_remove_reason: String(objUserSubmission.submit_removeReason),
 						};
-						ftoConnectionPool.query(sqlQuery2, postData2, (err2, result2) => {
-							if (err2) {
+						ftoConnectionPool.query(sqlQuery3, postData3, (err3, result3) => {
+							if (err3) {
 								ftoConnectionPool.rollback(() => {
 									// Failed to insert data into table
-									bFailedRequestTrackRemoveTblQuery = true;
-									reject(GetSqlErrorObj(err2, `${filename}:${LineNumber()}`));
+									bFailedRequestSubmissionTblQuery = true;
+									reject(GetSqlErrorObj(err3, `${filename}:${LineNumber()}`));
 								});
 								return;
 							}
-							submissionResults['fto_request_track_remove_from_episode'] = result2;
-
-							// Retrieve the auto-incremented ID from the first insert and Prepare Third insert query using the retrieved ID
-							const insertedTrackEditRequestId = Number(result2.insertId);
-							const sqlQuery3 = 'INSERT INTO `fto_request_submissions` SET ?';
-							const postData3 = {
-								submission_type: 'TRACK_REMOVE',
-								request_id: insertedTrackEditRequestId,
-								fto_user_id: nUserID,
-								fto_track_id: nFtoTrackID,
-								fto_occurrence_id: nFtoOccurrenceID,
-							};
-							ftoConnectionPool.query(sqlQuery3, postData3, (err3, result3) => {
-								if (err3) {
-									ftoConnectionPool.rollback(() => {
-										// Failed to insert data into table
-										bFailedRequestSubmissionTblQuery = true;
-										reject(GetSqlErrorObj(err3, `${filename}:${LineNumber()}`));
-									});
-									return;
+							submissionResults['fto_request_submissions'] = result3;
+		
+							// Re-enable foreign key checks
+							ftoConnectionPool.query('SET FOREIGN_KEY_CHECKS = 1', (err) => {
+								if (err) {
+									reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
 								}
-								submissionResults['fto_request_submissions'] = result3;
-			
-								// Re-enable foreign key checks
-								ftoConnectionPool.query('SET FOREIGN_KEY_CHECKS = 1', (err) => {
-									if (err) {
-										reject(GetSqlErrorObj(err1, `${filename}:${LineNumber()}`));
-									}
 
-									// Commit the transaction if relevant insert queries are successful
-									if (MyXNOR(!bFailedOccurrenceTblQuery, submissionResults.hasOwnProperty('fto_occurrence')) && 
-									MyXNOR(!bFailedRequestTrackRemoveTblQuery, submissionResults.hasOwnProperty('fto_request_track_remove_from_episode')) && 
-									MyXNOR(!bFailedRequestSubmissionTblQuery, submissionResults.hasOwnProperty('fto_request_submissions'))) {
-										ftoConnectionPool.commit((err) => {
-											if (err) {
-												ftoConnectionPool.rollback(() => {
-													LogError('PostSubmission_TrackRemove', `Failed to commit transaction.\nError Message: ${err.sqlMessage}`);
-													reject(GetSqlErrorObj(err, `${filename}:${LineNumber()}`));
-												});
-												return;
-											}
-											ftoConnectionPool.release();
-											resolve(submissionResults);
-										});
-									}
-									else {
-										// Insert queries not successful
+								// Commit the transaction if relevant insert queries are successful
+								if (MyXNOR(!bFailedOccurrenceTblQuery, submissionResults.hasOwnProperty('fto_occurrence')) && 
+								MyXNOR(!bFailedRequestTrackRemoveTblQuery, submissionResults.hasOwnProperty('fto_request_track_remove_from_episode')) && 
+								MyXNOR(!bFailedRequestSubmissionTblQuery, submissionResults.hasOwnProperty('fto_request_submissions'))) {
+									ftoConnectionPool.commit((err) => {
+										if (err) {
+											ftoConnectionPool.rollback(() => {
+												LogError('PostSubmission_TrackRemove', `Failed to commit transaction.\nError Message: ${err.sqlMessage}`);
+												reject(GetSqlErrorObj(err, `${filename}:${LineNumber()}`));
+											});
+											return;
+										}
 										ftoConnectionPool.release();
-									}
-								});
+										resolve(submissionResults);
+									});
+								}
+								else {
+									// Insert queries not successful
+									ftoConnectionPool.release();
+								}
 							});
 						});
-					}); 
-				});
+					});
+				}); 
 			});
 		});
 	});

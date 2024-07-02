@@ -20,7 +20,7 @@ const SubmitTrackEdit = ({
         username: null
     }
 }) => {
-    const { navigateToAnime, navigateToEpisode, navigateToTrack } = useCustomNavigate();
+    const { navigateToHome, navigateToAnime, navigateToEpisode, navigateToTrack } = useCustomNavigate();
     const { track_id } = useParams();
     const { occurrence_id } = useParams();
 
@@ -622,6 +622,7 @@ const SubmitTrackEdit = ({
                         episodeID={ftoEpisodeID}
                         setFtoEpisodeID={setFtoEpisodeID}
                         setPageToEditMode={setPageToEditMode}
+                        user_properties={user_properties}
                     />
                 )}
 

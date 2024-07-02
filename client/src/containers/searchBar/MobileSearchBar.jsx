@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useEffect} from 'react'
 
 import search_icon from '../../assets/Search_Icon.svg'
 import { IoArrowBack } from "react-icons/io5";
