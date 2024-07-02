@@ -69,23 +69,23 @@ ALTER TABLE `fto_track`
 --
 -- Dumping data for table `fto_occurrence`
 --
-INSERT INTO `fto_occurrence` (`occurrence_id`, `fto_episode_id`, `fto_track_id`, `track_type`, `scene_description`) 
+INSERT INTO `fto_occurrence` (`occurrence_id`, `activity`, `fto_episode_id`, `fto_track_id`, `track_type`, `scene_description`) 
 VALUES
-    (1, 1, 1, 'BGM', 'The monster Nomu attacks Katsuki, but the young hero is saved when All Might takes the brunt of Nomu\'s attack.'),
-    (2, 1, 3, 'BGM', 'Izuku Midoriya reflects on All Might\'s condition as he begins to fight the League of villains at the USJ.'),
-    (3, 1, 4, 'BGM', 'Class 1-A students back-up All might against Shigaraki and the league of villains'),
-    (4, 1, 5, 'BGM', 'Nomu regenerates from Todoroki\'s ice and is ordered to attack Bakugo to free Kurogiri. '),
-    (5, 1, 6, 'BGM', 'Tomura Shigaragi taunts All Might\'s   on the hypocrisy of using violence to save others.'),
-    (6, 1, 7, 'BGM', 'After All Might arrives he begins to beat up all of the common thugs the League of Villains hired to attack UA.'),
-    (7, 1, 8, 'BGM', 'All might arrives at the U.S.J. to stop the League of Villains.'),
-    (8, 1, 9, 'OP', 'Opening for My Hero Academia Episode 12'),
-    (9, 1, 10, 'ED', 'Ending for My Hero Academia Episode 12'),
-    (10, 2, 1, 'BGM', 'The UA Pro teachers arrive just in time to help All Might and the rest of the Class 1A students'),
-    (11, 2, 7, 'BGM', 'Shigaraki escapes with the help of Kurogiri and Class 1A students reflect on the event\'s that just occurred at the USJ.'),
-    (12, 2, 11, 'BGM', 'All Might and Izuku lay in the hospital after the events that occurred at the USJ.'),
-    (13, 2, 9, 'OP', 'Opening for My Hero Academia Episode 13'),
-    (14, 2, 10, 'ED', 'Ending for My Hero Academia Episode 13'),
-    (15, 4, 12, 'BGM', 'Endeavour arrives in time to save heroes from nomu attack, and proceeds to incinerate its head\'s cells to prevent regeneration.')
+    (1, 1, 1, 1, 'BGM', 'The monster Nomu attacks Katsuki, but the young hero is saved when All Might takes the brunt of Nomu\'s attack.'),
+    (2, 1, 1, 3, 'BGM', 'Izuku Midoriya reflects on All Might\'s condition as he begins to fight the League of villains at the USJ.'),
+    (3, 1, 1, 4, 'BGM', 'Class 1-A students back-up All might against Shigaraki and the league of villains'),
+    (4, 1, 1, 5, 'BGM', 'Nomu regenerates from Todoroki\'s ice and is ordered to attack Bakugo to free Kurogiri. '),
+    (5, 1, 1, 6, 'BGM', 'Tomura Shigaragi taunts All Might\'s   on the hypocrisy of using violence to save others.'),
+    (6, 1, 1, 7, 'BGM', 'After All Might arrives he begins to beat up all of the common thugs the League of Villains hired to attack UA.'),
+    (7, 1, 1, 8, 'BGM', 'All might arrives at the U.S.J. to stop the League of Villains.'),
+    (8, 1, 1, 9, 'OP', 'Opening for My Hero Academia Episode 12'),
+    (9, 1, 1, 10, 'ED', 'Ending for My Hero Academia Episode 12'),
+    (10, 1, 2, 1, 'BGM', 'The UA Pro teachers arrive just in time to help All Might and the rest of the Class 1A students'),
+    (11, 1, 2, 7, 'BGM', 'Shigaraki escapes with the help of Kurogiri and Class 1A students reflect on the event\'s that just occurred at the USJ.'),
+    (12, 1, 2, 11, 'BGM', 'All Might and Izuku lay in the hospital after the events that occurred at the USJ.'),
+    (13, 1, 2, 9, 'OP', 'Opening for My Hero Academia Episode 13'),
+    (14, 1, 2, 10, 'ED', 'Ending for My Hero Academia Episode 13'),
+    (15, 1, 4, 12, 'BGM', 'Endeavour arrives in time to save heroes from nomu attack, and proceeds to incinerate its head\'s cells to prevent regeneration.')
 ;
 ALTER TABLE `fto_occurrence`
     MODIFY `occurrence_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;

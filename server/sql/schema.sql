@@ -67,14 +67,14 @@ CREATE TABLE `fto_track` (
 
 CREATE TABLE `fto_occurrence` (
     `occurrence_id` int(11) NOT NULL AUTO_INCREMENT,
+    `activity` BOOLEAN NOT NULL DEFAULT TRUE,
     `fto_episode_id` int(11) NOT NULL,
     `fto_track_id` int(11) NOT NULL,
-    `track_type` enum('OP','ED','IM','BGM') NOT NULL,
+    `track_type` enum('OP','ED','BGM') NOT NULL,
     `scene_description` varchar(250) DEFAULT NULL,
     PRIMARY KEY (`occurrence_id`),
     FOREIGN KEY (`fto_track_id`) REFERENCES `fto_track` (`track_id`),
-    FOREIGN KEY (`fto_episode_id`) REFERENCES `fto_episode` (`episode_id`),
-    CONSTRAINT `unique_episode_id_track_id` UNIQUE (`fto_episode_id`, `fto_track_id`)
+    FOREIGN KEY (`fto_episode_id`) REFERENCES `fto_episode` (`episode_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `fto_request_submissions` (

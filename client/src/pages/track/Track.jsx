@@ -88,7 +88,7 @@ const Track = ({
                     if (Number(trackInfo['episode_no']) > 0) {
                         return Number(trackInfo['episode_no']);
                     }
-                    return;
+                    return null;
                 }).sort(function(a, b){return a-b});
             }
 
@@ -229,7 +229,7 @@ const Track = ({
                                     <div className='fto__page__track-main_content--episode_occurrences'>
                                         {ftoTrackInfo.episode_occurrences.map((episodeNum, it) => {
                                             return (
-                                                <a key={it} className={'fto__page__track-main_content--episode_occurrence' + ((pageEpisodeNum == episodeNum) ? ' fto__page__track-main_content--episode_occurrence--selected' : ' fto__page__track-main_content--episode_occurrence--unselected')}
+                                                <a key={it} className={'fto__page__track-main_content--episode_occurrence' + ((pageEpisodeNum === episodeNum) ? ' fto__page__track-main_content--episode_occurrence--selected' : ' fto__page__track-main_content--episode_occurrence--unselected')}
                                                     href={`/anime/${ftoTrackInfo.fto_anime_id}/episode/${episodeNum}`} 
                                                     onClick={(e) => { e.preventDefault(); navigateToEpisode(ftoTrackInfo.fto_anime_id, episodeNum)}} >
                                                     {episodeNum}
